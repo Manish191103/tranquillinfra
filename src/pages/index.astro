@@ -1,0 +1,42 @@
+---
+import { render } from 'astro:content';
+import { getEntry } from 'astro:content';
+
+import Layout from '~/layouts/PageLayout.astro';
+import HeroText from '~/components/widgets/HeroText.astro';
+import type { MetaData } from '~/types';
+
+export const prerender = true;
+
+const entry = await getEntry('page', 'home');
+if (!entry) throw new Error('Missing `src/data/page/home.md` — the homepage has no content.');
+const { Content } = await render(entry);
+const { heroTitle, heroIntro } = entry.data;
+
+const metadata: MetaData = {
+  title: entry.data.title,
+  description: entry.data.description,
+  openGraph: { type: 'website' },
+};
+---
+
+<Layout metadata={metadata}>
+  <HeroText
+    title={heroTitle}
+    subtitle={heroIntro}
+    callToAction={{
+      text: 'Explore Tranquill City',
+      href: '/projects/tranquill-city/',
+      variant: 'primary',
+    }}
+    callToAction2={{ text: 'Read the insights', href: '/blog/', variant: 'secondary' }}
+  />
+
+  <section class="mx-auto max-w-4xl px-4 py-8 sm:px-6 md:py-12">
+    <div
+      class="prose prose-lg prose-headings:font-heading prose-a:text-primary dark:prose-headings:text-slate-300 prose-headings:leading-tighter prose-headings:tracking-tighter prose-img:rounded-md mx-auto"
+    >
+      <Content />
+    </div>
+  </section>
+</Layout>

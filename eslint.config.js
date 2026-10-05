@@ -61,6 +61,14 @@ export default [
     },
   },
   {
-    ignores: ['dist', 'node_modules', '.github', 'types.generated.d.ts', '.astro'],
+    ignores: [
+      'dist',
+      'node_modules',
+      '.github',
+      'types.generated.d.ts',
+      '.astro',
+      // Vendored self-hosted Decap CMS bundle: third-party minified output.
+      'public/decapcms',
+    ],
   },
 ];

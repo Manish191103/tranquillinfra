@@ -1,0 +1,254 @@
+# Decap CMS configuration for tranquillinfra.com.
+#
+# Mirrors the Zod schemas in src/content.config.ts — add every new content
+# field in both places. Content is read at build time only: a save here
+# commits to the repository, and the Cloudflare build of that branch
+# publishes the change.
+#
+# The admin itself is served from /decapcms/ (self-hosted bundle, no CDN
+# dependency). Authentication uses the GitHub backend with PKCE, so no
+# OAuth proxy server is needed on Cloudflare; the `app_id` is the client ID
+# of the GitHub OAuth App whose callback URL points at /decapcms/.
+
+backend:
+  name: github
+  repo: Manish191103/tranquillinfra
+  branch: main
+  auth_type: pkce
+  app_id: Ov23liu4AlIzPvGH69cq
+
+site_url: 'https://www.tranquillinfra.com'
+
+# Uploaded images land in src/assets/images and are referenced as
+# ~/assets/images/…, the form the AstroWind <Image /> resolver (findImage)
+# understands, so uploads go through Sharp optimisation like every other
+# local image.
+media_folder: 'src/assets/images'
+public_folder: '~/assets/images'
+
+collections:
+  # Blog posts — src/data/post, rendered at /blog/<slug>/.
+  - name: post
+    label: Insights (Blog)
+    folder: 'src/data/post'
+    create: true
+    extension: md
+    slug: '{{slug}}'
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: Excerpt, name: excerpt, widget: text, required: false }
+      - { label: Cover image, name: image, widget: image, required: false }
+      - { label: Cover image alt text, name: imageAlt, widget: string, required: false }
+      - { label: Publish date, name: publishDate, widget: datetime, format: 'YYYY-MM-DD', date_format: 'YYYY-MM-DD', time_format: false }
+      - { label: Update date, name: updateDate, widget: datetime, format: 'YYYY-MM-DD', date_format: 'YYYY-MM-DD', time_format: false, required: false }
+      - { label: Draft, name: draft, widget: boolean, default: false, required: false }
+      - { label: Category, name: category, widget: string, required: false }
+      - { label: Tags, name: tags, widget: list, required: false, collapsed: false }
+      - { label: Author, name: author, widget: string, required: false }
+      - { label: Featured, name: featured, widget: boolean, default: false, required: false }
+      - label: FAQ (rendered as an FAQ section with FAQPage schema)
+        name: faq
+        widget: list
+        required: false
+        collapsed: true
+        fields:
+          - { label: Question, name: question, widget: string }
+          - { label: Answer, name: answer, widget: text }
+      - label: Sources
+        name: sources
+        widget: list
+        required: false
+        collapsed: true
+        fields:
+          - { label: Label, name: label, widget: string }
+          - { label: URL, name: url, widget: string }
+      - { label: Body, name: body, widget: markdown }
+
+  # Standard pages — src/data/page, rendered at /<slug>/.
+  - name: page
+    label: Pages
+    folder: 'src/data/page'
+    create: true
+    extension: md
+    slug: '{{slug}}'
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: Description, name: description, widget: text }
+      - { label: Hero heading, name: heroTitle, widget: string, required: false }
+      - { label: Hero intro, name: heroIntro, widget: text, required: false }
+      - { label: Published at, name: publishedAt, widget: datetime, format: 'YYYY-MM-DD', date_format: 'YYYY-MM-DD', time_format: false, required: false }
+      - { label: Updated at, name: updatedAt, widget: datetime, format: 'YYYY-MM-DD', date_format: 'YYYY-MM-DD', time_format: false, required: false }
+      - { label: Draft, name: draft, widget: boolean, default: false, required: false }
+      - { label: Body, name: body, widget: markdown }
+
+  # Project pages — src/data/project, rendered at /projects/<slug>/.
+  - name: project
+    label: Projects
+    folder: 'src/data/project'
+    create: true
+    extension: md
+    slug: '{{slug}}'
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: Display title, name: displayTitle, widget: string, required: false }
+      - { label: Description, name: description, widget: text }
+      - { label: Project type, name: projectType, widget: string, required: false }
+      - { label: Location, name: location, widget: string, required: false }
+      - { label: Intro, name: intro, widget: text, required: false }
+      - { label: Layout summary, name: layout, widget: string, required: false }
+      - { label: Verification note, name: verificationNote, widget: text, required: false }
+      - label: Hero
+        name: hero
+        widget: object
+        required: false
+        collapsed: true
+        fields:
+          - { label: Poster image, name: image, widget: image }
+          - { label: Poster alt text, name: alt, widget: string }
+          - { label: Caption, name: caption, widget: string, required: false }
+          - label: Video
+            name: video
+            widget: object
+            required: false
+            collapsed: true
+            fields:
+              - { label: Video URL, name: src, widget: string }
+              - { label: Mobile video URL, name: mobileSrc, widget: string, required: false }
+      - label: Plan section
+        name: plan
+        widget: object
+        required: false
+        collapsed: true
+        fields:
+          - { label: Eyebrow, name: eyebrow, widget: string }
+          - { label: Title, name: title, widget: string }
+          - { label: Intro, name: intro, widget: text }
+          - { label: Image, name: image, widget: image }
+          - { label: Image alt text, name: alt, widget: string }
+          - { label: Caption, name: caption, widget: string, required: false }
+          - { label: Note, name: note, widget: text, required: false }
+      - label: Story section
+        name: story
+        widget: object
+        required: false
+        collapsed: true
+        fields:
+          - { label: Eyebrow, name: eyebrow, widget: string }
+          - { label: Title, name: title, widget: string }
+          - { label: Intro, name: intro, widget: text }
+          - { label: Note, name: note, widget: text, required: false }
+          - label: Images
+            name: images
+            widget: list
+            fields:
+              - { label: Image, name: image, widget: image }
+              - { label: Alt text, name: alt, widget: string }
+              - { label: Caption, name: caption, widget: string, required: false }
+      - label: Amenities section
+        name: amenities
+        widget: object
+        required: false
+        collapsed: true
+        fields:
+          - { label: Eyebrow, name: eyebrow, widget: string }
+          - { label: Title, name: title, widget: string }
+          - { label: Intro, name: intro, widget: text }
+          - { label: Note, name: note, widget: text, required: false }
+          - label: Groups
+            name: groups
+            widget: list
+            fields:
+              - { label: Group title, name: title, widget: string }
+              - label: Items
+                name: items
+                widget: list
+                fields:
+                  - { label: Name, name: name, widget: string }
+                  - { label: Description, name: description, widget: string }
+                  - { label: 'Icon (tabler name, no prefix)', name: icon, widget: string, required: false }
+      - label: Location section
+        name: locationSection
+        widget: object
+        required: false
+        collapsed: true
+        fields:
+          - { label: Eyebrow, name: eyebrow, widget: string }
+          - { label: Title, name: title, widget: string }
+          - { label: Intro, name: intro, widget: text }
+          - { label: Note, name: note, widget: text, required: false }
+          - label: Groups
+            name: groups
+            widget: list
+            fields:
+              - { label: Group title, name: title, widget: string }
+              - { label: Landmarks, name: landmarks, widget: list }
+      - label: Facts section
+        name: facts
+        widget: object
+        required: false
+        collapsed: true
+        fields:
+          - { label: Eyebrow, name: eyebrow, widget: string, required: false }
+          - { label: Title, name: title, widget: string, required: false }
+          - { label: Intro, name: intro, widget: text, required: false }
+      - label: FAQ section
+        name: faq
+        widget: object
+        required: false
+        collapsed: true
+        fields:
+          - { label: Eyebrow, name: eyebrow, widget: string }
+          - { label: Title, name: title, widget: string }
+          - { label: Intro, name: intro, widget: text }
+          - label: Questions
+            name: items
+            widget: list
+            fields:
+              - { label: Question, name: question, widget: string }
+              - { label: Answer, name: answer, widget: text }
+      - label: Enquiry section
+        name: enquiry
+        widget: object
+        required: false
+        collapsed: true
+        fields:
+          - { label: Eyebrow, name: eyebrow, widget: string, required: false }
+          - { label: Title, name: title, widget: string, required: false }
+          - { label: Intro, name: intro, widget: text, required: false }
+      - label: Testimonials section
+        name: testimonials
+        widget: object
+        required: false
+        collapsed: true
+        fields:
+          - { label: Eyebrow, name: eyebrow, widget: string }
+          - { label: Title, name: title, widget: string }
+          - { label: Intro, name: intro, widget: text }
+          - { label: Note, name: note, widget: text, required: false }
+          - label: Buyer videos
+            name: items
+            widget: list
+            fields:
+              - { label: Id, name: id, widget: string }
+              - label: Video
+                name: video
+                widget: object
+                fields:
+                  - { label: Video URL, name: src, widget: string }
+                  - { label: Poster image, name: poster, widget: image }
+                  - { label: Poster alt text, name: posterAlt, widget: string }
+                  - { label: Duration, name: duration, widget: string }
+                  - { label: Orientation, name: orientation, widget: select, options: ['portrait', 'landscape'] }
+      - { label: Directions URL, name: directionsUrl, widget: string, required: false }
+      - label: Map coordinates
+        name: coordinates
+        widget: object
+        required: false
+        collapsed: true
+        fields:
+          - { label: Latitude, name: latitude, widget: number, value_type: float }
+          - { label: Longitude, name: longitude, widget: number, value_type: float }
+      - { label: Published at, name: publishedAt, widget: datetime, format: 'YYYY-MM-DD', date_format: 'YYYY-MM-DD', time_format: false, required: false }
+      - { label: Updated at, name: updatedAt, widget: datetime, format: 'YYYY-MM-DD', date_format: 'YYYY-MM-DD', time_format: false, required: false }
+      - { label: Draft, name: draft, widget: boolean, default: false, required: false }
+      - { label: Body, name: body, widget: markdown }

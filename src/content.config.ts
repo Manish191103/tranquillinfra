@@ -117,7 +117,9 @@ const projectSchema = z.object({
   amenities: z.record(z.string(), z.unknown()).optional(),
   locationSection: z.record(z.string(), z.unknown()).optional(),
   facts: z.unknown().optional(),
-  faq: z.object({ items: z.array(z.object({ question: z.string(), answer: z.string() })) }).optional(),
+  faq: z
+    .object({ items: z.array(z.object({ question: z.string(), answer: z.string() })) })
+    .optional(),
   enquiry: z.record(z.string(), z.unknown()).optional(),
   testimonials: z.record(z.string(), z.unknown()).optional(),
   directionsUrl: z.string().optional(),

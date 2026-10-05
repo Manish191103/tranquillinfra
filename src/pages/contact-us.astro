@@ -1,0 +1,75 @@
+---
+import Layout from '~/layouts/PageLayout.astro';
+import HeroText from '~/components/widgets/HeroText.astro';
+import Contact from '~/components/widgets/Contact.astro';
+import type { Input, MetaData, Textarea } from '~/types';
+
+export const prerender = true;
+
+const metadata: MetaData = {
+  title: 'Contact us',
+  description:
+    'Talk to the Tranquill Infra team about Tranquill City — book a site visit, ask a question or request the brochure.',
+  openGraph: {
+    type: 'website',
+  },
+};
+
+// Form fields match the fields the lead pipeline needs; the widget renders
+// the markup only — see .agents/skills/configure-contact-form.md for wiring.
+const inputs: Input[] = [
+  {
+    type: 'text',
+    name: 'name',
+    label: 'Name',
+    placeholder: 'Your name',
+    autocomplete: 'name',
+    required: true,
+  },
+  {
+    type: 'tel',
+    name: 'phone',
+    label: 'Phone',
+    placeholder: 'Your phone number',
+    autocomplete: 'tel',
+    required: true,
+  },
+  {
+    type: 'email',
+    name: 'email',
+    label: 'Email',
+    placeholder: 'you@example.com',
+    autocomplete: 'email',
+  },
+];
+
+const textarea: Textarea = {
+  label: 'Message',
+  placeholder: 'What would you like to know or see on a site visit?',
+  rows: 5,
+  required: true,
+};
+
+const disclaimer = {
+  label:
+    "I agree to be contacted about this enquiry. We don't share your details with anyone else.",
+};
+
+const button = 'Send message';
+---
+
+<Layout metadata={metadata}>
+  <HeroText
+    title="Talk to the team"
+    subtitle="Questions about Tranquill City, a site visit or the latest brochure — one form reaches the team."
+  />
+
+  <Contact
+    tagline="Contact"
+    inputs={inputs}
+    textarea={textarea}
+    disclaimer={disclaimer}
+    button={button}
+    classes={{ container: 'max-w-4xl pb-16' }}
+  />
+</Layout>

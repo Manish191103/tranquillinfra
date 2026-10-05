@@ -33,6 +33,13 @@ export default defineConfig({
   // at prerender time (OG PNGs run satori + sharp, which need Node APIs).
   adapter: cloudflare({ imageService: 'compile', prerenderEnvironment: 'node' }),
 
+  // `/projects/` has no listing page — it points straight at the flagship
+  // project (see the comment in src/navigation.ts). Static output emits this
+  // as a meta-refresh HTML file served by the asset server.
+  redirects: {
+    '/projects': '/projects/tranquill-city',
+  },
+
   output: 'static',
 
   // Nothing here stores session state. Left on, the adapter provisions a
