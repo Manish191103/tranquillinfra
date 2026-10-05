@@ -12,7 +12,7 @@ export default ({ config: _themeConfig = 'src/config.yaml' } = {}): AstroIntegra
 
     hooks: {
       'astro:config:setup': async ({
-        // command,
+        command,
         config,
         // injectRoute,
         // isRestart,
@@ -32,7 +32,15 @@ export default ({ config: _themeConfig = 'src/config.yaml' } = {}): AstroIntegra
           site: SITE.site,
           base: SITE.base,
 
-          trailingSlash: SITE.trailingSlash ? 'always' : 'never',
+          // Published URLs carry the trailing slash (`trailingSlash: true`),
+          // and canonical URLs, redirects and the sitemap follow it. In DEV
+          // only, that policy would break Astro's extensionless image
+          // endpoint: dev `<img>` markup points at `/_image?…` without a
+          // slash, and under 'always' that request 404s into the 404 page
+          // (withastro/astro#16338 — only "file endpoints" are exempt). The
+          // production build keeps 'always' untouched; dev merely stops
+          // caring about the slash.
+          trailingSlash: command === 'dev' ? 'never' : SITE.trailingSlash ? 'always' : 'never',
 
           vite: {
             plugins: [
