@@ -1,0 +1,134 @@
+# Tranquill Infra
+
+Tranquill Infra Projects Pvt. Ltd. is a real estate development company focused on premium residential plot developments in Hyderabad, India. First development: Tranquill City.
+
+Last updated: 2026-09-30.
+
+## Key pages
+
+- [Home](https://www.tranquillinfra.com/): Tranquill City overview and current project highlights.
+- [Tranquill City](https://www.tranquillinfra.com/projects/tranquill-city/): Tranquill City project information — layout plan, amenities, location and approvals.
+- [About us](https://www.tranquillinfra.com/about-us/): Company purpose and background.
+- [Insights](https://www.tranquillinfra.com/blog/): The full guide archive.
+- [Contact](https://www.tranquillinfra.com/contact-us/): Contact details and enquiry options.
+- [Privacy policy](https://www.tranquillinfra.com/privacy-policy/): Privacy and data-use information.
+
+## Current project
+
+### Tranquill City
+
+Premium villa plot development in Rudraram near Patancheru, Hyderabad.
+
+- **Location:** Rudraram village, Patancheru mandal, Sangareddy district, Telangana, India
+- **Coordinates:** 17.585611°N, 78.148361°E
+- **Project type:** Gated community of premium villa plots
+- **Entry price:** From ₹50 lakh (INR 50,00,000) per plot — the entry price for the smallest saleable band. Plots are priced per plot, not per square metre, so a specific plot's price depends on its size band and number; ask the team for the plots you are comparing.
+- **Plot sizes:** 125.42–250.84 sq.m (150–300 sq.yd), published as a range.
+- **Inventory:** 82 parcels in total. Four of them (plots 1-4) are held under HMDA Mortgage conditions and are not for sale, leaving 78 saleable plots. The layout covers 19,410 sq.m (4.8 acre).
+- **RERA:** REA01100108192 — ask the Tranquill Infra team for the registration record and check the number printed on it against the one here, along with the project name, promoter and location. The [Telangana RERA portal](https://rera.telangana.gov.in/) is where the authority publishes project registrations, but do not assume this number resolves there: it did not return a record when checked on 30 September 2026, so treat the document the team gives you as the source.
+- **HMDA layout permission:** 2103/HMDA/SWDL/2026 — verify in HMDA's [Layout Permission Report](https://masterplan.hmda.gov.in/planning/LO.aspx): search by year 2026 and by this file number, then match the village, mandal and district. Neither authority publishes a permalink that resolves a single number, so ask the team for the year, file number, district, mandal and village if you do not have them; the [approvals guide](https://www.tranquillinfra.com/blog/hmda-or-dtcp-plot-approval-telangana/) sets out how to do this.
+- **Development stage:** Approved layout.
+- **Advertised features:** 40 ft & 33 ft CC internal roads, gated community, 24/7 security, water connection points, jogging track, cycle track, street lighting, rainwater harvesting, underground drainage, children's play zone, landscaped parks of 1,040.50 sq.yd and 762.49 sq.yd.
+
+**Nearby landmarks** — names in the surrounding corridor, not a measured radius.
+
+- Mumbai Highway NH-65
+- Outer Ring Road (ORR)
+- Proposed Regional Ring Road (RRR)
+- IIT Hyderabad
+- BHEL Township, Ramachandrapuram
+- ICRISAT
+- Patancheru and BDL Township
+- Patancheru industrial belt
+- Isnapur and Kazipally
+- Pashamylaram
+- Miyapur and Lingampally
+- Gachibowli and Financial District
+- GITAM University, Rudraram
+- International and CBSE schools
+- Super-specialty hospitals, Patancheru and Sangareddy
+
+## Answers
+
+Ten of the questions buyers ask most, answered on the site and copied here from the same reviewed frontmatter. Each is on the linked post in full.
+
+**How much does it cost to register a plot in Telangana?** ([registration guide](https://www.tranquillinfra.com/blog/plot-registration-telangana-costs/))
+
+A sale deed carries three main charges — stamp duty, transfer duty and the registration fee — plus user charges. In the department's current schedule stamp duty on a sale deed is 5.5% (Article 47-A, G.O.Ms.No.59 dated 20.07.2021). Transfer duty is charged only on property within municipal or urban limits — 1.5% there, and 0% for property inside a Gram Panchayat area. The registration fee runs the other way, at 2% inside a Gram Panchayat area and 0.5% outside it (G.O.Ms.No.60, dated 20 July 2021 and notified 2 September 2021). The two splits are set to reach the same total, so a sale deed costs 7.5% of the value either way. The department's calculator and the sub-registrar's computation slip give the exact figure for a specific plot.
+
+**How long do I have to register a sale deed after signing?** ([registration guide](https://www.tranquillinfra.com/blog/plot-registration-telangana-costs/))
+
+A document can be presented within four months from the date of execution. After that it can be presented within another four months with a penalty — up to ten times the registration fee — if the District Registrar grants permission. Beyond eight months it cannot be accepted for registration.
+
+**What is an encumbrance certificate, and what does it not show?** ([registration guide](https://www.tranquillinfra.com/blog/plot-registration-telangana-costs/))
+
+It lists the transactions registered against a property, so it reveals mortgages, prior sales and registered liabilities. It does not capture unregistered claims, which is why the department itself cautions that an EC cannot be taken as the sole criterion to buy a property. It costs Rs.500 per certificate for a search up to 30 years and Rs.1,000 beyond that, and is issued through MeeSeva centres and sub-registrar offices.
+
+**Can a plot in an unapproved layout be registered?** ([registration guide](https://www.tranquillinfra.com/blog/plot-registration-telangana-costs/))
+
+No. Telangana's layout regularization FAQ states that registration of plots by sale is not permitted in unapproved layouts. Until the layout is regularized or otherwise approved, there is nothing to register. See the approvals guide for how to check which authority should have approved the layout.
+
+**How do I know whether a village falls under HMDA?** ([approvals guide](https://www.tranquillinfra.com/blog/hmda-or-dtcp-plot-approval-telangana/))
+
+Check the revenue village, mandal, district and survey number against the current HMDA notification for the Hyderabad Metropolitan Region, and ask which authority issued the layout approval number on the project's documents. The region has been expanded by notification, so an old village list or a brochure claim is not enough.
+
+**What documents should I check before buying a plot?** ([plot verification guide](https://www.tranquillinfra.com/blog/verify-plot-hyderabad/))
+
+Ask for the layout approval letter and plan, title and link documents, an appropriate encumbrance search or certificate, any applicable land-conversion record, project-registration details where applicable, and confirmation of the specific plot's status.
+
+**Can I get a plot loan in Telangana without planning to construct a house?** ([plot loans guide](https://www.tranquillinfra.com/blog/plot-loans-telangana/))
+
+Bank finance for land acquisition is granted only where the borrower declares an intention to construct a house on the plot — with bank finance or otherwise — within the period the bank itself lays down. That declaration is what puts a plot loan inside housing finance. A plot bought purely to hold as an asset sits outside those terms, and the lender's conditions will reflect it.
+
+**How much of the plot value will a bank fund?** ([plot loans guide](https://www.tranquillinfra.com/blog/plot-loans-telangana/))
+
+The Loan-to-Value ceilings in the RBI's housing-finance rules apply to housing loans, and banks are required to exclude stamp duty, registration and other documentation charges from the property value used for LTV. Nothing in those rules entitles a borrower to the same ratio on a bare plot — the sanctioned share is the lender's own policy. Ask for the ratio and the EMI on the plot loan specifically, not on a home-loan illustration.
+
+**Do I get income-tax benefit on a plot loan?** ([plot loans guide](https://www.tranquillinfra.com/blog/plot-loans-telangana/))
+
+Not while the plot stays vacant, and not automatically afterwards either. Section 24(b) allows a deduction for interest on capital borrowed to acquire or construct a property, computed under income from house property, so on a plot-only loan there is no house property to compute against; once the house is constructed, the pre-construction interest is deductible in five equal instalments beginning with the year of acquisition or construction. The ₹2 lakh ceiling widely quoted for a self-occupied house — capital borrowed on or after 1 April 1999, and acquisition or construction completed within five years from the end of the financial year in which the capital was borrowed — is an old-regime condition; under the default section 115BAC regime no deduction is available for interest on a self-occupied property, and the ceiling is read as an aggregate across self-occupied properties rather than an allowance for each one. Section 24 and section 115BAC are amended by later Finance Acts, so confirm the text in force for your assessment year with a tax adviser.
+
+**Can I build a house immediately?** ([Tranquill City](https://www.tranquillinfra.com/projects/tranquill-city/))
+
+We will not give you a date this site cannot support. What is published today is an approved layout: HMDA layout permission 2103/HMDA/SWDL/2026 and RERA registration REA01100108192, with the planned internal roads, parks and services shown on the reference plan. No possession, handover or development-completion date is published here, and the gallery images are renders of the planned layout rather than photographs of completed construction. Ask the team to confirm the current site stage, what work has been completed, the permissions available on your plot and the handover position — in writing, before you commit.
+
+## Blog
+
+Listed in the order `/blog/` renders them: the featured guide first, then newest first.
+
+- [Verify a Plot in Hyderabad](https://www.tranquillinfra.com/blog/verify-plot-hyderabad/): Step-by-step due-diligence guide for checking layout approval, RERA registration, title and encumbrance. (Featured)
+- [HMDA vs DTCP: Which Approved Your Plot?](https://www.tranquillinfra.com/blog/hmda-or-dtcp-plot-approval-telangana/): How layout jurisdiction is decided, what a Gram Panchayat approval is worth, and how to check an approval number.
+- [Plot Loans in Telangana: Eligibility, LTV & Tax](https://www.tranquillinfra.com/blog/plot-loans-telangana/): The RBI construction declaration, LTV treatment, the section 24 tax timing and the old-regime versus section 115BAC position, and what lenders check on the plot.
+- [Plot Registration Charges in Telangana (2026)](https://www.tranquillinfra.com/blog/plot-registration-telangana-costs/): Stamp duty, transfer duty and the registration-fee schedule and the 7.5% total, Section 47-A market value, the four-month registration window, and the encumbrance certificate.
+- [Open Plots & Villa Plots in Rudraram, Near Patancheru](https://www.tranquillinfra.com/blog/rudraram-patancheru-corridor/): The NH-65/ORR belt and its landmarks, and the published details of the Tranquill City layout.
+- [Introducing Tranquill Infra — Our Approach to Land](https://www.tranquillinfra.com/blog/introducing-tranquill-infra/): The company, how it works, and the Tranquill City plan.
+
+Full list above; [Insights](https://www.tranquillinfra.com/blog/) is the canonical entry point and carries every post. [RSS](https://www.tranquillinfra.com/rss.xml) and the [sitemap index](https://www.tranquillinfra.com/sitemap-index.xml) carry the same set in machine-readable form.
+
+## Contact
+
+- **Phone:** +91 95503 62288
+- **Email:** info@tranquillinfra.com
+- **WhatsApp:** +91 95503 62288
+- **Office:** Flat No. 405, Jaya Bharathi Kalpana Apartments, Nandini Nagar, Miyapur – 500049, Telangana, India
+- **Business hours:** Monday, 9:00 AM – 6:00 PM; Tuesday, Closed; Wednesday–Sunday, 9:00 AM – 6:00 PM
+- **Instagram:** [tranquill_infraprojects](https://www.instagram.com/tranquill_infraprojects/)
+
+## Resources
+
+- [Brochure](https://www.tranquillinfra.com/brochure/tranquill-city-final.pdf): Tranquill City project brochure.
+- [Google Maps directions](https://www.google.com/maps/dir/?api=1&destination=17.585611,78.148361): Directions to Tranquill City.
+- [HMDA Layout Permission Report](https://masterplan.hmda.gov.in/planning/LO.aspx): the authority's search surface for a layout permission — year, file number, district, mandal and village.
+- [Telangana RERA](https://rera.telangana.gov.in/): the project registration search portal.
+
+## What this file does not state, and why
+
+One place for every deferral, so nothing above reads as an oversight.
+
+- **No possession, handover or development-completion date.** What is published today is an approved layout. A date would be a promise we cannot currently stand behind; ask the team for the current site stage and the work completed, in writing.
+- **The images are renders.** Every image of the layout on this site — the hero, the gallery, the amenity and story frames — is an illustrative render of the planned layout, not a photograph of completed construction.
+- **No drive times or distances.** A road's length changes with the route, the traffic and the hour. Use the map and the directions link for live figures from your own starting point.
+- **No per-band plot counts.** The size range is published as a range. A band-by-band availability figure is one we cannot stand behind; ask the team for the band, length, width and facing of a specific plot.
+- **No price per plot other than the entry price.** Plot pricing is per plot, not per square metre. The entry price is published; a specific plot's price depends on its band and number.
+- **Not legal, tax or financial advice.** The guides on registration charges, approvals and plot loans are general buyer education. What applies to a plot depends on the instrument, the value fixed under the Act, the land and the transaction. Verify with the relevant authority, and take your own adviser.
+- **Not a project status feed.** Prices, availability and site stage move. Confirm them with the team before you commit.

@@ -1,0 +1,14 @@
+dist/
+node_modules/
+.astro/
+pnpm-lock.yaml
+
+# Vendored upstream (AstroWind's config integration) — formatted to its own
+# project's settings, so reformatting it here would only obscure diffs when it
+# is refreshed from upstream.
+vendor/
+
+# Content and generated assets.
+public/
+src/content/
+src/data/

@@ -1,0 +1,42 @@
+---
+import { Icon } from 'astro-icon/components';
+import Button from '~/components/ui/Button.astro';
+
+export interface Props {
+  prevUrl?: string;
+  nextUrl?: string;
+  prevText?: string;
+  nextText?: string;
+}
+
+// `prevUrl`/`nextUrl` come from Astro's `page.url` and already include `base`
+// and honour `trailingSlash`, so they must not go through `getPermalink()`
+// (that would prefix `base` a second time, see #629).
+const { prevUrl, nextUrl, prevText = 'Newer posts', nextText = 'Older posts' } = Astro.props;
+---
+
+{
+  (prevUrl || nextUrl) && (
+    <div class="container flex">
+      <div class="container mx-auto flex flex-row justify-between">
+        <Button
+          variant="tertiary"
+          class={`mr-2 px-3 md:px-3 ${!prevUrl ? 'invisible' : ''}`}
+          href={prevUrl}
+        >
+          <Icon name="tabler:chevron-left" class="h-6 w-6" />
+          <p class="ml-2">{prevText}</p>
+        </Button>
+
+        <Button
+          variant="tertiary"
+          class={`px-3 md:px-3 ${!nextUrl ? 'invisible' : ''}`}
+          href={nextUrl}
+        >
+          <span class="mr-2">{nextText}</span>
+          <Icon name="tabler:chevron-right" class="h-6 w-6" />
+        </Button>
+      </div>
+    </div>
+  )
+}

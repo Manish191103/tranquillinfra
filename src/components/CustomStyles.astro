@@ -1,0 +1,43 @@
+---
+// The brand palette lives here, as `--aw-*` custom properties that
+// src/assets/styles/tailwind.css maps into Tailwind's theme (`bg-primary`,
+// `text-heading`, `text-muted`, …) and src/assets/styles/shadcn.css re-exports
+// under the shadcn names (`bg-background`, `text-foreground`, …).
+//
+// Change a value here and every widget, plus any shadcn-style component added
+// later, re-themes with it — which is why a colour is never written literally
+// in a component. Each value carries the primitive it came from and the
+// contrast ratio it measures against the surface it actually sits on: the
+// accent is a light gold, legible on forest and invisible on sand, so text on
+// a light surface uses `--aw-color-accent-ink` instead (gold stepped down,
+// 4.65:1 on the page background).
+//
+// Fonts come from Astro's native Fonts API (see `fonts` in astro.config.ts and
+// <Font /> in Layout.astro), exposed as `--font-manrope`, `--font-fraunces`
+// and `--font-jetbrains-mono`.
+//
+---
+
+<style is:inline>
+  :root {
+    --aw-font-sans: var(--font-manrope);
+    --aw-font-serif: var(--font-fraunces);
+    --aw-font-mono: var(--font-jetbrains-mono);
+    --aw-font-heading: var(--font-fraunces);
+
+    --aw-color-primary: oklch(32.93% 0.0532 173.9); /* brand-700 forest */
+    --aw-color-secondary: oklch(42.61% 0.0699 171.6); /* brand-500 */
+    --aw-color-accent: oklch(85.62% 0.1266 88); /* gold-500, a surface colour */
+    --aw-color-accent-ink: oklch(52% 0.11 72); /* gold for text on sand, 4.65:1 */
+
+    --aw-color-text-heading: oklch(28% 0.045 173); /* brand-800, 12.6:1 on sand */
+    --aw-color-text-default: oklch(32.93% 0.0532 173.9); /* brand-700 */
+    --aw-color-text-muted: oklch(41% 0.027 152); /* sage-700, 7.6:1 on sand */
+    --aw-color-bg-page: oklch(96.5% 0.014 85); /* sand-100 */
+
+    ::selection {
+      background-color: oklch(85.62% 0.1266 88);
+      color: oklch(28% 0.045 173);
+    }
+  }
+</style>

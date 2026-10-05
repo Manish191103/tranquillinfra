@@ -1,0 +1,110 @@
+# Tranquill Infra site configuration.
+#
+# Read at build time by the vendored `astrowind` integration (vendor/integration),
+# which exposes it to components as the `astrowind:config` virtual module
+# (`SITE`, `METADATA`, `I18N`, `APP_BLOG`, `UI`, `ANALYTICS`). Editing a value
+# here updates the navigation, the SEO defaults, the feeds and the sitemap —
+# nothing reads it twice.
+site:
+  name: Tranquill Infra Projects
+  site: 'https://www.tranquillinfra.com'
+  base: '/'
+
+  # Every published URL carries its trailing slash: `/blog/`, `/about-us/`,
+  # `/projects/tranquill-city/`. Astro's `trailingSlash` setting, the sitemap,
+  # the RSS feed and the canonical URLs all follow this one value, so flipping
+  # it redirects the whole site rather than splitting it across two shapes.
+  trailingSlash: true
+
+  # Leave null until the Search Console property is verified for this codebase.
+  # Set here rather than in a <meta> tag so the value has exactly one home.
+  googleSiteVerificationId: null
+
+# Default SEO metadata
+metadata:
+  title:
+    default: Tranquill Infra Projects
+    template: '%s — Tranquill Infra Projects'
+  description: 'HMDA-approved gated community plots and villa plots in Rudraram, near Patancheru, Hyderabad.'
+  robots:
+    index: true
+    follow: true
+  openGraph:
+    site_name: Tranquill Infra Projects
+    images:
+      - url: '~/assets/images/default.png'
+        width: 1200
+        height: 628
+    type: website
+  twitter:
+    handle: null
+    site: null
+    cardType: summary_large_image
+
+i18n:
+  # `en-IN`: the site is English, published for an Indian audience, and the
+  # locale reaches `hreflang` and the `inLanguage` of the structured data.
+  language: en-IN
+  textDirection: ltr
+
+apps:
+  blog:
+    isEnabled: true
+
+    # Twelve per page. The archive currently holds fewer posts than this, so
+    # every post stays on `/blog/` — the buyers' verification guides are the
+    # site's deepest-inlinked pages and a second page would split their signals.
+    postsPerPage: 12
+
+    post:
+      isEnabled: true
+      # Variables: %slug%, %year%, %month%, %day%, %hour%, %minute%, %second%, %category%
+      permalink: '/blog/%slug%'
+      robots:
+        index: true
+
+    list:
+      isEnabled: true
+      pathname: 'blog'
+      robots:
+        index: true
+
+    # No taxonomy routes. Each post carries its own category and the tag
+    # vocabulary is thin, so `/category/<x>/` and `/tag/<y>/` would each be a
+    # single-post page competing with the article it duplicates.
+    category:
+      isEnabled: false
+      pathname: 'category'
+      robots:
+        index: false
+
+    tag:
+      isEnabled: false
+      pathname: 'tag'
+      robots:
+        index: false
+
+    isRelatedPostsEnabled: true
+    relatedPostsCount: 2
+
+analytics:
+  vendors:
+    googleAnalytics:
+      # Google Analytics 4 property. Analytics.astro renders this tag on every
+      # page, with no consent gate — AstroWind's behaviour, kept deliberately.
+      # The site's audience is India-only, where analytics cookies are not
+      # gated on prior consent. Null removes the tag entirely.
+      id: G-SK7K0WHJPK
+      # Must agree with `hasExternalScripts` in astro.config.ts. The vendored
+      # config builder defaults this to true, which renders the tag as
+      # `type="text/partytown"`; with the partytown integration switched off,
+      # nothing forwards it to a worker and the tag silently never runs. True
+      # here requires flipping that flag in astro.config.ts as well.
+      partytown: false
+
+ui:
+  # `light:only` — the brand's sand/forest palette is authored as a single
+  # light theme. `system`/`dark` ship an inverted dark palette that has not
+  # been designed or contrast-checked for this brand, so the toggle stays off
+  # until one exists.
+  theme: 'light:only'

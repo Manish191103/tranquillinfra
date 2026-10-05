@@ -1,0 +1,7 @@
+# pnpm 12 reads build-script approvals from this file, not from package.json.
+# Each entry runs that package's install script. esbuild ships its platform
+# binary; workerd is Cloudflare's local runtime, used by `wrangler dev` and by
+# `wrangler deploy --dry-run`. Nothing else in the tree runs install scripts.
+allowBuilds:
+  esbuild: true
+  workerd: true

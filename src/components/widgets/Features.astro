@@ -1,0 +1,70 @@
+---
+import { Icon } from 'astro-icon/components';
+import Button from '~/components/ui/Button.astro';
+import Headline from '~/components/ui/Headline.astro';
+import WidgetWrapper from '~/components/ui/WidgetWrapper.astro';
+import { getColumnsClass } from '~/utils/utils';
+import type { Features as Props } from '~/types';
+
+const {
+  title = await Astro.slots.render('title'),
+  subtitle = await Astro.slots.render('subtitle'),
+  tagline = await Astro.slots.render('tagline'),
+  items = [],
+  columns = 2,
+  defaultIcon,
+
+  id,
+  isDark = false,
+  classes = {},
+  bg = await Astro.slots.render('bg'),
+} = Astro.props;
+
+const columnsClass = getColumnsClass(columns);
+---
+
+<WidgetWrapper
+  id={id}
+  isDark={isDark}
+  containerClass={`max-w-5xl ${classes?.container ?? ''}`}
+  bg={bg}
+>
+  <Headline
+    title={title}
+    subtitle={subtitle}
+    tagline={tagline}
+    classes={classes?.headline as Record<string, string>}
+  />
+
+  {
+    items.length > 0 && (
+      <div class:list={['mx-auto grid gap-8 md:gap-y-12', columnsClass]}>
+        {items.map(({ title: itemTitle, description, icon, callToAction }) => (
+          <div class="intersect-once motion-safe:md:intersect:animate-fade motion-safe:md:opacity-0">
+            <div class="flex max-w-md flex-row">
+              {(icon || defaultIcon) && (
+                <div class="flex justify-center">
+                  <Icon
+                    name={icon || defaultIcon}
+                    class="bg-primary mr-2 mr-4 h-7 w-7 rounded-full p-2 text-white md:h-12 md:w-12 md:p-3 rtl:mr-0 rtl:ml-2 rtl:ml-4"
+                  />
+                </div>
+              )}
+              <div class="mt-0.5">
+                {itemTitle && <h3 class="text-xl font-bold md:text-[1.3rem]">{itemTitle}</h3>}
+                {description && (
+                  <p class:list={[{ 'mt-3': itemTitle }, 'text-muted']} set:html={description} />
+                )}
+                {callToAction && (
+                  <div class:list={[{ 'mt-3': itemTitle || description }]}>
+                    <Button variant="link" {...callToAction} />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  }
+</WidgetWrapper>

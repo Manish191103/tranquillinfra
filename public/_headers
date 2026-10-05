@@ -1,0 +1,26 @@
+# Security headers for every static-asset response. The Cloudflare asset server
+# applies this file to prerendered pages, the 404 page, feeds and images;
+# responses the Worker renders (the on-demand API routes) get the same set from
+# src/middleware.ts. `/*` is the documented catch-all path
+# pattern — `#` is the only comment marker — and its headers are indented.
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), browsing-topics=(), interest-cohort=(), usb=(), serial=(), hid=(), accelerometer=(), gyroscope=(), magnetometer=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Content-Security-Policy: base-uri 'self'; object-src 'none'; form-action 'self' https://formspree.io; frame-ancestors 'none'
+
+# Caching baseline comes from the Workers asset server itself: every unhashed
+# response is served `Cache-Control: public, max-age=0, must-revalidate` with an
+# ETag — including HTML, the feeds and any generated OG PNGs, which are all
+# rebuilt in place at every deploy — and content-hashed `/_astro/*` is served
+# immutable. The rules below only add the exceptions to that baseline.
+# `_headers` appends same-named values from matching rules instead of
+# overriding, so never restate a header on `/*` that a narrower rule also sets.
+
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/media/*
+  Cache-Control: public, max-age=31536000, immutable
