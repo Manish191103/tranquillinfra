@@ -27,20 +27,20 @@ media_folder: 'src/assets/images'
 public_folder: '~/assets/images'
 
 collections:
-  # Blog posts — src/data/post, rendered at /blog/<slug>/.
-  - name: post
+  # Blog posts — src/content/blog, rendered at /blog/<slug>/.
+  - name: blog
     label: Insights (Blog)
-    folder: 'src/data/post'
+    folder: 'src/content/blog'
     create: true
     extension: md
     slug: '{{slug}}'
     fields:
       - { label: Title, name: title, widget: string }
-      - { label: Excerpt, name: excerpt, widget: text, required: false }
+      - { label: Description, name: description, widget: text }
       - { label: Cover image, name: image, widget: image, required: false }
       - { label: Cover image alt text, name: imageAlt, widget: string, required: false }
-      - { label: Publish date, name: publishDate, widget: datetime, format: 'YYYY-MM-DD', date_format: 'YYYY-MM-DD', time_format: false }
-      - { label: Update date, name: updateDate, widget: datetime, format: 'YYYY-MM-DD', date_format: 'YYYY-MM-DD', time_format: false, required: false }
+      - { label: Published at, name: publishedAt, widget: datetime, format: 'YYYY-MM-DD', date_format: 'YYYY-MM-DD', time_format: false }
+      - { label: Updated at, name: updatedAt, widget: datetime, format: 'YYYY-MM-DD', date_format: 'YYYY-MM-DD', time_format: false, required: false }
       - { label: Draft, name: draft, widget: boolean, default: false, required: false }
       - { label: Category, name: category, widget: string, required: false }
       - { label: Tags, name: tags, widget: list, required: false, collapsed: false }
@@ -64,10 +64,10 @@ collections:
           - { label: URL, name: url, widget: string }
       - { label: Body, name: body, widget: markdown }
 
-  # Standard pages — src/data/page, rendered at /<slug>/.
-  - name: page
+  # Standard pages — src/content/pages, rendered at /<slug>/.
+  - name: pages
     label: Pages
-    folder: 'src/data/page'
+    folder: 'src/content/pages'
     # Editing only: new pages are added at the codebase level, so a CMS entry
     # can't create a route-less data file.
     create: false
@@ -83,10 +83,10 @@ collections:
       - { label: Draft, name: draft, widget: boolean, default: false, required: false }
       - { label: Body, name: body, widget: markdown }
 
-  # Project pages — src/data/project, rendered at /projects/<slug>/.
-  - name: project
+  # Project pages — src/content/projects, rendered at /projects/<slug>/.
+  - name: projects
     label: Projects
-    folder: 'src/data/project'
+    folder: 'src/content/projects'
     # Editing only: new project pages are added at the codebase level.
     create: false
     extension: md

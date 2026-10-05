@@ -1,0 +1,191 @@
+---
+/**
+ * ProjectPlan
+ *
+ * The reference layout plan, shown large and read-only, beside the figures the
+ * plan actually shows and this site actually publishes. The sheet is the
+ * delivered plotting plan; the caption and the mortgage note arrive from the
+ * content entry (docs/project-imagery-plan.md).
+ *
+ * Why the table exists: the sheet is a bitmap. Plot numbers, road widths, the
+ * boundary buffer, the park and social-infrastructure areas and the four
+ * HMDA-held parcels exist only as pixels on it, and a text extractor — a
+ * screen reader, a crawler, an LLM building an answer about this project —
+ * gets the alt text and nothing else. So the counts and measurements the plan
+ * is showing are restated as real markup, and every value comes from
+ * `project.config.ts`, the one place the published numbers live: the proof
+ * belt, the stats belt, this table, the facts section and the structured data
+ * all read the same fields, so they cannot disagree.
+ *
+ * What is deliberately NOT here: per-plot dimensions, per-band availability
+ * counts, the boundary buffer distance and the compass facing of any parcel.
+ * The site refuses to publish those on principle (see the FAQ answer on plot
+ * sizes), and the buffer distance appears nowhere on the site at all — only in
+ * an archived planning doc. Inventing them here would be the single worst thing
+ * this section could do, so the last row says who confirms them instead.
+ */
+import { Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import SectionHeading from '~/components/patterns/SectionHeading.astro';
+import projectConfig from '~/config/project.config';
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  plan: { image: ImageMetadata; alt: string; caption: string; note: string };
+}
+
+const { eyebrow, title, intro, plan } = Astro.props;
+
+const { availability, plotSizes, siteArea } = projectConfig;
+
+/**
+ * One published figure per row. `plan.note` already names plots 1–4 as the
+ * HMDA-held parcels, so the count and the numbers are consistent by
+ * construction: both sides of that claim are read from `availability`.
+ */
+const planFacts: Array<{ label: string; value: string; detail?: string }> = [
+  {
+    label: 'Parcels in the layout',
+    value: String(availability.total),
+    detail: 'Every numbered parcel on the sheet, saleable or held.',
+  },
+  {
+    label: 'Plots for sale',
+    value: String(availability.saleable),
+    detail: 'What a buyer can actually purchase.',
+  },
+  {
+    label: 'Held under HMDA Mortgage conditions',
+    value: String(availability.mortgageHeld),
+    detail: 'Not part of the saleable layout.',
+  },
+  {
+    label: 'Plot sizes',
+    value: plotSizes,
+    detail: 'Published as a range rather than a count per band.',
+  },
+  {
+    label: 'Site area',
+    value: `${siteArea.sqM.toLocaleString('en-IN')} sq.m (${siteArea.acre} acre)`,
+  },
+  {
+    label: 'Internal roads',
+    // The widths are advertised, and they are advertised in one place — the
+    // features list further down this page. Naming that section rather than
+    // copying the figures here keeps a single source for them; a second copy in
+    // a second table is exactly how a published number goes stale.
+    value: '40 ft and 33 ft CC internal roads',
+    detail: 'Advertised in the features list on this page.',
+  },
+  {
+    label: 'Anything plot-specific',
+    value: 'Ask the team',
+    detail:
+      'The size band, length, width, compass facing and boundary buffer distance of any single numbered plot are not published here. Ask the team for the plot you are comparing.',
+  },
+];
+---
+
+<section
+  id="project-plan"
+  class="border-border bg-background-secondary scroll-mt-24 border-y"
+  aria-labelledby="project-plan-title"
+>
+  <div class="section mx-auto max-w-6xl px-6">
+    <SectionHeading eyebrow={eyebrow} title={title} intro={intro} id="project-plan-title" />
+
+    <figure class="shell stack">
+      <div class="shell-core overflow-hidden">
+        <Picture
+          src={plan.image}
+          alt={plan.alt}
+          widths={[640, 960, 1440, 1920]}
+          sizes="(min-width: 1280px) 1152px, 100vw"
+          fallbackFormat="webp"
+          formats={['avif', 'webp']}
+          class="w-full"
+        />
+      </div>
+      <figcaption class="mt-4 flex max-w-[64rem] flex-col gap-1 px-1 text-sm">
+        <span class="text-foreground-muted">{plan.caption}</span>
+        <span class="text-foreground-subtle">{plan.note}</span>
+      </figcaption>
+    </figure>
+
+    {/*
+     * A real table, not a styled list. Every row is a label/value pair a
+     * machine can read as one, which is the whole point: the bitmap above is
+     * the drawing, and this is what it is drawing.
+     */}
+    <div class="mt-12 grid gap-10 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] md:gap-14">
+      {/* Scrolls rather than overflows: a 320px document table has no room to
+          reflow a published figure. */}
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse text-left text-sm">
+          <caption class="text-foreground-muted pb-4 text-left text-pretty">
+            What the reference plan shows, and what this site publishes. Per-plot dimensions are not
+            published here — ask the team for the plot you are comparing.
+          </caption>
+          <thead>
+            <tr>
+              <th
+                scope="col"
+                class="text-foreground-muted border-border border-b pb-3 text-[0.7rem] font-extrabold tracking-[0.13em] uppercase"
+              >
+                Figure
+              </th>
+              <th
+                scope="col"
+                class="text-foreground-muted border-border w-[38%] border-b pb-3 text-[0.7rem] font-extrabold tracking-[0.13em] uppercase"
+              >
+                Published value
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {planFacts.map((fact) => (
+              <tr class="align-top">
+                <th
+                  scope="row"
+                  class="text-foreground border-border border-b py-4 pr-4 font-semibold text-pretty"
+                >
+                  {fact.label}
+                  {fact.detail && (
+                    <span class="text-foreground-subtle mt-1 block text-xs font-normal text-pretty">
+                      {fact.detail}
+                    </span>
+                  )}
+                </th>
+                <td class="text-foreground-secondary border-border border-b py-4 font-mono text-[0.8125rem] tabular-nums text-pretty">
+                  {fact.value}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <aside class="border-border border-t pt-6 md:border-t-0 md:border-l md:pt-0 md:pl-10">
+        <h3 class="display-xs">Before you visit</h3>
+        <p class="text-foreground-muted mt-4 text-sm text-pretty">
+          Bring the numbered plots you are comparing to the site visit. The team can give you the
+          size band, length, width and compass facing of each one, along with the current price
+          list, and you can check the approval numbers on the portals before you commit.
+        </p>
+        <p class="text-foreground-subtle mt-4 text-sm text-pretty">
+          The advertised internal road widths, the parks and the rest of the layout's features are
+          listed on this page under{' '}
+          <a
+            class="text-foreground hover:text-accent-ink underline underline-offset-2"
+            href="#project-amenities"
+          >
+            planned features
+          </a>
+          .
+        </p>
+      </aside>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,82 @@
+---
+/**
+ * ValuesSection
+ *
+ * The standards behind the work: a feature pairing a short text block with the
+ * delivered infrastructure render — an internal layout road at dusk, annotated
+ * in-frame with the five essential-infrastructure features — then four value
+ * cards. Icons come from the shared Icon primitive; copy and icon names arrive
+ * from the page.
+ */
+import { Picture } from 'astro:assets';
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+import SectionHeading from '~/components/patterns/SectionHeading.astro';
+import valuesImage from '~/assets/images/projects/tranquill-city/values-landscape.webp';
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  imageAlt: string;
+  feature: { eyebrow: string; title: string; body: string };
+  values: Array<{ icon: string; title: string; body: string }>;
+}
+
+const { eyebrow, title, intro, imageAlt, feature, values } = Astro.props;
+---
+
+<section
+  class="bg-background-secondary border-border border-t"
+  aria-labelledby="about-values-title"
+>
+  <div class="section mx-auto max-w-6xl px-6">
+    <SectionHeading eyebrow={eyebrow} title={title} intro={intro} id="about-values-title" />
+
+    <div class="mt-10 grid gap-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-center lg:gap-14">
+      <div>
+        <p class="eyebrow">{feature.eyebrow}</p>
+        <h3 class="display-sm text-foreground">{feature.title}</h3>
+        <p class="text-foreground-muted mt-4">{feature.body}</p>
+      </div>
+
+      {/*
+       * The render inside a shell, matching the hero plate on the same page.
+       * The image keeps its own aspect ratio and fills the core; the bezel is
+       * the frame.
+       */}
+      <div class="shell reveal-from-right">
+        <div class="shell-core overflow-hidden">
+          <Picture
+            src={valuesImage}
+            alt={imageAlt}
+            widths={[640, 960, 1280, 1672]}
+            sizes="(min-width: 1280px) 550px, (min-width: 1024px) 48vw, calc(100vw - 3rem)"
+            formats={['avif', 'webp']}
+            fallbackFormat="webp"
+            loading="lazy"
+            class="aspect-[16/9] w-full object-cover"
+          />
+        </div>
+      </div>
+    </div>
+
+    <ul class="mt-[var(--shell-padding)] grid gap-[var(--shell-padding)] sm:grid-cols-2 lg:grid-cols-4">
+      {values.map((value, index) => (
+        <li class:list={['shell lift', `reveal-${Math.min(index + 1, 5)}`]}>
+          <div class="shell-core h-full p-6">
+            {/*
+             * The icon well is a pressed depression rather than a filled disc —
+             * an inset shadow with no background, so the four read as marks
+             * cut into the plate.
+             */}
+            <span class="icon-well text-secondary-foreground">
+              <Icon name={value.icon} size="md" />
+            </span>
+            <h3 class="display-xs text-foreground mt-6">{value.title}</h3>
+            <p class="text-foreground-muted mt-3 text-sm leading-relaxed">{value.body}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

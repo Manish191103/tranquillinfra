@@ -1,0 +1,395 @@
+---
+/**
+ * AnnouncementBar Component
+ *
+ * Rotating notice band that sits above the header. Messages are supplied by the
+ * caller — the component carries no copy.
+ *
+ * Behaviour: one message at a time, auto-rotation on an interval, and
+ * previous/pause/next/dismiss controls. Rotation holds while the visitor is
+ * interacting with the bar — pointer press, hover or focus — so a link cannot
+ * be swapped out from under a finger between touch-down and touch-up on the
+ * topmost element of every page. It stops under `prefers-reduced-motion` (the
+ * pause control is hidden there). The step controls collapse below `sm:`, where
+ * the row is too narrow to keep both the controls and a readable message.
+ *
+ * Every message ships as real text in the markup and is hidden at paint by CSS,
+ * never by the `hidden` attribute. That attribute was a strong signal to every
+ * consumer that three of the four messages did not exist — and one of the three
+ * is the statutory line, "Verify RERA … and HMDA … yourself". A text extractor
+ * or an LLM reading the markup has to be able to see that this site publishes
+ * its approval numbers and asks the reader to check them; `hidden` plus
+ * `aria-hidden` on three of four is exactly the combination that leads a reader
+ * to conclude the opposite.
+ *
+ * Dismissal persists for the session. A returning visitor never sees the bar
+ * flash and collapse: an inline script marks the document element from
+ * `sessionStorage` before first paint and the bar is hidden by CSS.
+ */
+import type { HTMLAttributes } from 'astro/types';
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+import type { EnquiryRequestType } from '~/lib/enquiry-cta';
+import { cn } from '~/lib/cn';
+
+export interface AnnouncementMessage {
+  text: string;
+  href: string;
+  /** Analytics hook; the tracking layer reads `data-track` when it lands. */
+  track?: string;
+  /** Dialog element to open instead of navigating, where the page renders one. */
+  dialog?: string;
+  /** What the link is asking for; the dialog opens on that request. */
+  requestType?: EnquiryRequestType;
+}
+
+interface Props extends HTMLAttributes<'aside'> {
+  /** Messages to rotate through; the first renders server-side */
+  messages: AnnouncementMessage[];
+  /**
+   * Auto-rotation interval in milliseconds.
+   *
+   * 18s, not 5s. The bar is an `aria-live` region that rotates a trust message
+   * — including the statutory one — indefinitely, and at 5s that is a polite
+   * announcement every five seconds for as long as the tab is open, which is
+   * the behaviour 4.1.2 is about. 18s is long enough that a visitor is not
+   * interrupted mid-sentence and short enough that the second and third
+   * messages are still seen. A pause control exists either way; the interval is
+   * not what makes the region usable.
+   */
+  interval?: number;
+  /** sessionStorage key holding the dismissal flag */
+  storageKey?: string;
+}
+
+const {
+  messages,
+  interval = 18000,
+  storageKey = 'tq-announcement-dismissed',
+  class: className,
+  ...attrs
+} = Astro.props;
+
+const hasMultiple = messages.length > 1;
+
+const controlClasses = cn(
+  'inline-flex size-8 shrink-0 items-center justify-center rounded-md',
+  'text-foreground-muted transition-colors hover:bg-secondary hover:text-foreground',
+  'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none'
+);
+---
+
+{messages.length > 0 && (
+  <>
+    {/* Runs while the parser is still above the bar, so the collapse is
+        decided before the first paint. The key is fixed in practice: one bar
+        per page. */}
+    <script
+      is:inline
+      set:html={`try{if(sessionStorage.getItem(${JSON.stringify(storageKey)})==='true'){document.documentElement.dataset.announcementDismissed=''}}catch(e){}`}
+    ></script>
+    <aside
+      class:list={[
+        'invert-section bg-background text-foreground border-[var(--border-invert)] border-b',
+        className,
+      ]}
+      data-announcement-bar
+      data-interval={interval}
+      data-storage-key={storageKey}
+      aria-label="Current updates"
+      {...attrs}
+    >
+      {/*
+        WCAG 2.2 target size (minimum): below `sm` the prev/next/pause controls
+        are `max-sm:hidden`, so this link IS the whole top-of-page call to
+        action on a phone — and it measured 298×16px, under the 24×24 floor by
+        8px of height. `min-h-6` is exactly the minimum, so the row's 2.5rem
+        still governs the bar's height and nothing moves.
+      */}
+      <div class="mx-auto flex min-h-10 max-w-6xl items-center justify-between gap-3 px-6">
+        {/*
+          `aria-live="off"` until the visitor touches the controls (see
+          `armLiveRegion` below). A polite live region that starts announcing a
+          new message every 18 seconds before anyone has asked for it is still a
+          region that interrupts; the moment a visitor presses next, or focuses
+          the bar, it becomes the polite region it was meant to be.
+        */}
+        <div class="grid min-w-0 flex-1 items-center" data-announcement-live aria-live="off">
+          {messages.map((message, index) => (
+            <a
+              href={message.href}
+              data-track={message.track}
+              data-dialog-trigger={message.dialog}
+              data-dialog-request-type={message.requestType}
+              data-announcement-message
+              class:list={[
+                'hover:text-accent-ink focus-visible:ring-ring min-h-6 flex min-w-0 items-center gap-2 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none',
+                index === 0 && 'is-active',
+              ]}
+            >
+              <span class="bg-accent size-1.5 shrink-0 rounded-full" aria-hidden="true" />
+              <span class="truncate">{message.text}</span>
+              <Icon name="arrow-up-right" size="xs" class="text-accent-ink shrink-0" />
+            </a>
+          ))}
+        </div>
+
+        <div
+          class="flex shrink-0 items-center gap-0.5"
+          role="group"
+          aria-label="Announcement controls"
+        >
+          {hasMultiple && (
+            <>
+              <button
+                type="button"
+                class={cn(controlClasses, 'max-sm:hidden')}
+                data-announcement-prev
+                aria-label="Previous announcement"
+              >
+                <Icon name="chevron-left" size="sm" />
+              </button>
+              <button
+                type="button"
+                class={cn(controlClasses, 'max-sm:hidden')}
+                data-announcement-pause
+                aria-label="Pause announcements"
+                aria-pressed="false"
+              >
+                <span data-announcement-pause-icon>
+                  <Icon name="pause" size="sm" />
+                </span>
+                <span data-announcement-play-icon hidden>
+                  <Icon name="play" size="sm" />
+                </span>
+              </button>
+              <button
+                type="button"
+                class={cn(controlClasses, 'max-sm:hidden')}
+                data-announcement-next
+                aria-label="Next announcement"
+              >
+                <Icon name="chevron-right" size="sm" />
+              </button>
+            </>
+          )}
+          <button
+            type="button"
+            class={controlClasses}
+            data-announcement-dismiss
+            aria-label="Close announcements"
+          >
+            <Icon name="x" size="sm" />
+          </button>
+        </div>
+      </div>
+    </aside>
+  </>
+)}
+
+<style is:global>
+  /* Applied by the inline script before the bar is parsed. */
+  html[data-announcement-dismissed] [data-announcement-bar] {
+    display: none;
+  }
+
+  /*
+   * Rotation state, expressed on the element rather than with `hidden`, so the
+   * markup always carries all four messages as ordinary links. `display: none`
+   * is what removes the inactive ones from the rendered page and from the
+   * accessibility tree — which is what `hidden` did too, except that `hidden`
+   * also told every markup-level reader the message was not part of the page.
+   */
+  [data-announcement-message]:not(.is-active) {
+    display: none;
+  }
+</style>
+
+<script>
+  /** Geometry/timer cleanup, so no rotation outlives its page (see below). */
+  const teardowns = new WeakMap<HTMLElement, () => void>();
+
+  function initAnnouncementBars() {
+    document.querySelectorAll<HTMLElement>('[data-announcement-bar]').forEach((bar) => {
+      if (bar.dataset.announcementInit) return;
+      bar.dataset.announcementInit = 'true';
+
+      const messages = Array.from(bar.querySelectorAll<HTMLElement>('[data-announcement-message]'));
+      if (messages.length === 0) return;
+
+      const liveRegion = bar.querySelector<HTMLElement>('[data-announcement-live]');
+      const storageKey = bar.dataset.storageKey || 'tq-announcement-dismissed';
+
+      // Already dismissed: the inline script has hidden the bar; nothing to bind.
+      try {
+        if (window.sessionStorage.getItem(storageKey) === 'true') return;
+      } catch {
+        /* Storage can be unavailable in privacy-restricted browsers. */
+      }
+
+      const interval = Number(bar.dataset.interval) || 18000;
+      const previousButton = bar.querySelector<HTMLButtonElement>('[data-announcement-prev]');
+      const pauseButton = bar.querySelector<HTMLButtonElement>('[data-announcement-pause]');
+      const nextButton = bar.querySelector<HTMLButtonElement>('[data-announcement-next]');
+      const dismissButton = bar.querySelector<HTMLButtonElement>('[data-announcement-dismiss]');
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+      let currentIndex = 0;
+      let paused = reducedMotion.matches;
+      let interacting = false;
+      let timer: number | undefined;
+
+      /**
+       * Hand the region over to the visitor.
+       *
+       * The bar ships `aria-live="off"`. Rotation is not a change the visitor
+       * asked for and a polite region has no way to tell an unsolicited
+       * announcement from a wanted one, so a bar that rotates on a timer is
+       * only allowed to announce once somebody has touched it — pressed a step
+       * control, or moved focus into it. From that moment it is the polite
+       * region it was always meant to be, and a manual change is announced.
+       * Setting it once is enough; `aria-live` does not need to be armed per
+       * announcement.
+       */
+      const armLiveRegion = () => {
+        liveRegion?.setAttribute('aria-live', 'polite');
+      };
+
+      const showMessage = (index: number) => {
+        currentIndex = (index + messages.length) % messages.length;
+        messages.forEach((message, messageIndex) => {
+          message.classList.toggle('is-active', messageIndex === currentIndex);
+        });
+      };
+
+      const stopTimer = () => {
+        if (timer !== undefined) {
+          window.clearInterval(timer);
+          timer = undefined;
+        }
+      };
+
+      const startTimer = () => {
+        stopTimer();
+        if (!paused && !interacting && messages.length > 1) {
+          timer = window.setInterval(() => showMessage(currentIndex + 1), interval);
+        }
+      };
+
+      // A press anywhere in the bar holds the rotation until it is released:
+      // the visitor's target must not move between touch-down and touch-up.
+      // Focus and hover hold it for the same reason.
+      const hold = () => {
+        interacting = true;
+        stopTimer();
+      };
+      const release = () => {
+        interacting = false;
+        startTimer();
+      };
+
+      const abort = new AbortController();
+      const { signal } = abort;
+      bar.addEventListener('pointerdown', hold, { signal });
+      bar.addEventListener('pointerup', release, { signal });
+      bar.addEventListener('pointercancel', release, { signal });
+      bar.addEventListener(
+        'focusin',
+        () => {
+          armLiveRegion();
+          hold();
+        },
+        { signal }
+      );
+      bar.addEventListener('focusout', release, { signal });
+
+      // Hover only where it is real: a tap synthesizes mouse events on touch
+      // screens and would leave the bar paused for the rest of the visit.
+      if (window.matchMedia('(hover: hover)').matches) {
+        bar.addEventListener('mouseenter', hold, { signal });
+        bar.addEventListener('mouseleave', release, { signal });
+      }
+
+      previousButton?.addEventListener(
+        'click',
+        () => {
+          armLiveRegion();
+          stopTimer();
+          showMessage(currentIndex - 1);
+          startTimer();
+        },
+        { signal }
+      );
+
+      nextButton?.addEventListener(
+        'click',
+        () => {
+          armLiveRegion();
+          stopTimer();
+          showMessage(currentIndex + 1);
+          startTimer();
+        },
+        { signal }
+      );
+
+      pauseButton?.addEventListener(
+        'click',
+        () => {
+          paused = !paused;
+          armLiveRegion();
+          const pauseIcon = pauseButton.querySelector<HTMLElement>(
+            '[data-announcement-pause-icon]'
+          );
+          const playIcon = pauseButton.querySelector<HTMLElement>('[data-announcement-play-icon]');
+          if (pauseIcon) pauseIcon.hidden = paused;
+          if (playIcon) playIcon.hidden = !paused;
+          pauseButton.setAttribute(
+            'aria-label',
+            paused ? 'Resume announcements' : 'Pause announcements'
+          );
+          pauseButton.setAttribute('aria-pressed', String(paused));
+          startTimer();
+        },
+        { signal }
+      );
+
+      if (reducedMotion.matches && pauseButton) {
+        pauseButton.hidden = true;
+      }
+
+      dismissButton?.addEventListener(
+        'click',
+        () => {
+          document.documentElement.dataset.announcementDismissed = '';
+          stopTimer();
+          abort.abort();
+          try {
+            window.sessionStorage.setItem(storageKey, 'true');
+          } catch {
+            /* Storage can be unavailable in privacy-restricted browsers. */
+          }
+        },
+        { signal }
+      );
+
+      startTimer();
+
+      teardowns.set(bar, () => {
+        stopTimer();
+        abort.abort();
+        teardowns.delete(bar);
+      });
+    });
+  }
+
+  function teardownAnnouncementBars() {
+    document.querySelectorAll<HTMLElement>('[data-announcement-bar]').forEach((bar) => {
+      teardowns.get(bar)?.();
+    });
+  }
+
+  initAnnouncementBars();
+  document.addEventListener('astro:page-load', initAnnouncementBars);
+  document.addEventListener('astro:after-swap', initAnnouncementBars);
+  // Clear the interval before the swap so no rotation survives the page.
+  document.addEventListener('astro:before-swap', teardownAnnouncementBars);
+</script>

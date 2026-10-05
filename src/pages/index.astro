@@ -2,52 +2,68 @@
 /**
  * Homepage
  *
- * Assembled from the ported sections: cinematic hero, the published-positions
- * band, the proof belt and the closing CTA. All copy lives here or in
- * `src/data/page/home.md`; the section components stay presentation-only.
+ * Assembled from the ported sections: cinematic hero, build sequence, proof
+ * belt, project spotlight, investment belt, next steps, library directory and
+ * the closing CTA. All copy lives here or in `src/content/pages/home.md`; the
+ * section components stay presentation-only.
  *
  * Imagery status (client feedback 2026-09-13): HOME-01 closed 2026-09-15 — the
  * hero carousel runs the supplied illustrative renders from
  * `assets/images/projects/tranquill-city/home-hero/`; 2026-09-16 reordered the
  * set (the entrance render leads, the labelled aerial follows), added a fifth
- * frame and re-delivered slides 3-5 (villa street, play area, walkway).
+ * frame and re-delivered slides 3-5 (villa street, play area, walkway —
+ * `docs/home-hero-images-plan.md` §7-9). The shared master
+ * `tranquill-city/walkway.webp` is separate from the carousel now: it serves
+ * this page's project spotlight (it replaced `project-story.webp`) and the
+ * `/contact-us/` hero (`docs/project-imagery-plan.md`, `docs/hero-swap-plan.md`).
+ * HOME-02 replaced build stages 2-5 with the supplied aerial frames; the single
+ * on-site reel (HOME-03) lands once the clip and speaker consent are confirmed.
  */
 import { getEntry, render } from 'astro:content';
-import { Icon } from 'astro-icon/components';
 import PageLayout from '~/layouts/PageLayout.astro';
-import HomeHero from '~/components/widgets/HomeHero.astro';
-import Prose from '~/components/widgets/Prose.astro';
-import ProofBelt from '~/components/widgets/ProofBelt.astro';
-import ScrollBuildStory from '~/components/widgets/ScrollBuildStory.astro';
-import ProjectSpotlight from '~/components/widgets/ProjectSpotlight.astro';
-import InvestmentBelt from '~/components/widgets/InvestmentBelt.astro';
-import NextSteps from '~/components/widgets/NextSteps.astro';
-import LibraryDirectory from '~/components/widgets/LibraryDirectory.astro';
-import HomeCta from '~/components/widgets/HomeCta.astro';
-import type { CarouselSlide } from '~/components/ui/Carousel/carousel';
-import { buildPosterPreload } from '~/components/ui/Carousel/posters';
-import { contact } from '~/contact';
+import Hero from '~/components/home/Hero.astro';
+import ScrollBuildStory from '~/components/home/ScrollBuildStory.astro';
+import ProofBelt from '~/components/home/ProofBelt.astro';
+import InvestmentBelt from '~/components/home/InvestmentBelt.astro';
+import NextSteps from '~/components/home/NextSteps.astro';
+import Prose from '~/components/patterns/Prose.astro';
+import Button from '~/components/ui/form/Button/Button.astro';
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+import ProjectSpotlight from '~/components/home/ProjectSpotlight.astro';
 
-import type { MetaData } from '~/types';
+import LibraryDirectory from '~/components/home/LibraryDirectory.astro';
+import HomeCta from '~/components/home/HomeCta.astro';
+import type { CarouselSlide } from '~/components/ui/overlay/Carousel/carousel';
+import { buildPosterPreload } from '~/components/ui/overlay/Carousel/posters';
+import type { BuildFrame } from '~/components/home/ScrollBuildStory.astro';
+import { getPublishedPosts } from '~/lib/blog';
+import projectConfig, { projectProofPoints } from '~/config/project.config';
 
 import heroArrival from '~/assets/images/projects/tranquill-city/home-hero/arrival.webp';
 import heroEntrance from '~/assets/images/projects/tranquill-city/home-hero/entrance.webp';
 import heroGreenSpaces from '~/assets/images/projects/tranquill-city/home-hero/green-spaces.webp';
 import heroAmenities from '~/assets/images/projects/tranquill-city/home-hero/amenities.webp';
 import heroCommunityWalk from '~/assets/images/projects/tranquill-city/home-hero/community-walk.webp';
+import walkway from '~/assets/images/projects/tranquill-city/walkway.webp';
+import groundFrame from '~/assets/images/projects/tranquill-city/build-sequence/01-ground.webp';
+import traceFrame from '~/assets/images/projects/tranquill-city/build-sequence/02-trace.webp';
+import connectFrame from '~/assets/images/projects/tranquill-city/build-sequence/03-connect.webp';
+import growFrame from '~/assets/images/projects/tranquill-city/build-sequence/04-grow.webp';
+import belongFrame from '~/assets/images/projects/tranquill-city/build-sequence/05-belong.webp';
+import { breakableReference } from '~/lib/breakable-reference';
 
-const home = await getEntry('page', 'home');
+const home = await getEntry('pages', 'home');
 if (!home) {
-  throw new Error('Missing required page entry "home".');
+  throw new Error('Missing required pages entry "home".');
 }
 const { Content } = await render(home);
 
 // The hero heading is frontmatter: the hero panel renders the page's single H1
 // and the body section below continues from it, so there is one heading to edit
 // and exactly one H1 in the document.
-const { heroTitle, heroIntro } = home.data;
-if (!heroTitle) {
-  throw new Error('The "home" page entry needs a heroTitle for the hero.');
+const homeBodyTitle = home.data.heroTitle;
+if (!homeBodyTitle) {
+  throw new Error('The "home" pages entry needs a level-one heading for the hero.');
 }
 
 const heroClips: CarouselSlide[] = [
@@ -94,21 +110,73 @@ const heroClips: CarouselSlide[] = [
 // hero markup deep in the body.
 const lcpPreload = await buildPosterPreload(heroClips[0]);
 
-// The published numbers, read from `contact.ts` so the plate beside the prose
-// cannot drift from the announcement bar, the header chrome, or the project
-// page's facts. The two approval rows link to the portals that publish them,
-// because the site's whole argument is that a buyer can check these
-// independently.
-const { details, approvals } = contact;
+const buildSequence: BuildFrame[] = [
+  {
+    image: groundFrame,
+    imageAlt: 'Illustrative Deccan plateau terrain before development',
+    label: 'Ground',
+    title: 'A beginning with nothing to hide.',
+    detail:
+      'Before a road or boundary, there is the terrain — quiet, open, and full of possibility.',
+  },
+  {
+    image: traceFrame,
+    imageAlt: 'Illustrative concept image of plot foundations and internal roads across the layout',
+    label: 'Trace',
+    title: 'A line gives the land a direction.',
+    detail:
+      'The first gestures are simple: a boundary, a threshold, and a clear sense of where the layout begins.',
+  },
+  {
+    image: connectFrame,
+    imageAlt:
+      'Illustrative concept image of structures rising along the internal roads of the layout',
+    label: 'Connect',
+    title: 'Movement becomes a rhythm.',
+    detail: 'Internal roads follow the ground, linking each plot to the wider landscape.',
+  },
+  {
+    image: growFrame,
+    imageAlt: 'Illustrative concept image of homes and planting taking shape across the layout',
+    label: 'Grow',
+    title: 'The plan makes space for life.',
+    detail: 'Green corridors and shared clearings soften the geometry of the layout.',
+  },
+  {
+    image: belongFrame,
+    imageAlt: 'Illustrative concept image of the layout with homes and planted streets in place',
+    label: 'Belong',
+    title: 'A place you can picture before you arrive.',
+    detail: 'The layout resolves — open, connected, and ready for the life that will happen there.',
+  },
+];
+
+const proofPoints = projectProofPoints();
+
+/**
+ * The figures a buyer scans before anything else, built from
+ * `project.config.ts` so the plate beside the prose cannot drift from the
+ * project page, the About facts table, or the schema. The two approval rows
+ * link to the portals that publish them, because the site's whole argument is
+ * that a buyer can check these independently.
+ */
 const publishedDetails: { label: string; value: string; href?: string }[] = [
-  { label: 'Plot sizes', value: details.plotSizes },
+  { label: 'Plot sizes', value: projectConfig.plotSizes },
   {
     label: 'Plots available',
-    value: `${details.totalParcels - details.mortgageHeldParcels} saleable of ${details.totalParcels}`,
+    value: `${projectConfig.availability.saleable} saleable of ${projectConfig.availability.total}`,
   },
-  { label: 'Entry price', value: details.priceDisplay },
-  { label: 'RERA', value: approvals.rera.number, href: details.verify.rera },
-  { label: 'HMDA', value: approvals.hmda.number, href: details.verify.hmda },
+  { label: 'Entry price', value: projectConfig.price.display },
+  {
+    label: 'RERA',
+    value: projectConfig.approvals.rera.number,
+    href: projectConfig.approvals.rera.verify,
+  },
+  {
+    label: 'HMDA',
+    value: projectConfig.approvals.hmda.number,
+    href: projectConfig.approvals.hmda.verify,
+  },
 ];
 
 /**
@@ -116,43 +184,81 @@ const publishedDetails: { label: string; value: string; href?: string }[] = [
  * Stating it here is the same promise the entry's second paragraph makes in
  * prose, so the pair reads as claim and evidence rather than a repetition.
  */
-const mortgageNote = `${details.mortgageHeldParcels} parcels are held under HMDA Mortgage conditions and are not for sale. We do not publish a possession date, per-band plot counts or drive times — the team confirms those.`;
+const mortgageNote = `${projectConfig.availability.mortgageHeld} parcels (plots 1 to ${projectConfig.availability.mortgageHeld}) are held under HMDA Mortgage conditions and are not for sale. We do not publish a possession date, per-band plot counts or drive times — the team confirms those.`;
 
-// The homepage proof belt: the four numbers a buyer checks first.
-const proofPoints = [
-  { label: 'Plot sizes', value: details.plotSizes },
-  { label: 'RERA', value: approvals.rera.number },
-  { label: 'HMDA', value: approvals.hmda.number },
-  { label: 'Project type', value: details.projectType },
-];
+/**
+ * The homepage reading window, and the `featured` post is pinned into it.
+ *
+ * This was a bare `slice(0, 4)` over a list `getPublishedPosts()` returns
+ * newest-first, which dropped the flagship today: four posts share
+ * 2026-09-16 and `verify-plot-hyderabad` — the `featured: true` buyer-
+ * verification guide — is 2026-09-05. The post the homepage's own "Visit and
+ * verify" step and the home entry both link to, and the one a buyer arrives for,
+ * carried zero links from the homepage, and every post published after the four
+ * same-day ones would have done the same by default. The archive already pins it
+ * (`src/pages/blog/[...page].astro`); the homepage was the copy that did not.
+ *
+ * The remaining slots go to the newest post in each category not yet on show,
+ * then to whatever is left by recency. A date-ordered window is the same thing
+ * right up until a category repeats, and then it is much narrower: with four of
+ * the six published posts on a single date, recency alone spends three of four
+ * slots on one day, and the window is thinnest exactly when the archive is
+ * busiest. Four slots, not six — a wider window was rejected because it grows
+ * the section rather than the range of it.
+ */
+const LIBRARY_WINDOW = 4;
+const allPosts = await getPublishedPosts();
+const featuredPost = allPosts.find((post) => post.data.featured);
+const unfeaturedPosts = featuredPost ? allPosts.filter((post) => post !== featuredPost) : allPosts;
+// One pass over a date-sorted list, so the first post of each unseen category is
+// also the newest one in it.
+const seenCategories = new Set(featuredPost ? [featuredPost.data.category] : []);
+const firstOfEachCategory = unfeaturedPosts.filter((post) => {
+  if (seenCategories.has(post.data.category)) return false;
+  seenCategories.add(post.data.category);
+  return true;
+});
+const latestPosts = [
+  ...(featuredPost ? [featuredPost] : []),
+  ...firstOfEachCategory,
+  ...unfeaturedPosts,
+].slice(0, LIBRARY_WINDOW);
 
-const metadata: MetaData = {
-  title: home.data.title,
-  description: home.data.description,
-  openGraph: { type: 'website' },
-};
+const directoryPosts = latestPosts.map((post) => ({
+  href: `/blog/${post.id}/`,
+  title: post.data.title,
+  category: post.data.category,
+  date: post.data.publishedAt,
+  description: post.data.description,
+}));
+
+// Up to three reviewed answers per post, newest posts first.
+const directoryQuestions: {
+  href: string;
+  question: string;
+  postTitle: string;
+}[] = latestPosts
+  .flatMap((post) =>
+    post.data.faq.slice(0, 3).map((item) => ({
+      href: `/blog/${post.id}/`,
+      question: item.question,
+      postTitle: post.data.title,
+    }))
+  )
+  .slice(0, 6);
 ---
 
-<PageLayout metadata={metadata}>
-  <Fragment slot="head">
-    <link
-      rel="preload"
-      as="image"
-      href={lcpPreload.srcset.split(' ')[0]}
-      imagesrcset={lcpPreload.srcset}
-      imagesizes={lcpPreload.sizes}
-    />
-  </Fragment>
-
-  <HomeHero
+<PageLayout title={home.data.title} description={home.data.description} lcpPreload={lcpPreload}>
+  <Hero
     clips={heroClips}
-    title={heroTitle}
-    intro={heroIntro ?? home.data.description}
+    title={homeBodyTitle}
+    intro={home.data.heroIntro ?? home.data.description}
     eyebrow="A considered address in Rudraram"
     actions={[
       {
         label: 'Book a site visit',
         href: '/contact-us/',
+        variant: 'primary',
         track: 'site_visit',
         dialog: 'enquiry-dialog',
       },
@@ -168,8 +274,8 @@ const metadata: MetaData = {
     visitor saw (measured 2026-09-30: ~10 screens of text on a phone before any
     visual, and a stray markdown link rendering as an unstyled underline at the
     end). The facts a buyer actually scans now sit beside the prose as a plate,
-    built from `contact.ts` so the plate cannot drift from the header chrome,
-    and the prose keeps only the argument the plate cannot carry.
+    built from `project.config.ts` so the two cannot drift, and the prose keeps
+    only the argument the plate cannot carry.
   */}
   <section
     id="home-published"
@@ -192,14 +298,14 @@ const metadata: MetaData = {
       <aside class="shell reveal-4 lg:sticky lg:top-28 lg:self-start">
         <div class="shell-core p-6 md:p-8">
           <h3 class="display-xs">Published details</h3>
-          <p class="text-muted mt-2 text-sm">
+          <p class="text-foreground-muted mt-2 text-sm">
             Every figure below is on the page you can check independently.
           </p>
 
           <dl class="mt-7 grid gap-6">
             {publishedDetails.map((row) => (
               <div class="border-border border-t pt-4">
-                <dt class="text-muted text-[0.7rem] font-extrabold tracking-[0.13em] uppercase">
+                <dt class="text-foreground-muted text-[0.7rem] font-extrabold tracking-[0.13em] uppercase">
                   {row.label}
                 </dt>
                 <dd class="mt-1.5 [overflow-wrap:break-word]">
@@ -210,50 +316,47 @@ const metadata: MetaData = {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <span class="min-w-0">{row.value}</span>
-                      <Icon name="tabler:arrow-up-right" class="text-accent-ink size-4 shrink-0" />
+                      <span class="min-w-0" set:html={breakableReference(row.value)} />
+                      <Icon name="arrow-up-right" size="xs" class="text-accent-ink shrink-0" />
                     </a>
                   ) : (
-                    <span class="display-xs">{row.value}</span>
+                    <span class="display-xs" set:html={breakableReference(row.value)} />
                   )}
                 </dd>
               </div>
             ))}
           </dl>
 
-          <p class="text-muted mt-7 border-t border-border pt-5 text-sm text-pretty">
+          <p class="text-foreground-muted mt-7 border-t border-border pt-5 text-sm text-pretty">
             {mortgageNote}
           </p>
 
-          <a
+          <Button
             href="/projects/tranquill-city/"
-            class="cta cta-outline mt-7 !px-5 !py-2 text-sm"
+            variant="secondary"
+            size="sm"
+            class="mt-7"
             data-track="project"
           >
-            <span class="cta-label">Full project detail</span>
-            <span class="cta-icon" aria-hidden="true">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </span>
-          </a>
+            Full project detail
+          </Button>
         </div>
       </aside>
     </div>
   </section>
 
-  <ScrollBuildStory />
+  <ScrollBuildStory
+    sequence={buildSequence}
+    eyebrow="Tranquill City, taking shape"
+    titleLead="Start with the land."
+    titleAccent="Build the place."
+    caption="Land, movement, life"
+  />
 
   <ProofBelt points={proofPoints} label="Tranquill City project details" />
 
   <ProjectSpotlight
+    image={walkway}
     eyebrow="Our projects"
     title="A place shaped for what comes next."
     body="Tranquill City is a premium villa plot development in Rudraram near Patancheru, Hyderabad, planned as a gated community with internal roads, parks, and round-the-clock security."
@@ -262,11 +365,115 @@ const metadata: MetaData = {
     alt="Illustrative golden-hour view of a landscaped walking path inside the planned layout, with glass-fronted villas, a timber seating deck, benches and planting, and two residents walking in the distance"
   />
 
-  <InvestmentBelt />
+  {/*
+    The corridor band.
 
-  <NextSteps />
+    The `stat` used to be "1 lakh+ employees work in the Patancheru–Sangareddy
+    industrial belt" — no source, no year, no methodology, no government
+    publication, on a page whose own posts cite every G.O. and departmental FAQ
+    it relies on. `InvestmentBelt` renders it as plain prose, so an extractor
+    lifted it verbatim, and a model asked why Rudraram is a good place to buy
+    land would quote it and attribute it to this developer. Nothing on the site
+    or in `project.config.ts` supports the number, and the repo's own keyword
+    research commits to "no invented volumes".
 
-  <LibraryDirectory />
+    It is gone rather than softened, and the slot is empty rather than
+    refilled. Every figure the site can actually stand behind — 82 parcels, 78
+    saleable, 4 under HMDA Mortgage conditions, the plot range, the ₹50 lakh
+    entry price, RERA REA01100108192, HMDA 2103/HMDA/SWDL/2026 — is already on
+    this page: twice, in the `publishedDetails` plate directly above and again in
+    the home entry's first paragraph. A third copy here would be a duplication,
+    not evidence, and the only things this section has that the rest of the page
+    does not are the corridor line in `intro` and the pillars. `stat` is optional
+    on the component for exactly this case, and the corridor chain carries the
+    section on its own. Restore it only with a citation the site can name.
+  */}
+  <InvestmentBelt
+    eyebrow="A longer view"
+    title="A corridor with space to grow."
+    intro="Kukatpally → Nizampet → Miyapur → Patancheru → Rudraram → Sangareddy traces the growth belt around Tranquill City."
+    pillars={[
+      /*
+       * These read as promises, so they are not allowed to promise a return.
+       * The array used to hold 'Strategic Locations' and 'Long-term Value
+       * Creation' — appreciation claims the site makes no evidence for and, in
+       * a buyer's hands, would be read as an expected return. They also
+       * contradicted the blog programme, which exists to warn buyers off this
+       * register: `verify-plot-hyderabad.md` publishes its checklist because
+       * "an informed buyer is good for everyone" and tells publishers to
+       * publish in stages, while the homepage was making a five-year
+       * projection. A model summarising the page took "Value Creation" as a
+       * positioning claim and restated it as a return an evaluator could
+       * compare against the disclaimers.
+       *
+       * So every entry is now something a buyer can check in the next ten
+       * minutes, and four of the six are refusals the site already states in
+       * prose: the approvals carry numbers and portal links, the entry price is
+       * published, the 82/78/4 inventory is stated including the mortgaged
+       * parcels, the imagery is labelled as renders, and drive times and a
+       * possession date are declined. The length is unchanged — the component
+       * lays the pills out as a plate, and a three-item plate reads as a
+       * truncated list.
+       */
+      'Documented Approvals',
+      'Published Prices',
+      'Inventory Stated Honestly',
+      'Imagery Labelled as Renders',
+      'No Drive-Time Estimates',
+      'No Possession Date Claimed',
+    ]}
+  />
+
+  <NextSteps
+    eyebrow="Before you enquire"
+    title="A better way to compare a plot."
+    intro="You do not need to decide from a brochure alone. Use the project page, the documents, and a site visit in that order."
+    steps={[
+      {
+        title: 'Understand the project',
+        body: 'Review the plot range, advertised features, location context, plan, and current qualifications.',
+        link: {
+          href: '/projects/tranquill-city/',
+          label: 'Tranquill City project page',
+          track: 'project',
+        },
+      },
+      {
+        title: 'Ask for what matters',
+        body: 'Request current availability, pricing, and the project documents relevant to the plot and decision you are considering.',
+        // A lead CTA: it sends the visitor to the contact page. Without a track
+        // the delegated click layer skips it, so this step's contribution to
+        // enquiries was invisible.
+        link: { href: '/contact-us/', label: 'Ask the team', track: 'site_visit' },
+      },
+      {
+        title: 'Visit and verify',
+        body: 'Arrange a site visit, bring your questions, and read the verification guidance before any document review.',
+        link: {
+          href: '/blog/verify-plot-hyderabad/',
+          label: 'How to verify a plot before you buy',
+        },
+      },
+    ]}
+  />
+
+  <LibraryDirectory
+    copy={{
+      eyebrow: 'The Tranquill library',
+      title: 'Read before you decide.',
+      intro: 'Project notes and useful answers, published as the details are reviewed.',
+      insightsTitle: 'Latest from Insights',
+      insightsNote: 'Notes from the team',
+      questionsTitle: 'Relevant questions',
+      questionsNote: 'Answers linked to the source article',
+      viewAllLabel: 'View all',
+      postsEmpty: 'New articles are being prepared. Visit Insights soon.',
+      questionsEmpty: 'Questions will appear here as articles gain reviewed answers.',
+    }}
+    posts={directoryPosts}
+    questions={directoryQuestions}
+    viewAllHref="/blog/"
+  />
 
   <HomeCta
     title="See how Tranquill City could fit your plans."

@@ -1,49 +1,82 @@
 ---
-import Layout from '~/layouts/Layout.astro';
-import Header from '~/components/widgets/Header.astro';
-import Footer from '~/components/widgets/Footer.astro';
-import Announcement from '~/components/widgets/Announcement.astro';
-import MobileContactBar from '~/components/widgets/MobileContactBar.astro';
-import EnquiryDialog from '~/components/widgets/EnquiryDialog.astro';
+/**
+ * PageLayout
+ * Layout wrapper for standard content pages (non-landing)
+ * Uses SiteHeader + SiteFooter with content page configuration
+ */
+import BaseLayout from './BaseLayout.astro';
+import SiteHeader from '~/components/layout/SiteHeader.astro';
+import SiteFooter from '~/components/layout/SiteFooter.astro';
+import EnquiryDialog from '~/components/patterns/EnquiryDialog.astro';
+import type { ImagePreload } from '~/components/ui/overlay/Carousel/posters';
 
-import { headerData, footerData } from '~/navigation';
-
-import type { MetaData } from '~/types';
-
-export interface Props {
-  metadata?: MetaData;
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  imageAlt?: string;
+  /** Article metadata for OG/Twitter card output on blog posts */
+  article?: {
+    publishedTime?: Date;
+    modifiedTime?: Date;
+    authors?: string[];
+    tags?: string[];
+  };
+  noindex?: boolean;
+  nofollow?: boolean;
+  /** Preload hint for the page's LCP image; see BaseLayout. */
+  lcpPreload?: ImagePreload;
+  /**
+   * Render the popup enquiry form, so any CTA on the page can open it. Pages
+   * that already embed the inline enquiry form set this to `false`: their
+   * triggers fall back to their `href` and navigate to the form instead.
+   */
+  enquiryDialog?: boolean;
+  /**
+   * Let the dialog open itself once the visitor is engaged (`minDwell` +
+   * scroll depth or desktop exit intent, suppressed after a dismissal and never
+   * after an enquiry). Pages where an interruption would be inappropriate — the
+   * privacy policy, the 404 — set this to `false` and keep the CTA triggers.
+   */
+  enquiryDialogAutoOpen?: boolean;
 }
 
-const { metadata } = Astro.props;
+const {
+  title,
+  description,
+  image,
+  imageAlt,
+  article,
+  noindex,
+  nofollow,
+  lcpPreload,
+  enquiryDialog = true,
+  enquiryDialogAutoOpen = true,
+} = Astro.props;
 ---
 
-<Layout metadata={metadata}>
-  <slot name="head" slot="head" />
-  {
-    /*
-    Slot fallbacks are rendered explicitly. With `<slot name="x">fallback</slot>`
-    Astro still evaluates the fallback when the page overrides the slot, and
-    astro-icon then believes the icons inside it (the RSS icon of the default
-    header, for instance) were already emitted, so their SVG sprite symbol
-    goes missing on that page.
-  */
-  }
-  {Astro.slots.has('announcement') ? <slot name="announcement" /> : <Announcement />}
-  {
-    Astro.slots.has('header') ? (
-      <slot name="header" />
-    ) : (
-      // The header computes the site-visit CTA (and its enquiry-dialog
-      // target) itself from the current path — `actions` is not passed, so
-      // the CTA is never duplicated.
-      <Header {...headerData} isSticky />
-    )
-  }
-  <main class="flex-1">
-    <slot />
-  </main>
-  {Astro.slots.has('footer') ? <slot name="footer" /> : <Footer {...footerData} />}
+<BaseLayout
+  title={title}
+  description={description}
+  image={image}
+  imageAlt={imageAlt}
+  article={article}
+  noindex={noindex}
+  nofollow={nofollow}
+  lcpPreload={lcpPreload}
+>
+  <SiteHeader slot="header" />
 
-  <EnquiryDialog />
-  <MobileContactBar />
-</Layout>
+  <!-- BaseLayout owns the single <main> landmark and the skip-link target.
+       `min-h-dvh` rather than `min-h-screen`: on iOS Safari `vh` is the
+       viewport with its chrome retracted, so a full-height page grows a dead
+       band under the browser UI and the page bounces on load. `dvh` tracks the
+       real visible height. -->
+  <div class="min-h-dvh">
+    <slot />
+  </div>
+
+  {enquiryDialog && <EnquiryDialog autoOpen={enquiryDialogAutoOpen} />}
+
+  <SiteFooter slot="footer" />
+</BaseLayout>

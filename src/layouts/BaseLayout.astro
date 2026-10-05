@@ -1,0 +1,142 @@
+---
+/**
+ * BaseLayout — the HTML shell.
+ *
+ * Adopted from tranquillinfra.com's BaseLayout with three local adaptations:
+ *  - Fonts come from Astro's native Fonts API (`<Font />` + the `--font-*`
+ *    variables) instead of Fontsource preloads; Astro handles the preload,
+ *    subset and metric-adjusted fallback itself.
+ *  - No consent banner: the site's audience is India-only, where analytics
+ *    cookies are not gated on prior consent (see AGENTS.md "Measurement").
+ *    `initAnalytics` runs ungated, exactly as before the cutover.
+ *  - The GA4 tag loader (`common/Analytics.astro`) is kept: our
+ *    `~/lib/analytics.ts` pushes events into that tag rather than loading a
+ *    second one.
+ */
+import '~/styles/global.css';
+
+import { Font } from 'astro:assets';
+import { ClientRouter } from 'astro:transitions';
+
+import Favicons from '~/components/Favicons.astro';
+import Analytics from '~/components/common/Analytics.astro';
+import SEO from '~/components/seo/SEO.astro';
+import JsonLd from '~/components/seo/JsonLd.astro';
+import siteConfig from '~/config/site.config';
+import { createWebsiteSchema } from '~/lib/schema';
+import type { WebSite, WithContext } from 'schema-dts';
+import type { ImagePreload } from '~/components/ui/overlay/Carousel/posters';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  imageAlt?: string;
+  /** Article metadata for OG/Twitter card output on blog posts */
+  article?: {
+    publishedTime?: Date;
+    modifiedTime?: Date;
+    authors?: string[];
+    tags?: string[];
+  };
+  noindex?: boolean;
+  nofollow?: boolean;
+  /** Preload hint for the page's LCP image; see buildPosterPreload. */
+  lcpPreload?: ImagePreload;
+}
+
+const { title, description, image, imageAlt, article, noindex = false, nofollow = false, lcpPreload } =
+  Astro.props;
+
+// The site's own structured data. The company entity is not here: it is
+// carried by the single sitewide `RealEstateAgent` node in `SEO.astro`, a
+// subtype of `Organization`. Two nodes for one company is a defect, not
+// redundancy — the old `Organization` and the agent node shared one `@id` and
+// disagreed on name, phone and address.
+const schemas: Array<WithContext<WebSite>> = [createWebsiteSchema()];
+---
+
+<!doctype html>
+<html lang="en-IN" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- LCP preload: the head position is the point — the fetch starts before
+        the parser reaches the hero markup deep in the body. -->
+    {
+      lcpPreload && (
+        <link
+          rel="preload"
+          as="image"
+          type={lcpPreload.type}
+          imagesrcset={lcpPreload.srcset}
+          imagesizes={lcpPreload.sizes}
+          fetchpriority="high"
+        />
+      )
+    }
+
+    <!-- Astro Fonts API: self-hosted, subset, preloaded (Manrope is the body
+        face, so it preloads; Fraunces is display-only; JetBrains Mono only
+        sets small labels and is not preloaded). -->
+    <Font cssVariable="--font-manrope" preload />
+    <Font cssVariable="--font-fraunces" />
+    <Font cssVariable="--font-jetbrains-mono" />
+
+    <Favicons />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content={siteConfig.branding.colors.themeColor} />
+
+    <!-- SEO. The RSS alternate link lives in SEO.astro, beside the canonical,
+         so one component owns the whole discovery set. -->
+    <SEO
+      title={title}
+      description={description}
+      image={image}
+      imageAlt={imageAlt}
+      article={article}
+      noindex={noindex}
+      nofollow={nofollow}
+    />
+
+    <!-- JSON-LD Structured Data -->
+    <JsonLd schema={schemas} />
+
+    <!-- Client-side routing for view transitions -->
+    <ClientRouter fallback="swap" />
+  </head>
+
+  <body class="bg-background text-foreground min-h-dvh antialiased">
+    <!-- Skip to content link -->
+    <a
+      href="#main-content"
+      class="focus:bg-primary focus:text-primary-foreground sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-full focus:px-5 focus:py-2.5 focus:text-sm"
+    >
+      Skip to content
+    </a>
+
+    <!-- Film grain. `position: fixed` and `pointer-events: none`, so it gives
+        the large flat surfaces a paper texture without ever intercepting a
+        click or forcing a repaint during scroll. `aria-hidden` because it
+        carries no information — it is a background, not content. -->
+    <div class="grain" aria-hidden="true"></div>
+
+    <slot name="header" />
+
+    <main id="main-content" class="flex-1">
+      <slot />
+    </main>
+
+    <slot name="footer" />
+
+    <Analytics />
+
+    <script>
+      import { initAnalytics } from '~/lib/analytics';
+
+      initAnalytics();
+    </script>
+  </body>
+</html>

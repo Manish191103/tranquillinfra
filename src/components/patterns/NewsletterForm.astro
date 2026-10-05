@@ -1,0 +1,97 @@
+---
+import { PUBLIC_FORMSPREE_FORM_ID } from 'astro:env/client';
+/**
+ * The newsletter opt-in. A subscribe is not a lead: it posts to Formspree and
+ * fires the newsletter conversion, with no sales mail and no enquiry subject.
+ */
+import Input from '~/components/ui/form/Input/Input.astro';
+import Button from '~/components/ui/form/Button/Button.astro';
+import { cn } from '~/lib/cn';
+
+interface Props {
+  /** Overrides the env-configured Formspree form (one form per surface). */
+  action?: string;
+  placeholder?: string;
+  buttonText?: string;
+  successMessage?: string;
+  /** Accessible name for the email field — the visible placeholder is not one */
+  label?: string;
+  class?: string;
+}
+
+const {
+  action = `https://formspree.io/f/${PUBLIC_FORMSPREE_FORM_ID}`,
+  placeholder = 'Enter your email',
+  buttonText = 'Subscribe',
+  successMessage = 'Thanks for subscribing!',
+  label = 'Email address',
+  class: className,
+} = Astro.props;
+---
+
+<form
+  class={cn('newsletter-form', className)}
+  action={action}
+  method="POST"
+  data-success-message={successMessage}
+>
+  <div class="flex flex-col gap-3 sm:flex-row">
+    <div class="flex-1">
+      <Input
+        name="email"
+        type="email"
+        placeholder={placeholder}
+        aria-label={label}
+        required
+        autocomplete="email"
+      />
+    </div>
+    <Button type="submit" class="newsletter-submit">
+      {buttonText}
+    </Button>
+  </div>
+
+  <!-- Formspree reads `subject` as the notification subject; the script composes
+       it from the address (the static value covers a submission without JS). -->
+  <input type="hidden" name="subject" value="Newsletter signup" />
+  <input type="hidden" name="form_type" value="Newsletter" />
+
+  <!-- Honeypot field for spam protection -->
+  <div class="hidden" aria-hidden="true">
+    <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" />
+  </div>
+
+  <p class="newsletter-message text-sm" role="status" aria-live="polite"></p>
+</form>
+
+<script>
+  import { bindLeadForm } from '~/lib/leads';
+
+  function initNewsletterForms() {
+    document.querySelectorAll<HTMLFormElement>('.newsletter-form').forEach((form) => {
+      const button = form.querySelector('.newsletter-submit') as HTMLButtonElement | null;
+      const message = form.querySelector('.newsletter-message') as HTMLElement | null;
+
+      if (!button || !message) return;
+
+      bindLeadForm({
+        form,
+        button,
+        message,
+        kind: 'newsletter',
+        submitLabel: button.textContent?.trim() || 'Subscribe',
+        submittingLabel: 'Subscribing...',
+        offlineMessage: 'Subscription failed. Please try again.',
+        composeSubject: ({ email }) => `Newsletter signup: ${email}`,
+        // The status line keeps its hook class so a later re-init finds it.
+        statusClasses: {
+          success: 'newsletter-message mt-3 text-sm text-success',
+          error: 'newsletter-message mt-3 text-sm text-destructive',
+        },
+      });
+    });
+  }
+
+  initNewsletterForms();
+  document.addEventListener('astro:page-load', initNewsletterForms);
+</script>

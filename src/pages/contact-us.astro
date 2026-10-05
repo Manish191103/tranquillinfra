@@ -1,76 +1,365 @@
 ---
-import Layout from '~/layouts/PageLayout.astro';
-import HeroText from '~/components/widgets/HeroText.astro';
-import Contact from '~/components/widgets/Contact.astro';
-import type { Input, MetaData, Textarea } from '~/types';
+/**
+ * Contact us
+ *
+ * The full-viewport hero carries the page's H1 over the illustrative planted
+ * walkway (the render the homepage's spotlight also runs — not the home
+ * carousel, whose fifth slide was re-delivered 2026-09-16, home plan §9; the
+ * aerial clip moved to the project hero in the 2026-09-16 swap,
+ * docs/hero-swap-plan.md) with the call, WhatsApp and email actions on the
+ * first fold. The NAP block (office, project site, hours) and the same actions
+ * sit
+ * side by side on desktop below it. The consent-aware maps for the office and
+ * the project site follow, then the single on-page enquiry form in a `bg-card` panel beside the three steps an
+ * enquiry goes through. Every phone/WhatsApp/email link carries a `data-track`
+ * attribute for the analytics layer; the values themselves come from
+ * `site.config.ts` (the published NAP) and `project.config.ts`.
+ */
+import { PUBLIC_GOOGLE_MAPS_API_KEY } from 'astro:env/client';
+import PageLayout from '~/layouts/PageLayout.astro';
+import Breadcrumbs from '~/components/seo/Breadcrumbs.astro';
+import ContactHero, { type ContactHeroAction } from '~/components/contact/ContactHero.astro';
+import ContactForm from '~/components/patterns/ContactForm.astro';
+import Button from '~/components/ui/form/Button/Button.astro';
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+import GoogleMap from '~/components/ui/data-display/GoogleMap/GoogleMap.astro';
+import siteConfig from '~/config/site.config';
+import { contactPlaces as buildContactPlaces, enquirySteps } from '~/config/contact.config';
+import walkway from '~/assets/images/projects/tranquill-city/walkway.webp';
 
-export const prerender = true;
+const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'Contact us' }];
 
-const metadata: MetaData = {
-  title: 'Contact us',
-  description:
-    'Talk to the Tranquill Infra team about Tranquill City — book a site visit, ask a question or request the brochure.',
-  openGraph: {
-    type: 'website',
-  },
-};
+const telHref = siteConfig.phoneE164 ? `tel:${siteConfig.phoneE164}` : undefined;
+const officeLines = siteConfig.office?.lines ?? [];
+const projectLines = siteConfig.project?.lines ?? [];
+const hours = siteConfig.hours ?? [];
 
-// Form fields match the fields the lead pipeline needs; the widget renders
-// the markup only — see .agents/skills/configure-contact-form.md for wiring.
-const inputs: Input[] = [
-  {
-    type: 'text',
-    name: 'name',
-    label: 'Name',
-    placeholder: 'Your name',
-    autocomplete: 'name',
-    required: true,
-  },
-  {
-    type: 'tel',
-    name: 'phone',
-    label: 'Phone',
-    placeholder: 'Your phone number',
-    autocomplete: 'tel',
-    required: true,
-  },
-  {
-    type: 'email',
-    name: 'email',
-    label: 'Email',
-    placeholder: 'you@example.com',
-    autocomplete: 'email',
-  },
-];
+// The map embeds are only rendered when the key is present; the addresses and
+// directions links render regardless, so the section never shows a setup prompt.
+const hasMapKey = Boolean(PUBLIC_GOOGLE_MAPS_API_KEY);
 
-const textarea: Textarea = {
-  label: 'Message',
-  placeholder: 'What would you like to know or see on a site visit?',
-  rows: 5,
-  required: true,
-};
+const contactPlaces = buildContactPlaces();
+const officePlace = contactPlaces.find((place) => place.id === 'office');
 
-const disclaimer = {
-  label:
-    "I agree to be contacted about this enquiry. We don't share your details with anyone else.",
-};
+/**
+ * The hero owns the first fold, so the three quickest channels live there; the
+ * details section below repeats them next to the NAP block.
+ */
+const heroActions: ContactHeroAction[] = [];
 
-const button = 'Send message';
+if (telHref && siteConfig.phone) {
+  heroActions.push({
+    label: `Call ${siteConfig.phone}`,
+    href: telHref,
+    icon: 'phone',
+    variant: 'accent',
+    track: 'phone',
+  });
+}
+
+if (siteConfig.whatsapp) {
+  heroActions.push({
+    label: 'Message on WhatsApp',
+    href: siteConfig.whatsapp,
+    icon: 'brand-whatsapp',
+    variant: 'whatsapp',
+    track: 'whatsapp',
+  });
+}
+
+heroActions.push({
+  label: 'Email us',
+  href: `mailto:${siteConfig.email}`,
+  icon: 'mail',
+  variant: 'quiet',
+  track: 'email',
+});
 ---
 
-<Layout metadata={metadata}>
-  <HeroText
-    title="Talk to the team"
-    subtitle="Questions about Tranquill City, a site visit or the latest brochure — one form reaches the team."
-  />
+<PageLayout
+  title="Contact Tranquill Infra — Rudraram & Patancheru Plots"
+  description="Call, WhatsApp or email the Tranquill Infra team about Tranquill City plots in Rudraram, near Patancheru — office, hours and enquiry form."
+  enquiryDialog={false}
+>
+  <ContactHero
+    eyebrow="Get in touch"
+    title="Contact us"
+    intro="Reach the sales team by phone or WhatsApp, or write to us with the details you need."
+    note="Have a question about Tranquill City or a future project? Use the details below, or send an enquiry and we will get back to you."
+    hero={{
+      image: walkway,
+      alt: 'Illustrative view of a planted walkway and seating deck between the villa plots in the planned layout',
+      caption: 'Illustrative view of a planted walkway inside the planned layout.',
+    }}
+    actions={heroActions}
+  >
+    <Breadcrumbs slot="breadcrumbs" items={breadcrumbs} tone="invert" />
+  </ContactHero>
 
-  <Contact
-    id="contact-form"
-    tagline="Contact"
-    inputs={inputs}
-    textarea={textarea}
-    disclaimer={disclaimer}
-    button={button}
-    classes={{ container: 'max-w-4xl pb-16' }}
-  />
-</Layout>
+  {/*
+    The form comes first, ahead of the NAP details and the maps. This page exists
+    to take an enquiry, and with those blocks above it the form sat ~2,900px down
+    — over three screens of phone before the first field (measured 2026-09). The
+    directory information and the maps stay on the page for the visitor who wants
+    them; they no longer sit between the visitor and the action.
+  */}
+  <section
+    id="contact-enquiry"
+    class="section bg-surface-invert text-on-invert scroll-mt-24"
+    aria-labelledby="contact-enquiry-title"
+  >
+    <div class="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-14">
+      <div>
+        <p class="eyebrow eyebrow-on-invert">Make an enquiry</p>
+        <h2 id="contact-enquiry-title" class="display-md text-on-invert">
+          Tell us what you need
+        </h2>
+        <p class="text-on-invert-secondary mt-4 max-w-[34rem]">
+          Share your details and the Tranquill Infra team will get back to you. Ask about a specific
+          numbered plot, a site visit, or the documents for the land you are comparing.
+        </p>
+
+        <ol class="mt-10 grid gap-8">
+          {enquirySteps.map((step, index) => (
+            <li class="reveal border-[var(--border-invert)] border-t pt-6">
+              <span
+                class="text-accent-ink font-mono text-[0.72rem] font-medium tracking-[0.16em] tabular-nums"
+                aria-hidden="true"
+              >
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <p class="display-xs text-on-invert mt-5">{step.title}</p>
+              <p class="text-on-invert-secondary mt-3 max-w-[34rem] text-sm text-pretty">
+                {step.body}
+              </p>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <div class="shell">
+        <div class="shell-core p-6 md:p-8">
+          <ContactForm />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section
+    id="contact-details"
+    class="border-border bg-background-secondary border-y scroll-mt-24"
+    aria-labelledby="contact-details-title"
+  >
+    <div class="section mx-auto max-w-6xl px-6">
+      <h2 id="contact-details-title" class="display-md">
+        Our contact details
+      </h2>
+      <p class="text-foreground-muted mt-4 max-w-[46rem] text-pretty">
+        Visit the office, call or message the team, or write to us — whichever is quickest for you.
+      </p>
+
+      <div class="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14">
+        <dl class="grid content-start gap-8">
+          {officeLines.length > 0 && (
+            <div class="border-border border-t pt-5">
+              <dt class="text-foreground-muted text-[0.7rem] font-extrabold tracking-[0.13em] uppercase">
+                Office address
+              </dt>
+              <dd class="mt-2">
+                <address class="text-foreground not-italic">
+                  {officeLines.map((line, index) => (
+                    <>
+                      {line}
+                      {index < officeLines.length - 1 && <br />}
+                    </>
+                  ))}
+                </address>
+              </dd>
+            </div>
+          )}
+
+          {projectLines.length > 0 && (
+            <div class="border-border border-t pt-5">
+              <dt class="text-foreground-muted text-[0.7rem] font-extrabold tracking-[0.13em] uppercase">
+                Project site
+              </dt>
+              <dd class="mt-2">
+                <address class="text-foreground not-italic">
+                  {projectLines.map((line, index) => (
+                    <>
+                      {line}
+                      {index < projectLines.length - 1 && <br />}
+                    </>
+                  ))}
+                </address>
+              </dd>
+            </div>
+          )}
+
+          {hours.length > 0 && (
+            <div class="border-border border-t pt-5">
+              <dt class="text-foreground-muted text-[0.7rem] font-extrabold tracking-[0.13em] uppercase">
+                Office hours
+              </dt>
+              <dd class="text-foreground mt-2 grid gap-1">
+                {hours.map((line) => (
+                  <span>{line}</span>
+                ))}
+              </dd>
+            </div>
+          )}
+        </dl>
+
+        <div class="border-border bg-card self-start rounded-md border p-6 shadow-sm">
+          <h3 class="display-xs">Quick actions</h3>
+          <p class="text-foreground-muted mt-2 text-sm">
+            We answer calls and messages during business hours.
+          </p>
+
+          <ul class="mt-5 grid gap-1">
+            {telHref && (
+              <li>
+                <a
+                  href={telHref}
+                  data-track="phone"
+                  class="hover:bg-secondary group -mx-2 flex items-start gap-3 rounded-md p-2 transition-colors"
+                >
+                  <span class="border-border text-accent-ink flex h-10 w-10 shrink-0 items-center justify-center rounded-md border">
+                    <Icon name="phone" size="sm" />
+                  </span>
+                  <span class="min-w-0">
+                    <span class="text-foreground-muted block text-[0.7rem] font-extrabold tracking-[0.13em] uppercase">
+                      Call us
+                    </span>
+                    <span class="display-xs group-hover:text-accent-ink block break-words">
+                      {siteConfig.phone}
+                    </span>
+                  </span>
+                </a>
+              </li>
+            )}
+
+            {siteConfig.whatsapp && (
+              <li>
+                <a
+                  href={siteConfig.whatsapp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-track="whatsapp"
+                  class="hover:bg-secondary group -mx-2 flex items-start gap-3 rounded-md p-2 transition-colors"
+                >
+                  <span class="border-border text-accent-ink flex h-10 w-10 shrink-0 items-center justify-center rounded-md border">
+                    <Icon name="brand-whatsapp" size="sm" />
+                  </span>
+                  <span class="min-w-0">
+                    <span class="text-foreground-muted block text-[0.7rem] font-extrabold tracking-[0.13em] uppercase">
+                      WhatsApp
+                    </span>
+                    <span class="display-xs group-hover:text-accent-ink block break-words">
+                      Message the team
+                    </span>
+                  </span>
+                </a>
+              </li>
+            )}
+
+            <li>
+              <a
+                href={`mailto:${siteConfig.email}`}
+                data-track="email"
+                class="hover:bg-secondary group -mx-2 flex items-start gap-3 rounded-md p-2 transition-colors"
+              >
+                <span class="border-border text-accent-ink flex h-10 w-10 shrink-0 items-center justify-center rounded-md border">
+                  <Icon name="mail" size="sm" />
+                </span>
+                <span class="min-w-0">
+                  <span class="text-foreground-muted block text-[0.7rem] font-extrabold tracking-[0.13em] uppercase">
+                    Email
+                  </span>
+                  <span class="display-xs group-hover:text-accent-ink block break-words">
+                    {siteConfig.email}
+                  </span>
+                </span>
+              </a>
+            </li>
+          </ul>
+
+          <div class="border-border mt-5 border-t pt-5">
+            <Button href={officePlace?.directionsUrl} variant="secondary" size="sm">
+              Get directions
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact-map" class="section scroll-mt-24" aria-labelledby="contact-map-title">
+    <div class="mx-auto max-w-6xl px-6">
+      <h2 id="contact-map-title" class="display-md">
+        Find the office and the site
+      </h2>
+      <p class="text-foreground-muted mt-4 max-w-[46rem] text-pretty">
+        The office is in Nandini Nagar, Miyapur, Hyderabad, and the Tranquill City project site is
+        at Rudraram, near Patancheru. Call ahead and the team will guide you in. Before you call,
+        the
+        <a class="text-accent-ink font-bold hover:underline" href="/projects/tranquill-city/">
+          Tranquill City project page
+        </a>
+        carries the current price, plot sizes and inventory, and the
+        <a
+          class="text-accent-ink font-bold hover:underline"
+          href="/brochure/tranquill-city-final.pdf"
+          data-track="brochure"
+        >
+          project brochure
+        </a>
+        is a concise overview you can read first.
+      </p>
+
+      <div class="mt-10 grid gap-10 lg:grid-cols-2 lg:gap-14">
+        {contactPlaces.map((place) => (
+          <div class="flex flex-col">
+            <h3 class="display-xs">{place.title}</h3>
+            <address class="text-foreground-muted mt-2 text-sm not-italic">
+              {place.lines.map((line, index) => (
+                <>
+                  {line}
+                  {index < place.lines.length - 1 && <br />}
+                </>
+              ))}
+            </address>
+
+            {hasMapKey && (
+              <GoogleMap
+                address={place.mapQuery}
+                size="lg"
+                ariaLabel={place.mapLabel}
+                placeholderTitle={place.title}
+                placeholderDescription="Accept cookies to load the interactive map."
+                externalLinkText={place.directionsLabel}
+                class="mt-5"
+              />
+            )}
+
+            <div class="mt-5">
+              <Button
+                href={place.directionsUrl}
+                variant="secondary"
+                size="sm"
+                aria-label={place.directionsLabel}
+              >
+                Get directions
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {/* No entity node here on purpose: SEO.astro already ships the sitewide
+      RealEstateAgent, and this page used to emit a second byte-identical copy of
+      the same @id in the same document. The office NAP this page prints is the
+      NAP that node carries. */}
+</PageLayout>

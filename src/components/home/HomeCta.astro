@@ -1,0 +1,83 @@
+---
+/**
+ * HomeCta
+ *
+ * The closing banner: a forest plate set inside its own bezel, copy on the left
+ * and the conversion action on the right, stacking on narrow screens.
+ *
+ * The banner is the site's last impression and the one moment per page allowed
+ * the room to itself, so it takes the `--space-section-xl` step and runs the
+ * title at the `display-lg` scale. The action is the nested-well CTA so it
+ * reads as the same object family as the hero's — the visitor should recognise
+ * it without reading it.
+ */
+import Button from '~/components/ui/form/Button/Button.astro';
+import { SITE_VISIT_CTA_LABEL, type EnquiryRequestType } from '~/lib/enquiry-cta';
+
+interface Props {
+  title: string;
+  body?: string;
+  href: string;
+  /** Defaults to the site's primary CTA, so a banner cannot invent a fourth label. */
+  label?: string;
+  /** Analytics hook; defaults to the site's only tracked conversion. */
+  track?: string;
+  /**
+   * Dialog element to open instead of navigating — the `href` stays the no-JS
+   * and no-dialog fallback.
+   */
+  dialog?: string;
+  /**
+   * What the banner is asking for. Defaults to a site visit, because that is
+   * the promise the dialog makes; a brochure trigger has to say so.
+   */
+  requestType?: EnquiryRequestType;
+}
+
+const {
+  title,
+  body,
+  href,
+  label = SITE_VISIT_CTA_LABEL,
+  track = 'site_visit',
+  dialog,
+  requestType,
+} = Astro.props;
+---
+
+<div class="home-cta mx-auto max-w-6xl px-6 py-[var(--space-section-xl)]">
+  <aside class="invert-section shell">
+    <div class="shell-core flex flex-col items-start gap-8 p-6 sm:p-10 lg:flex-row lg:items-center lg:justify-between lg:gap-16 lg:p-14">
+      <div class="reveal">
+        <h2 class="display-lg text-on-invert max-w-[18ch]">{title}</h2>
+        {body && (
+          <p class="text-on-invert-secondary reveal-2 mt-6 max-w-[34rem] text-lg text-pretty">
+            {body}
+          </p>
+        )}
+      </div>
+      <Button
+        href={href}
+        variant="ctaOnInvert"
+        data-track={track}
+        data-dialog-trigger={dialog}
+        data-dialog-request-type={dialog ? (requestType ?? 'site_visit') : undefined}
+        class="cta reveal-3 shrink-0 !px-7 !py-3 text-base [&_.cta-icon]:size-9"
+      >
+        <span class="cta-label">{label}</span>
+        <span class="cta-icon" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M5 12h14M12 5l7 7-7 7"></path>
+          </svg>
+        </span>
+      </Button>
+    </div>
+  </aside>
+</div>

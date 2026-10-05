@@ -1,0 +1,55 @@
+---
+/**
+ * SectionHeading
+ *
+ * The shared eyebrow + display title + intro block used by every section on the
+ * project page. Copy arrives from the content entry so the component stays
+ * presentation-only.
+ *
+ * The three parts reveal as one sequenced gesture: the eyebrow lands first, the
+ * title follows, the intro last. `.reveal`/`.reveal-2`/`.reveal-3` pull their
+ * scroll triggers progressively earlier, so by the time the eyebrow has settled
+ * the title is already travelling — which is what makes the stagger feel
+ * deliberate rather than like three things loading one after another.
+ */
+interface Props {
+  eyebrow?: string;
+  title: string;
+  intro?: string;
+  /** id applied to the h2 so the section can be labelled by it */
+  id?: string;
+  class?: string;
+  /** Display step for the title. `md` is the content default. */
+  size?: 'sm' | 'md' | 'lg';
+  /** Opt out of the entrance sequence (e.g. when the parent already reveals) */
+  noReveal?: boolean;
+}
+
+const { eyebrow, title, intro, id, class: className, size = 'md', noReveal = false } = Astro.props;
+
+const sizeStep = { sm: 'display-sm', md: 'display-md', lg: 'display-lg' }[size];
+---
+
+<div class:list={['max-w-[46rem]', className]}>
+  {eyebrow && (
+    <p
+      class:list={['eyebrow', !noReveal && 'reveal']}
+      data-reveal={!noReveal ? 'eyebrow' : undefined}
+    >
+      {eyebrow}
+    </p>
+  )}
+  <h2 id={id} class:list={[sizeStep, !noReveal && eyebrow && 'reveal-2', 'mt-6']}>
+    {title}
+  </h2>
+  {intro && (
+    <p
+      class:list={[
+        'text-pretty text-foreground-muted mt-6 text-lg',
+        !noReveal && (eyebrow ? 'reveal-3' : 'reveal'),
+      ]}
+    >
+      {intro}
+    </p>
+  )}
+</div>

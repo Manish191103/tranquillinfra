@@ -1,0 +1,18 @@
+---
+import type { Graph, Thing, WithContext } from 'schema-dts';
+import { jsonForScript } from '~/lib/inline-json';
+
+interface Props {
+  schema: WithContext<Thing> | WithContext<Thing>[] | Graph;
+}
+
+const { schema } = Astro.props;
+
+// A Graph is a single @context with an @graph of nodes; the array form is one
+// script per node. Both render as JSON-LD.
+const schemas = Array.isArray(schema) ? schema : [schema];
+---
+
+{schemas.map((s) => (
+  <script is:inline type="application/ld+json" set:html={jsonForScript(s)}></script>
+))}

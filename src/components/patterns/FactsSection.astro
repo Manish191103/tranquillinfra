@@ -1,0 +1,62 @@
+---
+/**
+ * FactsSection
+ *
+ * The verification block: a titled section of label/value rows — project
+ * details and published approval references on the project page, the published
+ * company details on About us. The page assembles the rows from
+ * `project.config.ts` and `site.config.ts`, so this component only arranges
+ * them. A fact with an `href` renders its value as a link to the official
+ * portal where the number can be checked.
+ */
+import SectionHeading from './SectionHeading.astro';
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+import { breakableReference } from '~/lib/breakable-reference';
+
+interface Props {
+  /** Section anchor id; also names the heading id used by `aria-labelledby` */
+  id: string;
+  eyebrow: string;
+  title: string;
+  intro: string;
+  facts: Array<{ label: string; value: string; href?: string }>;
+}
+
+const { id, eyebrow, title, intro, facts } = Astro.props;
+
+---
+
+<section
+  id={id}
+  class="border-border bg-background-secondary scroll-mt-24 border-y"
+  aria-labelledby={`${id}-title`}
+>
+  <div class="section mx-auto max-w-6xl px-6">
+    <SectionHeading eyebrow={eyebrow} title={title} intro={intro} id={`${id}-title`} />
+
+    <dl class="mt-10 grid gap-x-12 gap-y-6 md:grid-cols-2">
+      {facts.map((fact) => (
+        <div class="border-border border-t pt-5">
+          <dt class="text-foreground-muted text-[0.7rem] font-extrabold tracking-[0.13em] uppercase">
+            {fact.label}
+          </dt>
+          <dd class="display-xs mt-2 [overflow-wrap:break-word]">
+            {fact.href ? (
+              <a
+                class="hover:text-accent-ink focus-visible:text-accent-ink inline-flex items-center gap-1.5 transition-colors"
+                href={fact.href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span set:html={breakableReference(fact.value)} />
+                <Icon name="external-link" size="sm" />
+              </a>
+            ) : (
+              <span set:html={breakableReference(fact.value)} />
+            )}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  </div>
+</section>

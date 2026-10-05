@@ -1,0 +1,73 @@
+/* =============================================================================
+   Design Tokens - Primitive Colors
+   =============================================================================
+   Raw color scales that themes build upon. Brand scales are anchored on the
+   Tranquill palette (forest green, sage, sand, gold, clay) and expressed in
+   OKLCH so each ramp stays perceptually even.
+
+   The semantic tokens components consume live in tokens/semantic.css.
+   Only the steps that feed those tokens (or are used directly) are kept.
+   ============================================================================= */
+
+:root {
+  /* -------------------------------------------------------------------------
+     Brand - forest green (hue 173)
+     Anchored on the classic brand green: 500 is #1b5b4b (forest), 700 is the
+     deep #113e33 used for the header, footer and primary surfaces. 950 is the
+     hero scrim.
+     ------------------------------------------------------------------------- */
+  --brand-500: oklch(42.61% 0.0699 171.6);
+  --brand-600: oklch(38% 0.062 173);
+  --brand-700: oklch(32.93% 0.0532 173.9);
+  --brand-800: oklch(28% 0.045 173);
+  --brand-950: oklch(17% 0.028 173);
+
+  /* -------------------------------------------------------------------------
+     Sage - muted green-gray (hue 152)
+     Light steps for tinted panels and footer text, dark steps for quiet
+     foregrounds. 200 is the sage-light wash (#dce7df), 400 the sage tone.
+     ------------------------------------------------------------------------- */
+  --sage-200: oklch(91.79% 0.0161 152);
+  --sage-300: oklch(85.5% 0.022 152);
+  --sage-400: oklch(76.74% 0.0278 152);
+  --sage-700: oklch(41% 0.027 152);
+
+  /* -------------------------------------------------------------------------
+     Sand - warm neutral (hue 92)
+     50 is paper (#fdfbf6), 100 the page sand (#f3f0e7), 300 the hairline
+     (#dfdcd2); the dark steps carry warm text and borders.
+     ------------------------------------------------------------------------- */
+  --sand-50: oklch(98.82% 0.0069 92);
+  --sand-100: oklch(95.5% 0.0124 92);
+  --sand-200: oklch(92.5% 0.0135 92);
+  --sand-300: oklch(89.35% 0.0137 92);
+  --sand-400: oklch(80% 0.014 92);
+
+  /* -------------------------------------------------------------------------
+     Gold - brand accent (hue 88)
+     500 is the brand gold (#f2cb67).
+     ------------------------------------------------------------------------- */
+  --gold-500: oklch(85.62% 0.1266 88);
+  --gold-600: oklch(78% 0.13 88);
+
+  /* -------------------------------------------------------------------------
+     Clay - warm secondary accent (hue 40)
+     500 is the classic clay (#994a2d) used for focus and hover states.
+     ------------------------------------------------------------------------- */
+  --clay-500: oklch(50.29% 0.1141 40);
+
+  /* -------------------------------------------------------------------------
+     WhatsApp - vendor green, darkened for text contrast.
+     WhatsApp's own #25d366 fill is 1.98:1 against the white label the button
+     uses, far under the 4.5:1 minimum, and it affected every WhatsApp CTA on
+     the site (measured 2026-09). These two steps keep it unmistakably WhatsApp
+     green while clearing the bar: 5.4:1 fill, 8.1:1 hover. The glyph and the
+     wording carry the brand recognition, not the exact hex.
+     ------------------------------------------------------------------------- */
+  --whatsapp: #0d7a41;
+  --whatsapp-hover: #0b5c38;
+
+  /* Status Colors - OKLCH for consistent perception */
+  --success: oklch(72.3% 0.19 145);
+  --error: oklch(62.8% 0.22 25);
+}

@@ -1,0 +1,71 @@
+---
+/**
+ * Logo Component
+ *
+ * Renders the brand logo from `siteConfig.branding.logo`: `variant="light"`
+ * (default) for sand/paper surfaces, `variant="dark"` for the dark brand green
+ * (e.g. the footer). The mark is wide (≈4.8:1), so heights step up at the `sm`
+ * breakpoint where the header has horizontal room. Replace the masters in
+ * `src/assets/brand/` and update the `alt` text in `src/config/site.config.ts`
+ * to rebrand; keep both files tightly cropped, since the presets size the
+ * visible mark. The mark renders through <Picture> at the preset's display
+ * width (avif/webp, content-hashed), so it carries no wasted pixels on the
+ * critical path.
+ */
+import { Picture } from 'astro:assets';
+import siteConfig from '~/config/site.config';
+
+interface Props {
+  /** Size preset */
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  /** Surface the logo sits on */
+  variant?: 'light' | 'dark';
+  /** Above-the-fold placements (the header) load eagerly; the rest stay lazy */
+  loading?: 'eager' | 'lazy';
+  /** Additional CSS classes */
+  class?: string;
+}
+
+const { size = 'md', variant = 'light', loading = 'lazy', class: className } = Astro.props;
+
+// Heights mirror the header's sm/md/lg inner heights (48/56/64px), stepping up
+// at `sm` where the header has horizontal room. The mark is ~4.8:1, so a taller
+// preset also means a wider one — `max-w-full` keeps it inside tight columns.
+const sizeClasses: Record<string, string> = {
+  sm: 'h-6 sm:h-7',
+  md: 'h-7 sm:h-8',
+  lg: 'h-8 sm:h-9',
+  xl: 'h-12 sm:h-14',
+  '2xl': 'h-16 sm:h-20',
+};
+
+const sizeClass = sizeClasses[size] || sizeClasses.md;
+
+// The mark is 715x148 (≈4.83:1); each preset's `sizes` is the taller
+// breakpoint's height × that aspect, so the browser picks the nearest width
+// instead of a fixed rendition.
+const MARK_ASPECT = 715 / 148;
+const sizeHeights: Record<string, number> = {
+  sm: 28,
+  md: 32,
+  lg: 36,
+  xl: 56,
+  '2xl': 80,
+};
+const displayWidth = Math.round((sizeHeights[size] ?? 32) * MARK_ASPECT);
+const src = variant === 'dark' ? siteConfig.branding.logo.dark : siteConfig.branding.logo.light;
+---
+
+<span class:list={['inline-block', className]}>
+  <Picture
+    src={src}
+    alt={siteConfig.branding.logo.alt}
+    widths={[220, 440, 720]}
+    sizes={`${displayWidth}px`}
+    formats={['avif', 'webp']}
+    fallbackFormat="webp"
+    loading={loading}
+    decoding="async"
+    class:list={[sizeClass, 'block max-w-full w-auto object-contain']}
+  />
+</span>

@@ -1,0 +1,218 @@
+---
+/**
+ * Marquee
+ *
+ * Edge-to-edge auto-scrolling rail. The default slot is rendered twice: the
+ * duplicate is `aria-hidden` and `inert` so assistive technology and keyboard
+ * users meet the content only once, while CSS translates the whole track by
+ * -50% for a seamless loop.
+ *
+ * The pause control is the WCAG 2.2.2 (Pause, Stop, Hide) escape hatch for
+ * moving content. It toggles `data-paused` on the root, which sets
+ * `animation-play-state: paused`, and keeps `aria-pressed` plus its label in
+ * sync. Under `prefers-reduced-motion: reduce` the animation stops and the
+ * control is hidden — there is nothing left to pause. An IntersectionObserver
+ * adds `data-offscreen` while the rail is out of view; it composes with the
+ * control rather than replacing it, so a rail a visitor has paused stays paused
+ * when it scrolls back in.
+ *
+ * Without JavaScript the content stays fully visible and the layout is
+ * unchanged; only the pause control is inert.
+ */
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+
+interface Props {
+  /** Accessible name for the rail (renders it as a labelled region) */
+  label?: string;
+  /** Seconds for one full loop */
+  speedSeconds?: number;
+  /** Render the pause/resume control */
+  pauseControl?: boolean;
+  /** Control label while the rail is moving */
+  pauseLabel?: string;
+  /** Control label while the rail is paused */
+  playLabel?: string;
+}
+
+const {
+  label,
+  speedSeconds = 30,
+  pauseControl = true,
+  pauseLabel = 'Pause',
+  playLabel = 'Play',
+} = Astro.props;
+
+const controlClasses = [
+  'inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5',
+  'text-foreground-muted text-xs font-semibold whitespace-nowrap',
+  'transition-colors hover:bg-secondary hover:text-foreground',
+  'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
+].join(' ');
+---
+
+<section data-marquee aria-label={label} class="relative">
+  <div class="marquee-viewport">
+    <div class="marquee-track" style={`--marquee-duration: ${speedSeconds}s`}>
+      <div class="marquee-set">
+        <slot />
+      </div>
+      <div class="marquee-set" aria-hidden="true" inert>
+        <slot />
+      </div>
+    </div>
+  </div>
+
+  {pauseControl && (
+    <div class="mt-3 flex justify-end">
+      <button
+        type="button"
+        class={controlClasses}
+        data-marquee-toggle
+        data-pause-label={pauseLabel}
+        data-play-label={playLabel}
+        aria-pressed="false"
+        aria-label={pauseLabel}
+      >
+        <span data-marquee-pause-icon>
+          <Icon name="pause" size="xs" />
+        </span>
+        <span data-marquee-play-icon hidden>
+          <Icon name="play" size="xs" />
+        </span>
+        <span data-marquee-toggle-label>{pauseLabel}</span>
+      </button>
+    </div>
+  )}
+</section>
+
+<script>
+  function initMarquees() {
+    document.querySelectorAll<HTMLElement>('[data-marquee]').forEach((marquee) => {
+      if (marquee.dataset.marqueeInit) return;
+      marquee.dataset.marqueeInit = 'true';
+
+      const toggle = marquee.querySelector<HTMLButtonElement>('[data-marquee-toggle]');
+      if (!toggle) return;
+
+      const pauseLabel = toggle.dataset.pauseLabel ?? 'Pause';
+      const playLabel = toggle.dataset.playLabel ?? 'Play';
+      const labelNode = toggle.querySelector<HTMLElement>('[data-marquee-toggle-label]');
+      const pauseIcon = toggle.querySelector<HTMLElement>('[data-marquee-pause-icon]');
+      const playIcon = toggle.querySelector<HTMLElement>('[data-marquee-play-icon]');
+
+      toggle.addEventListener('click', () => {
+        const isPaused = marquee.hasAttribute('data-paused');
+
+        if (isPaused) {
+          marquee.removeAttribute('data-paused');
+        } else {
+          marquee.setAttribute('data-paused', '');
+        }
+
+        toggle.setAttribute('aria-pressed', String(!isPaused));
+        toggle.setAttribute('aria-label', isPaused ? pauseLabel : playLabel);
+        if (labelNode) labelNode.textContent = isPaused ? pauseLabel : playLabel;
+        if (pauseIcon) pauseIcon.hidden = !isPaused;
+        if (playIcon) playIcon.hidden = isPaused;
+      });
+
+      /*
+       * Stop the rail while it is off screen.
+       *
+       * `document.visibilityState` only covers a hidden TAB; a rail scrolled
+       * past the fold is still on screen as far as the compositor is concerned,
+       * so it keeps burning a composited animation for content nobody can see.
+       * The observer sets an attribute rather than touching `style`, so the
+       * manual pause control and this one compose instead of fighting: either
+       * one pauses the track, and clearing one does not clear the other.
+       */
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) marquee.removeAttribute('data-offscreen');
+              else marquee.setAttribute('data-offscreen', '');
+            }
+          },
+          // No threshold and no margin: the rail is full-bleed, so intersecting
+          // at all is the only question worth asking.
+          { threshold: 0 }
+        );
+        observer.observe(marquee);
+      }
+    });
+  }
+
+  initMarquees();
+  document.addEventListener('astro:page-load', initMarquees);
+  document.addEventListener('astro:after-swap', initMarquees);
+</script>
+
+<style>
+  /*
+ * `2%`, not `5%`. The rail carries the RERA and HMDA references and the plot
+ * size range, so the mask is a trust surface rather than a decorative fade: at
+ * 5% of a 1104px viewport, 55px, it ate the `px-6` padding of the first chip
+ * and clipped the first characters of the "PLOT SIZES" label sitting inside it.
+ * The fade is still doing its job at 2% — the rail is meant to run off the
+ * edge — but it now starts inside the chip's own padding.
+ */
+  .marquee-viewport {
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 2%, #000 95%, transparent);
+  }
+
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: tq-marquee-scroll var(--marquee-duration, 30s) linear infinite;
+  }
+
+  .marquee-set {
+    display: flex;
+    flex: 0 0 auto;
+    gap: clamp(0.75rem, 2vw, 1.5rem);
+    padding-right: clamp(0.75rem, 2vw, 1.5rem);
+  }
+
+  [data-marquee][data-paused] .marquee-track {
+    animation-play-state: paused;
+  }
+
+  /*
+   * Off-screen the rail is not visible content, so it does not need to be
+   * moving. The observer is only in the script path, so with scripting off this
+   * attribute is never set and the `scripting: none` block below still stops
+   * the animation outright.
+   */
+  [data-marquee][data-offscreen] .marquee-track {
+    animation-play-state: paused;
+  }
+
+  @keyframes tq-marquee-scroll {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track {
+      animation: none;
+    }
+
+    [data-marquee-toggle] {
+      display: none;
+    }
+  }
+
+  /* Without JavaScript the control cannot work, so show a static rail instead. */
+  @media (scripting: none) {
+    .marquee-track {
+      animation: none;
+    }
+
+    [data-marquee-toggle] {
+      display: none;
+    }
+  }
+</style>

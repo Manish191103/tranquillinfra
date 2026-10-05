@@ -1,0 +1,33 @@
+---
+/**
+ * FaqSection
+ *
+ * The visitor questions, answered. Uses the shared Accordion (native
+ * <details>/<summary>) so the FAQ works without JavaScript and stays keyboard
+ * accessible; the page emits the matching FAQPage structured data. The project
+ * page and About us both render through it.
+ */
+import Accordion from '~/components/ui/overlay/Accordion/Accordion.astro';
+import SectionHeading from './SectionHeading.astro';
+
+interface Props {
+  /** Section anchor id; also names the heading id used by `aria-labelledby` */
+  id: string;
+  eyebrow: string;
+  title: string;
+  intro: string;
+  items: Array<{ question: string; answer: string }>;
+}
+
+const { id, eyebrow, title, intro, items } = Astro.props;
+
+const accordionItems = items.map((item) => ({ title: item.question, content: item.answer }));
+---
+
+<section id={id} class="section mx-auto max-w-6xl px-6" aria-labelledby={`${id}-title`}>
+  <div class="grid gap-10 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-14">
+    <SectionHeading eyebrow={eyebrow} title={title} intro={intro} id={`${id}-title`} />
+
+    <Accordion items={accordionItems} />
+  </div>
+</section>

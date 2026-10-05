@@ -1,0 +1,259 @@
+---
+/**
+ * SiteFooter
+ *
+ * Site chrome: CTA band, footer columns (brand, link groups, contact/NAP) and
+ * the mobile contact bar, wired to `site.config.ts`.
+ */
+import Footer from '~/components/ui/navigation/Footer.astro';
+import MobileContactBar, { type ContactBarAction } from './MobileContactBar.astro';
+import Button from '~/components/ui/form/Button/Button.astro';
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+import Logo from '~/components/ui/marketing/Logo/Logo.astro';
+import siteConfig from '~/config/site.config';
+import projectConfig from '~/config/project.config';
+import { navItems } from '~/config/nav.config';
+import { analyticsConfig } from '~/config/analytics.config';
+import {
+  BROCHURE_DOWNLOAD_HREF,
+  enquiryCtaTarget,
+  PHONE_CTA_LABEL,
+  SITE_VISIT_CTA_LABEL,
+  WHATSAPP_CTA_LABEL,
+} from '~/lib/enquiry-cta';
+
+const consentEnabled = analyticsConfig.consentEnabled;
+
+// Same page-aware target as the header CTA (see `~/lib/enquiry-cta`).
+const enquiryCta = enquiryCtaTarget(Astro.url.pathname);
+
+const telHref = siteConfig.phoneE164 ? `tel:${siteConfig.phoneE164}` : undefined;
+
+const CONTACT_HREF = '/contact-us/';
+
+/**
+ * The columns render `nav.config.ts` rather than a second copy of it: the
+ * header, the mobile panel and these links are one list, and a duplicate is how
+ * the footer kept promising a "Projects" hub after the nav item was renamed.
+ * The brochure is the one link the site has that navigation does not.
+ */
+const linkGroups = [
+  { title: 'Explore', links: navItems.filter((item) => item.href !== CONTACT_HREF) },
+  { title: 'Get started', links: navItems.filter((item) => item.href === CONTACT_HREF) },
+  {
+    title: 'Resources',
+    links: [{ label: 'Download brochure', href: BROCHURE_DOWNLOAD_HREF, track: 'brochure' }],
+  },
+];
+
+const legalLinks = [{ label: 'Privacy policy', href: '/privacy-policy/' }];
+
+// Instagram is the brand's single social channel (see site.config socialLinks).
+const socialLinks = siteConfig.socialLinks[0]
+  ? [
+      {
+        platform: 'instagram',
+        href: siteConfig.socialLinks[0],
+        label: 'Tranquill Infra on Instagram',
+      },
+    ]
+  : [];
+
+const contactActions: ContactBarAction[] = [];
+
+if (telHref) {
+  contactActions.push({
+    label: PHONE_CTA_LABEL,
+    href: telHref,
+    icon: 'phone',
+    track: 'phone',
+  });
+}
+
+if (siteConfig.whatsapp) {
+  contactActions.push({
+    label: WHATSAPP_CTA_LABEL,
+    href: siteConfig.whatsapp,
+    icon: 'brand-whatsapp',
+    track: 'whatsapp',
+    variant: 'whatsapp',
+  });
+}
+
+contactActions.push({
+  label: SITE_VISIT_CTA_LABEL,
+  href: enquiryCta.href,
+  icon: 'arrow-up-right',
+  track: 'site_visit',
+  primary: true,
+  dialog: enquiryCta.dialog,
+  requestType: 'site_visit',
+});
+
+const officeLines = siteConfig.office?.lines ?? [];
+const projectLines = siteConfig.project?.lines ?? [];
+const hours = siteConfig.hours ?? [];
+---
+
+<section class="invert-section bg-background text-foreground border-[var(--border-invert)] border-t">
+  <div class="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-16 md:flex-row md:items-end md:justify-between md:py-20">
+    <div class="max-w-xl">
+      <p class="eyebrow">Visit Tranquill City</p>
+      {/*
+        A real `<h2>`, not `<p role="heading" aria-level="2">`.
+        The role version was a heading that existed only in the accessibility
+        tree: absent from the document outline, present in the accessibility
+        outline, and indistinguishable from a real heading to anything that reads
+        the markup. This band is the last section on every page, so its heading
+        is the last thing in the outline — one per page, and the name visitors
+        reach for when they skip to the end of a page. `footer.astro` owns the
+        rest of the document's closing structure and starts from its own
+        headings; this is chrome copy that happens to be set at display scale,
+        and the H2 is what makes it a section rather than a decoration.
+      */}
+      <h2 class="display-md">See the place in person.</h2>
+      <p class="text-foreground-muted mt-6">
+        {SITE_VISIT_CTA_LABEL} in {projectConfig.locality.village} or request the latest project
+        brochure.
+      </p>
+    </div>
+    <div class="flex shrink-0 flex-col gap-3 sm:flex-row">
+      {/*
+        The gold plate is the band's own inversion of the primary CTA, applied
+        through `class` rather than as `!important` overrides on a competing
+        variant: the gold tokens are already in the theme, so this needs no
+        priority fight to win.
+      */}
+      <Button
+        href={enquiryCta.href}
+        data-track="site_visit"
+        data-dialog-trigger={enquiryCta.dialog}
+        data-dialog-request-type="site_visit"
+        class="cta bg-accent text-accent-foreground hover:bg-accent-hover"
+      >
+        <span class="cta-label">{SITE_VISIT_CTA_LABEL}</span>
+        <span class="cta-icon" aria-hidden="true">
+          <Icon name="arrow-up-right" size="sm" />
+        </span>
+      </Button>
+      {siteConfig.whatsapp && (
+        /*
+          The brand glyph is its own `.cta-mark` well, not part of the label.
+          Inside the label it sat on a second line and pushed the copy half out
+          of the pill (measured 2026-09-30).
+
+          `cta` alone: the `whatsapp` variant owns the plate here, and a second
+          surface system on the element would only invite a cascade fight.
+        */
+        <Button href={siteConfig.whatsapp} data-track="whatsapp" variant="whatsapp" class="cta">
+          <span class="cta-mark" aria-hidden="true">
+            <Icon name="brand-whatsapp" size="sm" />
+          </span>
+          <span class="cta-label">{WHATSAPP_CTA_LABEL}</span>
+          <span class="cta-icon" aria-hidden="true">
+            <Icon name="arrow-up-right" size="sm" />
+          </span>
+        </Button>
+      )}
+    </div>
+  </div>
+</section>
+
+<Footer
+  layout="columns"
+  columns={5}
+  background="invert"
+  linkGroups={linkGroups}
+  tagline="Places shaped for what comes next."
+  socialLinks={socialLinks}
+  legalLinks={legalLinks}
+  copyright="© {year} {siteName}"
+>
+  <span slot="logo" class="inline-block">
+    <Logo size="lg" variant="dark" />
+  </span>
+
+  {consentEnabled && (
+    <button
+      slot="legal-actions"
+      type="button"
+      data-consent-open
+      class="text-foreground-muted hover:text-foreground cursor-pointer text-sm transition-colors"
+    >
+      Cookie settings
+    </button>
+  )}
+
+  <div slot="extra-columns" class="space-y-[var(--space-stack-md)]">
+    <p class="text-foreground text-sm font-semibold">Contact</p>
+    <div class="text-foreground-muted space-y-3 text-sm">
+      {officeLines.length > 0 && (
+        <div>
+          <p class="text-foreground-secondary text-xs font-semibold tracking-wide uppercase">
+            Office
+          </p>
+          <address class="not-italic">
+            {officeLines.map((line, index) => (
+              <>
+                {line}
+                {index < officeLines.length - 1 && <br />}
+              </>
+            ))}
+          </address>
+        </div>
+      )}
+
+      {projectLines.length > 0 && (
+        <div>
+          <p class="text-foreground-secondary text-xs font-semibold tracking-wide uppercase">
+            Project
+          </p>
+          <address class="not-italic">
+            {projectLines.map((line, index) => (
+              <>
+                {line}
+                {index < projectLines.length - 1 && <br />}
+              </>
+            ))}
+          </address>
+        </div>
+      )}
+
+      {telHref && (
+        <p class="pt-1">
+          <a
+            href={telHref}
+            data-track="phone"
+            class="text-foreground hover:text-accent-ink inline-flex items-center gap-2 transition-colors"
+          >
+            <Icon name="phone" size="sm" />
+            {siteConfig.phone}
+          </a>
+        </p>
+      )}
+
+      {siteConfig.whatsapp && (
+        <p>
+          <a
+            href={siteConfig.whatsapp}
+            data-track="whatsapp"
+            class="text-foreground hover:text-accent-ink inline-flex items-center gap-2 transition-colors"
+          >
+            <Icon name="brand-whatsapp" size="sm" />
+            {WHATSAPP_CTA_LABEL}
+          </a>
+        </p>
+      )}
+
+      {hours.length > 0 && (
+        <div class="text-foreground-muted pt-1 text-xs leading-relaxed">
+          {hours.map((line) => (
+            <p>{line}</p>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+</Footer>
+
+<MobileContactBar actions={contactActions} />

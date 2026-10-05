@@ -1,0 +1,54 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+import { cn } from '~/lib/cn';
+import { generateId } from '../utils';
+import { textareaVariants } from './textarea.variants';
+
+interface Props extends HTMLAttributes<'textarea'> {
+  label?: string;
+  error?: string;
+  hint?: string;
+  size?: 'sm' | 'md' | 'lg';
+  rows?: number;
+}
+
+const { label, error, hint, size = 'md', rows = 4, class: className, id, ...attrs } = Astro.props;
+
+const textareaId = id || generateId('textarea');
+
+const textareaStyles = cn(
+  textareaVariants({ size }),
+  error && 'border-destructive focus-visible:ring-destructive'
+);
+---
+
+<div class={cn('space-y-1.5', className)}>
+  {label && (
+    /* Explicit, not inherited — see the note in Input.astro: the control paints
+       the light-surface ramp, so the label has to as well. */
+    <label for={textareaId} class="text-foreground text-sm leading-none font-medium">
+      {label}
+    </label>
+  )}
+
+  <textarea
+    id={textareaId}
+    class={textareaStyles}
+    rows={rows}
+    aria-invalid={error ? 'true' : undefined}
+    aria-describedby={error ? `${textareaId}-error` : hint ? `${textareaId}-hint` : undefined}
+    {...attrs}
+  ></textarea>
+
+  {error && (
+    <p id={`${textareaId}-error`} class="text-destructive text-sm">
+      {error}
+    </p>
+  )}
+
+  {hint && !error && (
+    <p id={`${textareaId}-hint`} class="text-muted-foreground text-sm">
+      {hint}
+    </p>
+  )}
+</div>

@@ -1,0 +1,108 @@
+---
+/**
+ * ProjectLocation
+ *
+ * The proximity bands beside the consent-aware map. GoogleMap renders only when
+ * PUBLIC_GOOGLE_MAPS_API_KEY is configured; otherwise the panel falls back to
+ * the coordinates and a directions link, so the section never shows a setup
+ * prompt in production.
+ */
+import { PUBLIC_GOOGLE_MAPS_API_KEY } from 'astro:env/client';
+import Button from '~/components/ui/form/Button/Button.astro';
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+import GoogleMap from '~/components/ui/data-display/GoogleMap/GoogleMap.astro';
+import SectionHeading from '~/components/patterns/SectionHeading.astro';
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  note: string;
+  groups: Array<{ title: string; landmarks: string[] }>;
+  directionsUrl: string;
+  coordinates: { latitude: number; longitude: number };
+}
+
+const { eyebrow, title, intro, note, groups, directionsUrl, coordinates } = Astro.props;
+
+const hasMapKey = Boolean(PUBLIC_GOOGLE_MAPS_API_KEY);
+const coordinateLine = `${coordinates.latitude}° N, ${coordinates.longitude}° E`;
+---
+
+<section class="section mx-auto max-w-6xl px-6" aria-labelledby="project-location-title">
+  <SectionHeading eyebrow={eyebrow} title={title} intro={intro} id="project-location-title" />
+
+  <div class="mt-10 grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-14">
+    <div>
+      <div class="space-y-8">
+        {groups.map((group) => (
+          <section class="border-border border-t pt-5">
+            <h3 class="display-xs">{group.title}</h3>
+            <ul class="text-foreground-muted mt-3 grid gap-1.5 text-sm sm:grid-cols-2">
+              {group.landmarks.map((landmark) => (
+                <li class="flex items-start gap-2">
+                  <Icon name="map-pin" size="xs" class="text-accent-ink mt-1" />
+                  <span>{landmark}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+
+      <p class="text-foreground-subtle mt-6 max-w-[44rem] text-sm">{note}</p>
+
+      <div class="mt-6">
+        <Button href={directionsUrl} variant="secondary">
+          Get directions
+        </Button>
+      </div>
+    </div>
+
+    {hasMapKey ? (
+      <GoogleMap
+        lat={coordinates.latitude}
+        lng={coordinates.longitude}
+        zoom={14}
+        size="xl"
+        class="self-start"
+        ariaLabel="Map showing the location of Tranquill City, Rudraram"
+        placeholderTitle="Tranquill City location"
+      />
+    ) : (
+      <div class="shell self-start">
+        <div class="shell-core flex min-h-[16rem] flex-col items-start justify-center gap-2 p-8">
+          <Icon name="map-pin" size="lg" class="text-accent-ink" />
+          <p class="text-foreground-muted text-sm">
+            Open the coordinates in Google Maps for turn-by-turn directions to the site.
+          </p>
+          <Button href={directionsUrl} variant="secondary" size="sm" class="mt-3">
+            Open in Google Maps
+          </Button>
+        </div>
+      </div>
+    )}
+
+    {/*
+     * The coordinate line, outside the branch above, because with
+     * `PUBLIC_GOOGLE_MAPS_API_KEY` set the fallback plate never renders — and
+     * the map itself keeps the pair in a search placeholder that `loadMap()`
+     * then replaces with an iframe, so the numbers the plan and the directions
+     * link both use disappeared from the document in exactly the production
+     * configuration. A buyer reading this section could not copy the position,
+     * and a text extractor or an LLM summarising the address got no number at
+     * all.
+     *
+     * It is set in the mono face with `tabular-nums` for the same reason the
+     * stats belt sets its approval values that way: the number is meant to be
+     * transcribed, and a mono figure with equal advances is unambiguous at a
+     * glance and stable if the display face is ever swapped out. The value is
+     * the one `project.config.ts` and the entry publish; nothing here
+     * recomputes it, rounds it, or corrects it.
+     */}
+    <p class="text-foreground-subtle mt-6 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+      <Icon name="map-pin" size="xs" class="text-accent-ink" />
+      <span class="font-mono tabular-nums">{coordinateLine}</span>
+    </p>
+  </div>
+</section>

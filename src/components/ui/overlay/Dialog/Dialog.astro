@@ -1,0 +1,133 @@
+---
+/**
+ * Dialog Component
+ * Accessible modal dialog: background inertness, focus trap, keyboard
+ * navigation and scroll lock live in `./dialog.ts`, which mounts every
+ * `[data-dialog]` on the page. `open(id, trigger?)` on the element (or
+ * `window.openDialog`) remembers the trigger to restore focus to, and the
+ * element's first `[data-dialog-autofocus]` — falling back to the first
+ * focusable — receives focus on open.
+ */
+import { cn } from '~/lib/cn';
+import Icon from '../../primitives/Icon/Icon.astro';
+
+interface Props {
+  id: string;
+  title?: string;
+  description?: string;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  class?: string;
+}
+
+const { id, title, description, size = 'md', class: className } = Astro.props;
+
+const sizes = {
+  sm: 'max-w-sm',
+  md: 'max-w-lg',
+  lg: 'max-w-2xl',
+  xl: 'max-w-4xl',
+};
+---
+
+<div
+  id={id}
+  class="fixed inset-0 z-70 hidden"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby={title ? `${id}-title` : undefined}
+  aria-describedby={description ? `${id}-description` : undefined}
+  data-dialog
+>
+  <!-- Backdrop -->
+  <div
+    class="bg-foreground/50 fixed inset-0 opacity-0 backdrop-blur-sm transition-opacity duration-base ease-quint"
+    data-dialog-backdrop
+    aria-hidden="true"
+  ></div>
+
+  <!-- Dialog Panel. The scroll container centers with `my-auto` on the panel,
+       not `items-center` on the container: an item taller than the viewport
+       would otherwise overflow past the top edge, where it cannot be scrolled
+       to. -->
+  <div class="fixed inset-0 flex justify-center overflow-y-auto p-4">
+    <div
+      class={cn(
+        'relative my-auto w-full',
+        sizes[size],
+        'bg-background rounded-xl border border-border shadow-xl',
+        'scale-95 opacity-0 transition-[opacity,transform] duration-base ease-expo',
+        className
+      )}
+      data-dialog-panel
+    >
+      <!-- Close Button -->
+      <button
+        type="button"
+        class={cn(
+          'absolute top-4 right-4',
+          'text-foreground-muted hover:text-foreground',
+          'transition-colors',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md'
+        )}
+        data-dialog-close
+        aria-label="Close dialog"
+      >
+        <Icon name="x" class="h-5 w-5" />
+      </button>
+
+      <!-- Header -->
+      {(title || description) && (
+        <div class="p-6 pb-0">
+          {title && (
+            /*
+             * A real `<h2>`, not `<p role="heading" aria-level="2">`.
+             *
+             * The role version was invisible to the document outline and
+             * present in the accessibility outline — a heading that exists only
+             * for assistive technology, which is a worse guarantee than a real
+             * heading because nothing downstream (the outline, the reading
+             * order, a text extractor) can see it. On the project page it also
+             * put four identical "Buyer testimonial" headings into a document
+             * that has 15 real ones.
+             *
+             * `sr-only` keeps it out of the visual composition: the dialog is
+             * visually titled by its own content (the player's name plate, the
+             * form's own fieldset), so rendering a second title line would
+             * duplicate it. The element is still focusable-order-correct and
+             * still names the dialog through `aria-labelledby`.
+             *
+             * The size and weight are restated because `sr-only` clips rather
+             * than removes, so the type is what a real h2 would have been.
+             */
+            <h2 id={`${id}-title`} class="text-foreground sr-only text-lg font-semibold">
+              {title}
+            </h2>
+          )}
+          {description && (
+            <p id={`${id}-description`} class="text-foreground-muted mt-1 text-sm">
+              {description}
+            </p>
+          )}
+        </div>
+      )}
+
+      <!-- Content -->
+      <div class="p-6">
+        <slot />
+      </div>
+
+      <!-- Footer (optional) -->
+      <slot name="footer" />
+    </div>
+  </div>
+</div>
+
+<script>
+  import { initDialogs, resetDialogs } from './dialog';
+
+  initDialogs();
+  document.addEventListener('astro:page-load', initDialogs);
+  // The dialog elements are replaced on navigation: the inert set and the
+  // scroll lock must not outlive the page that opened the dialog.
+  document.addEventListener('astro:before-swap', resetDialogs);
+</script>

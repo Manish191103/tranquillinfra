@@ -1,0 +1,107 @@
+---
+/**
+ * ProjectHero
+ *
+ * The project opener, rendered through the shared ImageHero shell: the
+ * illustrative aerial of the planned layout — boundary marked in gold beside
+ * the road interchange at Rudraram — fills the viewport behind a
+ * bottom-weighted scrim, with the project's only H1, the location line and the
+ * two intent actions anchored to the bottom of the frame. Breadcrumbs arrive
+ * in the `breadcrumbs` slot so the page keeps owning the trail, and the cue
+ * jumps to the stats belt — the first block below the fold.
+ *
+ * The hero image is the page's LCP element; the shell renders it through
+ * <Picture> with `priority` (eager + high fetchpriority) and the cover-crop
+ * sizes hint, and `widths` ends at the source width (1920 px). The still is
+ * frame 0 of the background clip, so the cut into playback is invisible; the
+ * shell and ../layout/image-hero-video.ts carry the playback rules (window
+ * `load`, reduced motion, saveData, viewport, tab visibility, and the WCAG
+ * 2.2.2 pause toggle). The clip and the aerial moved here from `/contact-us/`
+ * in the 2026-09-16 hero swap (docs/hero-swap-plan.md); that page now opens
+ * over `tranquill-city/walkway.webp` — the frame the homepage's project
+ * spotlight also runs.
+ */
+import type { ImageMetadata } from 'astro';
+import ImageHero from '~/components/layout/ImageHero.astro';
+import Button from '~/components/ui/form/Button/Button.astro';
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+import { SITE_VISIT_CTA_LABEL } from '~/lib/enquiry-cta';
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  location: string;
+  intro: string;
+  hero: {
+    image: ImageMetadata;
+    alt: string;
+    caption: string;
+    /** Muted looping background clip; the still is its frame 0 */
+    video?: { src: string; mobileSrc?: string };
+  };
+  /** Availability caveat under the copy; project-agnostic, so it has a default */
+  note?: string;
+  /** On-page enquiry anchor; the card with the intent buttons and form lives there */
+  enquiryHref?: string;
+  /** On-page layout anchor */
+  planHref?: string;
+}
+
+const {
+  eyebrow,
+  title,
+  location,
+  intro,
+  hero,
+  // The entry price is published in the facts table on this page, so the caveat
+  // asks only for what the page genuinely does not state: the specific plot's
+  // number, its band and its documents. "Ask for pricing" directly under a
+  // published price made the page read as evasive about its own headline fact.
+  note = 'Ask the team for the price, size band and documents of any specific numbered plot.',
+  enquiryHref = '#project-brochure',
+  planHref = '#project-plan',
+} = Astro.props;
+
+// The shell renders over the photographic frame, so the actions take the same
+// on-invert overrides ContactHero uses.
+const accentAction = 'bg-accent text-accent-foreground hover:bg-accent-hover';
+const quietAction =
+  'border border-on-invert/40 text-on-invert hover:bg-on-invert/10 hover:text-on-invert';
+---
+
+<ImageHero
+  image={hero.image}
+  alt={hero.alt}
+  caption={hero.caption}
+  video={hero.video}
+  labelId="project-hero-title"
+  cueHref="#project-stats"
+  cueLabel="Skip to the project at a glance"
+  widths={[640, 960, 1280, 1600, 1920]}
+>
+  <slot name="breadcrumbs" slot="breadcrumbs" />
+
+  <p class="eyebrow">{eyebrow}</p>
+  <h1 id="project-hero-title" class="display-xl text-on-invert">
+    {title}
+  </h1>
+  <p class="text-on-invert-secondary mt-3 flex items-center gap-2 text-sm">
+    <Icon name="map-pin" size="sm" />
+    <span>{location}</span>
+  </p>
+  <p class="text-on-invert-secondary mt-5 max-w-[36rem] text-lg text-pretty">{intro}</p>
+  <p class="text-on-invert-muted mt-4 max-w-[36rem] text-sm text-pretty">{note}</p>
+
+  <ul class="mt-8 flex flex-wrap items-center gap-3">
+    <li>
+      <Button href={enquiryHref} size="lg" data-track="site_visit" class={accentAction}>
+        {SITE_VISIT_CTA_LABEL}
+      </Button>
+    </li>
+    <li>
+      <Button href={planHref} variant="ghost" size="lg" class={quietAction}>
+        Read the layout
+      </Button>
+    </li>
+  </ul>
+</ImageHero>

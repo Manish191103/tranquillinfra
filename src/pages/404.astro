@@ -1,32 +1,79 @@
 ---
-import { Icon } from 'astro-icon/components';
-import Layout from '~/layouts/Layout.astro';
-import { getHomePermalink } from '~/utils/permalinks';
-
-const title = `Error 404`;
+import PageLayout from '~/layouts/PageLayout.astro';
+import Button from '~/components/ui/form/Button/Button.astro';
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
 ---
 
-<Layout metadata={{ title }}>
-  <section class="section flex items-center">
-    <div class="mx-auto max-w-md text-center">
-      <h1 class="display-md mb-8">
-        <span class="sr-only">Error</span>
-        <span class="text-accent-ink">404</span>
-      </h1>
-      <p class="display-sm">Sorry, we couldn't find this page.</p>
-      <p class="text-muted mt-4 mb-8 text-lg">
-        But don't worry, you can find plenty of other things on our homepage.
-      </p>
-      <a
-        rel="noopener noreferrer"
-        href={getHomePermalink()}
-        class="cta cta-primary mx-auto"
-      >
-        <span class="cta-label">Back to homepage</span>
-        <span class="cta-icon" aria-hidden="true">
-          <Icon name="tabler:arrow-right" />
-        </span>
-      </a>
+<PageLayout
+  title="Page not found"
+  description="The page you're looking for has either been moved, deleted, or never existed in the first place."
+  noindex
+  enquiryDialogAutoOpen={false}
+>
+  <section class="relative flex min-h-[calc(100svh-8rem)] items-center justify-center overflow-hidden pt-16">
+    <div class="relative container px-6">
+      <div class="mx-auto max-w-2xl text-center">
+        <!--
+         * Decorative, and kept out of the accessibility tree on purpose: at
+         * 12rem this is not a label a screen-reader user needs, and the H1
+         * below it already carries "Page not found" as real text. It is a
+         * watermark, so `aria-hidden` is the honest description.
+         -->
+        <div
+          class="error-code font-display text-[8rem] leading-none select-none md:text-[12rem]"
+          aria-hidden="true"
+        >
+          404
+        </div>
+
+        <h1 class="display-sm text-foreground mb-4">Page not found</h1>
+
+        <p class="text-foreground-muted mx-auto mb-10 max-w-md text-lg">
+          The page you're looking for has either been moved, deleted, or never existed in the first
+          place.
+        </p>
+
+        <div class="flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <Button href="/" size="lg">
+            <Icon name="arrow-left" size="sm" />
+            Back to Home
+          </Button>
+        </div>
+      </div>
     </div>
   </section>
-</Layout>
+
+  <script>
+    import { trackNotFound } from '~/lib/analytics';
+
+    /*
+     * One `page_not_found` event per 404 render, on `astro:page-load` rather
+     * than at module body: BaseLayout's script (which configures the Google tag)
+     * runs after this one, and the event must follow the `config`. Fires once —
+     * a 404 is never reached by client-side routing.
+     */
+    document.addEventListener(
+      'astro:page-load',
+      () => trackNotFound(window.location.pathname),
+      { once: true }
+    );
+  </script>
+</PageLayout>
+
+<style>
+  /*
+   * The ghost numeral, at 0.3 rather than 0.15.
+   *
+   * At 0.15 it measured 1.05:1 against the sand — a text node nobody could
+   * read, still occupying ~90px of scroll height above the fold. 0.3 is still
+   * unambiguously a watermark (it reads as a texture, not as text) but it now
+   * has presence: ~2:1, which is the point of a watermark and stops it
+   * looking like a broken element. The alternative — dropping it — was
+   * rejected: the 8rem/12rem Fraunces numeral is the one piece of display type
+   * on the page and the whole reason the 404 does not read as a form.
+   */
+  .error-code {
+    color: var(--foreground);
+    opacity: 0.3;
+  }
+</style>

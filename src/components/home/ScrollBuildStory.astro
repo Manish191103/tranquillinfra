@@ -1,0 +1,1068 @@
+---
+/**
+ * ScrollBuildStory Component
+ *
+ * A pinned "build sequence": the canvas stays sticky over one viewport per
+ * frame while the beats scroll past it, cross-fading the backdrop image and
+ * updating the stage readout. Every string — frame copy, headings, caption and
+ * CTAs — is supplied by the caller, so the component carries no project copy.
+ *
+ * Structure (all consumed by `./scroll-build-story.ts`):
+ * - root     `[data-build-story]` + `--build-count` (pins for N × 100svh)
+ * - canvas   sticky `height: 100svh`; `[data-build-image][data-stage]` layers
+ * - beats    `[data-build-beat][data-stage][data-label]`, last one `#build-final`
+ * - progress `[data-build-jump]` buttons, `aria-current="step"` while active
+ * - status   `[data-build-stage-number]` / `[data-build-stage-label]`, aria-live
+ * - a11y     `prefers-reduced-motion` unpins the canvas into a stacked list
+ *
+ * Imagery is illustrative, so alt text stays descriptive of the scene and
+ * never claims finished villas or an established community. The frames are
+ * decorative backdrops under the shade/glow overlays and ship at `quality={25}`:
+ * Lighthouse's image-delivery audit flagged the q40 encodes for compression
+ * (~71 KiB of the initial load), and the overlay hides the difference.
+ */
+import { Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { enquiryCtaTarget, SITE_VISIT_CTA_LABEL } from '~/lib/enquiry-cta';
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+import siteConfig from '~/config/site.config';
+
+export interface BuildFrame {
+  image: ImageMetadata;
+  imageAlt: string;
+  label: string;
+  title: string;
+  detail: string;
+}
+
+interface Props {
+  sequence: BuildFrame[];
+  eyebrow: string;
+  titleLead: string;
+  /** Follows `titleLead` on its own line, in the accent colour */
+  titleAccent: string;
+  /** Caption line under the stage readout */
+  caption: string;
+  /** The build story's own project link; the site has one project page. */
+  projectHref?: string;
+  /** On-page layout anchor */
+  planHref?: string;
+  /** Site-visit CTA target; the page-aware enquiry target by default */
+  siteVisitHref?: string;
+  /** Accessible name for the stage nav */
+  sequenceLabel?: string;
+  skipLabel?: string;
+}
+
+const {
+  sequence,
+  eyebrow,
+  titleLead,
+  titleAccent,
+  caption,
+  projectHref = '/projects/tranquill-city/',
+  siteVisitHref: siteVisitHrefProp,
+  sequenceLabel = 'Build sequence',
+  skipLabel = 'Jump to the finished place',
+} = Astro.props;
+
+// Page-aware by default: the homepage renders the enquiry dialog, so the CTA
+// opens it; the pages that render the inline form instead scroll to it. An
+// explicit `siteVisitHref` wins, and then the dialog is not assumed to exist.
+const enquiryCta = enquiryCtaTarget(Astro.url.pathname);
+const siteVisitHref = siteVisitHrefProp ?? enquiryCta.href;
+const siteVisitDialog = siteVisitHrefProp ? undefined : enquiryCta.dialog;
+
+const lastIndex = sequence.length - 1;
+const projectLines = siteConfig.project?.lines ?? [siteConfig.name];
+const toplineProject = projectLines[0] ?? siteConfig.name;
+const toplinePlace = projectLines[projectLines.length - 1] ?? toplineProject;
+
+const pad = (value: number) => String(value).padStart(2, '0');
+---
+
+<section
+  class="build-story invert-section"
+  id="tranquill-city-build"
+  data-build-story
+  data-stage="1"
+  style={`--build-count:${sequence.length}`}
+  aria-labelledby="build-story-title"
+>
+  <div class="build-story-canvas">
+    <div class="build-story-media" aria-hidden="true">
+      {/*
+      Five frames, each a `<Picture>` with the same treatment.
+
+      `sizes` asks phones for two screens of width, for the reason ImageHero
+      documents at length: `object-fit: cover` scales a 1.78:1 source by HEIGHT
+      on a tall frame, so the width the browser would otherwise request is
+      narrower than the frame that actually gets painted, and the frames arrive
+      soft on exactly the widths that can least afford it. This was `100vw` at
+      every width — measured 2026-09-30, at a 390px viewport the canvas is
+      390×844, so the painted crop is ~1,470px of source width, against the 640px
+      candidate `100vw` resolved to.
+
+      `quality={25}` is deliberate and unchanged. Measured on the largest frame
+      (1671×941 source): AVIF q25 is 55KB against q40 at 111KB, and these are
+      full-bleed frames under a 91% forest scrim plus a `brightness(0.62)` dim
+      in their resting state — the wash hides most of what q25 costs, and 280KB
+      across five frames is not a trade worth making for artifacts nobody sees.
+      The mobile softness people actually noticed was `sizes`, not quality.
+    */}
+      {sequence.map((frame, index) => (
+        <Picture
+          class={`build-story-image${index === 0 ? ' is-visible' : ''}`}
+          data-build-image
+          data-stage={index + 1}
+          src={frame.image}
+          formats={['avif', 'webp']}
+          fallbackFormat="webp"
+          quality={25}
+          widths={[640, 960, 1280, 1672]}
+          sizes="(width < 60rem) 200vw, 100vw"
+          alt={frame.imageAlt}
+          loading="lazy"
+        />
+      ))}
+    </div>
+    <div class="build-story-shade" aria-hidden="true"></div>
+
+    <div class="build-story-topline" aria-hidden="true">
+      <span>{toplinePlace}</span>
+      {toplineProject !== toplinePlace && <span>{toplineProject}</span>}
+    </div>
+
+    <div class="build-story-status" aria-live="polite" aria-atomic="true">
+      <span data-build-stage-number>01 / {pad(sequence.length)}</span>
+      <span data-build-stage-label>{sequence[0]?.label ?? ''}</span>
+    </div>
+
+    <nav class="build-story-progress" aria-label={sequenceLabel}>
+      {sequence.map((frame, index) => (
+        <button
+          type="button"
+          class:list={['build-story-progress-button', index === 0 && 'is-active']}
+          data-build-jump={index + 1}
+          aria-label={`Show stage ${index + 1}: ${frame.label}`}
+          aria-current={index === 0 ? 'step' : undefined}
+        >
+          <span aria-hidden="true">{pad(index + 1)}</span>
+        </button>
+      ))}
+    </nav>
+
+    <p class="build-story-caption" aria-hidden="true">
+      {caption}
+    </p>
+  </div>
+
+  <div class="build-story-shell mx-auto max-w-6xl px-6">
+    <header class="build-story-intro">
+      <p class="build-story-eyebrow">{eyebrow}</p>
+      <h2 id="build-story-title">
+        {titleLead}
+        <br />
+        <span>{titleAccent}</span>
+      </h2>
+      <a class="build-story-skip" href="#build-final">
+        {skipLabel}
+        <Icon name="arrow-down-right" size="sm" />
+      </a>
+    </header>
+
+    <div class="build-story-beats">
+      {sequence.map((frame, index) => (
+        <article
+          class:list={[
+            'build-beat',
+            index === 0 && 'is-active',
+            index === lastIndex && 'build-beat-final',
+          ]}
+          id={index === lastIndex ? 'build-final' : undefined}
+          data-build-beat
+          data-stage={index + 1}
+          data-label={frame.label}
+          aria-labelledby={`build-beat-title-${index + 1}`}
+        >
+          <div class="build-beat-content">
+            <div class="build-beat-meta">
+              <span class="build-beat-number">{pad(index + 1)}</span>
+              <span class="build-beat-label">{frame.label}</span>
+            </div>
+            <h3 id={`build-beat-title-${index + 1}`}>{frame.title}</h3>
+            <p>{frame.detail}</p>
+            {index === lastIndex && (
+              <div class="build-beat-actions">
+                <a
+                  class="build-beat-cta bg-accent text-surface-invert hover:bg-accent-hover"
+                  href={siteVisitHref}
+                  data-track="site_visit"
+                  data-dialog-trigger={siteVisitDialog}
+                  data-dialog-request-type={siteVisitDialog ? 'site_visit' : undefined}
+                >
+                  {SITE_VISIT_CTA_LABEL}
+                </a>
+                <a
+                  class="build-beat-cta border-border text-foreground hover:bg-foreground hover:text-background border"
+                  href={projectHref}
+                >
+                  Explore the project
+                </a>
+              </div>
+            )}
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  import { mountScrollBuildStory } from './scroll-build-story';
+
+  mountScrollBuildStory();
+  document.addEventListener('astro:page-load', mountScrollBuildStory);
+  document.addEventListener('astro:after-swap', mountScrollBuildStory);
+</script>
+
+<style>
+  .build-story {
+    /* Chrome inset, aligned with the `max-w-6xl px-6` shell below */
+    --build-inset: max(1.5rem, calc((100vw - 72rem) / 2 + 1.5rem));
+    --build-text-shadow: 0 0.15rem 0.7rem rgb(0 0 0 / 45%);
+    /*
+     * The one neutral the whole frame is built on, and the only thing the
+     * scrim's alphas are tuned against. Near-black rather than the brand forest
+     * `invert-section` would resolve `--color-background` to: the section still
+     * carries `invert-section` (it has to — that is what makes the light ink
+     * tokens resolve for the copy), but the surface behind the photograph is now
+     * chromatic-free, so nothing shows green between frames, under a failed
+     * decode, or in the letterbox the `cover` crop leaves at extreme aspect
+     * ratios.
+     */
+    --build-base: rgb(11 13 12);
+    position: relative;
+    min-height: calc(var(--build-count) * 100svh);
+    overflow: clip;
+    isolation: isolate;
+    background: var(--build-base);
+    color: var(--color-foreground);
+  }
+
+  .build-story-canvas {
+    position: sticky;
+    z-index: 0;
+    top: 0;
+    height: 100svh;
+    overflow: hidden;
+    background: var(--build-base);
+  }
+
+  .build-story-media,
+  .build-story-shade {
+    position: absolute;
+    inset: 0;
+  }
+
+  .build-story-media {
+    overflow: hidden;
+    background: var(--build-base);
+  }
+
+  /* The image element belongs to <Picture>, hence the global selector. */
+  .build-story-media :global(.build-story-image) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transform: scale(1.035);
+    filter: saturate(0.8) contrast(0.98);
+    transition:
+      opacity 1100ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 1900ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /*
+   * Layer promotion, gated on the story being on screen.
+   *
+   * Five full-bleed cross-fading images is five composited layers, and a static
+   * `will-change` pays for all five for the whole document — including the ~80%
+   * of the page where this section is not on screen and nothing is cross-fading.
+   * `data-build-live` is set by ./scroll-build-story.ts while the section is
+   * within `200%` of the viewport and removed when it leaves, so the memory and
+   * the compositor cost track the effect instead of the document.
+   *
+   * Transform and opacity are the only promoted properties; the fade runs on the
+   * compositor and never touches layout or paint.
+   */
+  [data-build-live] .build-story-media :global(.build-story-image) {
+    will-change: opacity, transform;
+  }
+
+  .build-story-media :global(.build-story-image.is-visible) {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /*
+   * The legibility scrim — NEUTRAL, not forest.
+   *
+   * This used to be three gradients of `--surface-invert` (brand-800) at 91% /
+   * 78% / 72%, over a `brand-500` radial glow in `screen` blend mode, on top of
+   * a brand-700 section base. Five green layers stacked over the aerial renders,
+   * and the result was a murk in which the thing the section exists to show was
+   * unreadable: the gold layout outline, the road network and the labelled
+   * landmarks all disappeared into it.
+   *
+   * The scrim has one job, seating light type on a photograph, and it does that
+   * job with luminance. Nothing here is chromatic, so the renders read as
+   * themselves and the copy still clears its contrast target.
+   *
+   * The geometry is unchanged, because the geometry is what was right: a heavy
+   * left band under the copy column, a slower decay across the middle, a
+   * bottom-up band for the bottom-anchored copy, and a narrow right-edge veil
+   * sized in `rem` to seat the readout and the stage nav at any canvas width.
+   *
+   * The alphas are lower than the forest version's because a near-black scrim
+   * reads darker per unit of alpha than a mid-forest does. These were re-tuned
+   * against measured contrast rather than guessed — see
+   * `--build-scrim` below for the one value the copy's contrast actually depends
+   * on.
+   */
+  .build-story-shade {
+    z-index: 1;
+    background:
+      /*
+       * The instrument column: a narrow veil anchored to the right edge, sized in
+       * `rem` rather than as a share of the canvas so it tracks the readout and
+       * the stage nav wherever `--build-inset` puts them. The right inset is
+       * 24px at 1152px (98% of the canvas) and 408px at 1920px (79%), so no
+       * percentage band would seat them at both ends. `25rem` clears them at the
+       * widest inset (measured 20rem) with room to spare.
+       */
+      linear-gradient(to left, rgb(8 10 9 / 74%) 0%, rgb(8 10 9 / 44%) 48%, transparent 100%) 100%
+        0 / 25rem 100% no-repeat,
+      linear-gradient(
+        90deg,
+        rgb(8 10 9 / 92%) 0%,
+        rgb(8 10 9 / 70%) 34%,
+        rgb(8 10 9 / 42%) 62%,
+        rgb(8 10 9 / 18%) 88%,
+        transparent 100%
+      ),
+      linear-gradient(0deg, rgb(8 10 9 / 74%) 0%, transparent 40%, rgb(8 10 9 / 16%) 100%);
+    pointer-events: none;
+  }
+
+  /*
+   * The glow layer is gone.
+   *
+   * It was two radials — `accent` gold at 12% over the readout, `brand-500`
+   * green at 24% over the lower left — in `mix-blend-mode: screen`, which adds
+   * light rather than removing it. That is the layer that put a green cast on
+   * the lower-left third, which is exactly where the copy sits, and a
+   * screen-blended wash cannot seat anything: it only ever lightens. The scrim
+   * above does that job and the frames read better without this one.
+   */
+
+  .build-story-topline,
+  .build-story-status,
+  .build-story-caption,
+  .build-story-progress {
+    position: absolute;
+    z-index: 4;
+  }
+
+  /*
+   * The topline is the frame's name band — the place name at one end, the
+   * project name at the other. It is `aria-hidden`, so this is purely a visual
+   * concern, and it was rendering nothing at all: `top: 1.45rem` put it at
+   * y 23–38 inside a `position: sticky; top: 0` canvas, which is exactly where
+   * the sticky header's own inner row sits (y 14–50 at every width measured).
+   * Two blocks of `siteConfig.project.lines` derivation, invisible for the whole
+   * 4,372px pin.
+   *
+   * It is kept rather than deleted, because the band it draws is the frame's
+   * title and deleting it would leave the top-right corner carrying only the
+   * stage readout. `--header-height` is the same value the scroll-margin rules
+   * use, published by the header's runtime module, so the band tracks the real
+   * header height instead of re-declaring 4rem. The stage readout below it
+   * moves down with it.
+   */
+  .build-story-topline {
+    top: calc(var(--header-height, 4rem) + 0.6rem);
+    right: var(--build-inset);
+    left: var(--build-inset);
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    color: color-mix(in srgb, var(--color-foreground) 84%, transparent);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    line-height: 1.4;
+    text-shadow: var(--build-text-shadow);
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+
+  /* Sits under the topline band, so it moves with it. */
+  .build-story-status {
+    top: calc(var(--header-height, 4rem) + 3.7rem);
+    right: var(--build-inset);
+    display: grid;
+    justify-items: end;
+    gap: 0.15rem;
+    color: var(--color-foreground);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    line-height: 1.35;
+    text-align: right;
+    text-shadow: var(--build-text-shadow);
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+
+  .build-story-status span:last-child {
+    color: var(--accent);
+    font-size: 0.62rem;
+  }
+
+  .build-story-progress {
+    /*
+     * Desktop: a vertical column hard against the right inset, vertically
+     * centred, mirroring the copy column on the left.
+     */
+    top: 50%;
+    right: var(--build-inset);
+    display: grid;
+    gap: 0.45rem;
+    transform: translateY(-50%);
+  }
+
+  .build-story-progress-button {
+    display: grid;
+    width: 2.4rem;
+    height: 1.2rem;
+    place-items: center end;
+    padding: 0;
+    /*
+     * 88%, not the 58% this used to carry. The stage number is a 0.62rem
+     * label on a button, so it is small text and owes AA (4.5:1), and it sits
+     * over the photograph rather than over the opaque band the beat copy gets.
+     * At 58% it measured 2.3–4.1:1 across the five frames; the hierarchy it was
+     * expressing — an inactive tick quieter than the active one — is carried by
+     * the gold colour and the longer rule, which is what distinguishes the
+     * active stage anyway.
+     */
+    color: color-mix(in srgb, var(--color-foreground) 88%, transparent);
+    background: transparent;
+    border: 0;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-align: right;
+    text-shadow: var(--build-text-shadow);
+    cursor: pointer;
+  }
+
+  .build-story-progress-button::before {
+    display: block;
+    width: 1.5rem;
+    height: 1px;
+    margin-right: 0.5rem;
+    background: currentcolor;
+    content: '';
+    opacity: 0.65;
+    transition:
+      width 220ms ease,
+      color 220ms ease,
+      opacity var(--site-duration-base) var(--ease-in-out-quint);
+  }
+
+  .build-story-progress-button:hover,
+  .build-story-progress-button:focus-visible,
+  .build-story-progress-button.is-active {
+    color: var(--accent);
+  }
+
+  .build-story-progress-button.is-active::before,
+  .build-story-progress-button:hover::before,
+  .build-story-progress-button:focus-visible::before {
+    width: 2.25rem;
+    opacity: 1;
+  }
+
+  .build-story-progress-button:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+
+  .build-story-caption {
+    right: var(--build-inset);
+    bottom: 1.45rem;
+    margin: 0;
+    color: color-mix(in srgb, var(--color-foreground) 72%, transparent);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-shadow: var(--build-text-shadow);
+    text-transform: uppercase;
+  }
+
+  .build-story-shell {
+    position: relative;
+    z-index: 3;
+    min-height: calc(var(--build-count) * 100svh);
+    margin-top: -100svh;
+    pointer-events: none;
+  }
+
+  .build-story-intro {
+    /* In flow at the top of the shell so the beats (and their bottom-anchored
+       copy) always start below it — an absolute overlay here collides with
+       stage-1 content on short viewports (e.g. 1366×768). It still renders
+       over the pinned canvas: the shell pulls itself up by -100svh. */
+    padding-top: clamp(7rem, 15svh, 10rem);
+    padding-bottom: 3.5rem;
+    max-width: min(35rem, 45vw);
+    pointer-events: none;
+  }
+
+  .build-story-eyebrow {
+    margin-bottom: 1rem;
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    line-height: 1.4;
+    text-shadow: var(--build-text-shadow);
+    text-transform: uppercase;
+  }
+
+  .build-story-intro h2 {
+    /* The <br> in the markup supplies the sentence break; sized so each
+       sentence fits its line inside min(35rem, 45vw) at every pinned width
+       (a `max-width: 10ch` clamp wrapped "Start with the land." mid-sentence). */
+    margin: 0;
+    color: var(--color-foreground);
+    font-family: var(--font-display);
+    font-size: clamp(2.8rem, 4.5vw, 4.6rem);
+    font-weight: var(--site-heading-weight);
+    letter-spacing: var(--site-heading-tracking);
+    line-height: 1.02;
+    text-shadow: 0 0.2rem 1.4rem rgb(0 0 0 / 34%);
+    text-wrap: balance;
+  }
+
+  .build-story-intro h2 span {
+    color: var(--accent);
+  }
+
+  .build-story-skip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-top: 1.55rem;
+    color: var(--color-foreground);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    text-shadow: var(--build-text-shadow);
+    text-underline-offset: 0.35em;
+    pointer-events: auto;
+  }
+
+  .build-story-skip:hover {
+    color: var(--accent);
+  }
+
+  .build-story-skip:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 3px;
+  }
+
+  .build-story-beats {
+    width: min(34rem, 100%);
+    min-height: calc(var(--build-count) * 100svh);
+    margin-left: 0;
+  }
+
+  .build-beat {
+    display: flex;
+    min-height: 100svh;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 0 clamp(4.5rem, 10svh, 7.5rem);
+    pointer-events: auto;
+  }
+
+  /*
+   * The resting state is 1.0, not a dim. This used to be `opacity: 0.68` on the
+   * COPY with the active beat lifted to full strength, which measured the
+   * resting body at 4.04:1 and the resting label at 4.14:1 against the
+   * photograph (2026-09-30) — both under AA, on the one element the whole
+   * sequence exists to be read.
+   *
+   * The emphasis is now expressed where it costs nothing: the MEDIA dims. The
+   * active frame is the one at full strength; the frames either side are held
+   * back, so the eye is still walked down the five stages, and the copy over
+   * them is untouched, so its contrast is the copy's own — measured 7.9:1 for
+   * the body and 6.9:1 for the label in either state.
+   *
+   * The dim is gated on `[data-build-init]`, which `./scroll-build-story.ts`
+   * sets as its first act. Before that attribute lands the five beats are a
+   * plain, fully legible stacked list — see the scripting fallback at the foot
+   * of this file for why that has to be true.
+   */
+  .build-beat-content {
+    max-width: 33rem;
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 620ms cubic-bezier(0.16, 1, 0.3, 1),
+      transform 620ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /*
+   * The exit fade — the last thing this component needed and the first thing
+   * anyone scrolls into.
+   *
+   * The beat copy is bottom-anchored in a `100svh` beat, so it rides the full
+   * height of the viewport: up through the reading zone, into the sticky header
+   * (opaque, ~64px), and out. For most of the beat that is fine, but in the last
+   * ~66px of its travel the copy is half-sliced by the header and reads as
+   * broken rather than as leaving — measured 2026-09-30 at 390×844, where it is
+   * the only window in which any copy is ever clipped, and it is the window a
+   * visitor spends swapping stages.
+   *
+   * So the copy leaves by dissolving instead of by being cut. `view()` on the
+   * copy itself gives the exit range for free, and the compositor owns it — no
+   * observer, no per-frame JS, nothing to keep in sync with the controller that
+   * already picks the stage.
+   *
+   * `fill-mode: forwards`, not `both`, deliberately: `both` would hold the
+   * animation's `from` state (opacity 1) across the whole `entry`/`cover` range
+   * and silently override the resting dim below, which is what expresses
+   * emphasis while the sequence is pinned. With `forwards` the animation only
+   * contributes during and after its own range, so the dim still governs.
+   *
+   * Only `opacity` and `transform`, like every other animation in the system.
+   */
+  @keyframes build-beat-exit {
+    from {
+      opacity: 1;
+      transform: none;
+    }
+
+    to {
+      opacity: 0;
+      transform: translateY(-1.25rem);
+    }
+  }
+
+  @supports (animation-timeline: view()) {
+    .build-beat-content {
+      animation: build-beat-exit forwards;
+      animation-timeline: view();
+      /*
+       * Ends at 55% of the exit so the copy is fully gone while it is still
+       * below the header rather than reaching full transparency only once it is
+       * already off screen.
+       */
+      animation-range: exit 0% exit 55%;
+    }
+  }
+
+  /*
+   * The resting dim, in the one state where there is a stage to rest from.
+   *
+   * Narrower than it looks, and deliberately: above the nav breakpoint (where
+   * the beats scroll past a pinned canvas) with motion allowed and scripting
+   * available (where the controller has actually run, via `data-build-init`).
+   * Every other state — a phone, reduced motion, no JavaScript — unpins or
+   * stacks the beats into a plain list, and a plain list has nothing to dim
+   * against. Writing it as three compensating overrides inside the other blocks
+   * would have been three chances to get a specificity edge wrong; a browser
+   * that does not know `scripting` simply evaluates the query false and gets
+   * the plain list.
+   */
+  @media (width > 58rem) and (prefers-reduced-motion: no-preference) and (scripting: enabled) {
+    [data-build-init] .build-beat:not(.is-active) .build-beat-content {
+      opacity: 0.88;
+      transform: translateY(0.5rem);
+    }
+
+    /*
+     * The media dim that carries the emphasis instead: the active frame is the
+     * one at full strength and the frames either side are held back, so the eye
+     * is walked down the five stages while the copy over them is untouched.
+     */
+    [data-build-init] .build-story-image:not(.is-visible) {
+      filter: saturate(0.8) contrast(0.98) brightness(0.62);
+    }
+  }
+
+  .build-beat-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.85rem;
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    line-height: 1.4;
+    text-transform: uppercase;
+  }
+
+  .build-beat-label {
+    color: color-mix(in srgb, var(--color-foreground) 78%, transparent);
+  }
+
+  .build-beat h3 {
+    max-width: 12ch;
+    margin-bottom: 1rem;
+    color: var(--color-foreground);
+    font-family: var(--font-display);
+    font-size: clamp(2.2rem, 4.4vw, 4.35rem);
+    font-weight: var(--site-heading-weight);
+    letter-spacing: var(--site-heading-tracking);
+    line-height: 0.95;
+    text-shadow: 0 0.2rem 1.2rem rgb(0 0 0 / 38%);
+    text-wrap: balance;
+  }
+
+  /*
+   * 88%, not the 82% this carried under the forest scrim. Re-measured against
+   * the neutral one (2026-09-30, worst single pixel anywhere in the text block,
+   * both viewports): at 82% the body copy measured 4.61:1 on desktop — over AA by
+   * a hair and with no margin for a brighter frame. 88% lifts it to ~5.1:1
+   * without touching the scrim, so the photograph keeps the visibility the
+   * neutral scrim bought and the copy keeps real headroom. The label below stays
+   * quieter, so the hierarchy is unchanged.
+   */
+  .build-beat p {
+    max-width: 30rem;
+    margin-bottom: 0;
+    color: color-mix(in srgb, var(--color-foreground) 88%, transparent);
+    font-size: clamp(1rem, 1.4vw, 1.1rem);
+    line-height: 1.55;
+    text-shadow: var(--build-text-shadow);
+  }
+
+  .build-beat-final {
+    scroll-margin-top: 0;
+  }
+
+  .build-beat-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.55rem;
+    pointer-events: auto;
+  }
+
+  .build-beat-cta {
+    display: inline-flex;
+    height: 3rem;
+    align-items: center;
+    justify-content: center;
+    padding-inline: 1.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: background-color var(--site-transition-state);
+  }
+
+  .build-beat-cta:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 58rem) {
+    .build-story {
+      --build-canvas-height: 100svh;
+      min-height: auto;
+    }
+
+    .build-story-canvas {
+      height: var(--build-canvas-height);
+    }
+
+    /*
+     * The instrument cluster is removed below this breakpoint — the stage
+     * readout, the stage nav and the topline band. Not relocated: there is
+     * nowhere to put them.
+     *
+     * The beat copy is bottom-anchored in a `100svh` beat and is 310px wide on a
+     * 390px screen, so it sweeps the full height of the viewport and reaches
+     * both edges. Every fixed position the cluster could take is a position the
+     * copy also passes through, and both were tried (measured 2026-09-30):
+     *
+     *   bottom, as it was: the rail sits `bottom: 8.5rem` while the copy carries
+     *     `padding-bottom: calc(7.5rem + safe-area)`, so it lands 16px inside the
+     *     copy's band and draws through the "Explore the project" button on the
+     *     final beat — rail y 562–586 against the button's y 554–602.
+     *
+     *   top, under the readout: the copy's own travel puts its h3 at y 60–160
+     *     mid-handover, which is exactly where the cluster sits, and the ticks
+     *     run straight through the heading and the body copy beneath it.
+     *
+     * What is lost is a supplement, not information: each beat already names
+     * itself in the copy ("03 Connect"), and the sequence is five stages long,
+     * so a stage counter is not what a phone needs. What is gained is the whole
+     * frame for the photograph and the copy, which is what the section is for.
+     *
+     * The `scripting: none` branch at the foot of this file removes the same
+     * three for the same reason — there is no stage to report — and this is that
+     * decision applied to the width at which there is no room for one.
+     */
+    .build-story-topline,
+    .build-story-status,
+    .build-story-progress {
+      display: none;
+    }
+
+    .build-story-shell {
+      display: flow-root;
+      width: min(calc(100% - 2rem), 38rem);
+      min-height: auto;
+      margin-top: calc(-1 * var(--build-canvas-height));
+    }
+
+    .build-story-beats {
+      width: 100%;
+      min-height: auto;
+      margin-top: 0;
+    }
+
+    .build-story-intro {
+      max-width: 30rem;
+      padding-top: 6rem;
+      padding-bottom: 1.5rem;
+    }
+
+    .build-story-intro h2 {
+      font-size: clamp(2.9rem, 8.4vw, 4.8rem);
+    }
+
+    .build-beat {
+      min-height: 100svh;
+      padding: 1rem 0 calc(7.5rem + env(safe-area-inset-bottom));
+    }
+
+    .build-beat-content {
+      max-width: 100%;
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (max-width: 42rem) {
+    .build-story-topline {
+      top: calc(var(--header-height, 4rem) + 0.35rem);
+      font-size: 0.57rem;
+      letter-spacing: 0.12em;
+    }
+
+    .build-story-topline span:last-child {
+      display: none;
+    }
+
+    .build-story-status {
+      top: calc(var(--header-height, 4rem) + 2.9rem);
+      font-size: 0.64rem;
+    }
+
+    .build-story-status span:last-child {
+      font-size: 0.55rem;
+    }
+
+    /* Tracks the narrowed readout above it, so the cluster stays one block. */
+    .build-story-progress {
+      top: calc(var(--header-height, 4rem) + 4.7rem);
+    }
+
+    .build-story-caption {
+      display: none;
+    }
+
+    .build-story-intro {
+      max-width: 100%;
+      padding-top: 4.5rem;
+      padding-bottom: 1.5rem;
+    }
+
+    .build-story-intro h2 {
+      font-size: clamp(2.8rem, 12.2vw, 4.35rem);
+    }
+
+    .build-story-skip {
+      margin-top: 1.15rem;
+      font-size: 0.72rem;
+    }
+
+    .build-beat {
+      min-height: 100svh;
+      padding-bottom: calc(7.5rem + env(safe-area-inset-bottom));
+    }
+
+    .build-beat h3 {
+      font-size: clamp(2.15rem, 10vw, 3.2rem);
+    }
+
+    .build-beat p {
+      font-size: 0.98rem;
+    }
+
+    .build-beat-actions {
+      display: grid;
+      gap: 0.55rem;
+    }
+
+    .build-beat-cta {
+      width: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .build-story {
+      min-height: auto;
+    }
+
+    .build-story-canvas {
+      position: relative;
+      height: min(76svh, 40rem);
+    }
+
+    .build-story-media :global(.build-story-image),
+    .build-beat-content {
+      transition: none;
+    }
+
+    .build-story-shell {
+      min-height: auto;
+      margin-top: 0;
+    }
+
+    /* The intro is already in flow, so the beats stack below it naturally
+       once the canvas unpins. */
+    .build-story-intro {
+      max-width: 33rem;
+      padding-top: 4rem;
+      padding-bottom: 1rem;
+    }
+
+    .build-story-beats {
+      min-height: auto;
+    }
+
+    .build-beat,
+    .build-beat-final {
+      min-height: auto;
+      padding: 4rem 0;
+    }
+
+    .build-beat-content {
+      opacity: 1;
+      transform: none;
+    }
+
+    /*
+     * The stage readout goes, for the same reason the `scripting: none` branch
+     * below removes it: this query unpins the canvas, so there is no stage to
+     * report. With the beats stacked and two copies fully visible at a time,
+     * whatever the controller picked was decided by a one-pixel difference in
+     * presence (measured 2026-09-30: 221px vs 220px) while a polite live region
+     * announced the result — an unverifiable claim made to a screen reader on
+     * every handover, for a component that is now a list.
+     *
+     * The stage nav stays. The script runs here, so the buttons still work, and
+     * reaching stage five without scrolling four screens is exactly the shortcut
+     * this group is owed.
+     */
+    .build-story-status {
+      display: none;
+    }
+  }
+
+  /*
+   * Scripting off. The same unpinned stack the reduced-motion query produces,
+   * because the failure is the same one: with no controller there is no stage,
+   * so there is nothing for the canvas to pin to.
+   *
+   * Without this block the pinned behaviour survives the loss of the module and
+   * 4,372px of scroll collapse into one frame over copy nobody can follow:
+   * measured with `Emulation.setScriptExecutionDisabled` on `/`, the five beats
+   * sat at `contentOpacity: ["1", "0.68", "0.68", "0.68", "0.68"]` over a single
+   * `visibleImages: [true, false, false, false, false]` frame, while the
+   * `aria-live="polite"` status permanently read "01 / 05 Ground" — the copy on
+   * screen was stage five's. A text extractor took the same contradiction away
+   * with it.
+   *
+   * `scripting` is a media feature rather than a UA sniff, so the query cannot
+   * go stale the way a user-agent string check does; it is Baseline in the
+   * engines this site ships to, and `./Marquee.astro` already relies on the same
+   * feature for the same reason. Browsers that do not recognise the feature
+   * evaluate it false, which leaves them on the pinned build — degraded, still
+   * readable, and never blank: the `[data-build-init]` gate in the resting-state
+   * rules above keeps every beat at full opacity in that window too.
+   *
+   * The readout and the stage nav are removed rather than corrected. There is no
+   * stage to report and the jump buttons have no handler, so both are dead
+   * furniture — and a polite live region that announces a stage that does not
+   * exist is worse than no live region at all.
+   */
+  @media (scripting: none) {
+    .build-story {
+      min-height: auto;
+    }
+
+    .build-story-canvas {
+      position: relative;
+      height: min(76svh, 40rem);
+    }
+
+    .build-story-media :global(.build-story-image),
+    .build-beat-content {
+      transition: none;
+    }
+
+    .build-story-shell {
+      min-height: auto;
+      margin-top: 0;
+    }
+
+    .build-story-intro {
+      max-width: 33rem;
+      padding-top: 4rem;
+      padding-bottom: 1rem;
+    }
+
+    .build-story-beats {
+      min-height: auto;
+    }
+
+    .build-beat,
+    .build-beat-final {
+      min-height: auto;
+      padding: 4rem 0;
+    }
+
+    .build-beat-content {
+      opacity: 1;
+      transform: none;
+    }
+
+    .build-story-status,
+    .build-story-progress,
+    .build-story-caption {
+      display: none;
+    }
+  }
+</style>

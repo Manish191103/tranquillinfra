@@ -1,0 +1,87 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+import { cn } from '~/lib/cn';
+import { isExternalUrl } from '../utils';
+import { buttonVariants } from './button.variants';
+
+interface Props extends HTMLAttributes<'button'> {
+  variant?:
+    | 'primary'
+    | 'secondary'
+    | 'whatsapp'
+    | 'outline'
+    | 'ghost'
+    | 'link'
+    | 'destructive'
+    | 'ctaPrimary'
+    | 'ctaOutline'
+    | 'ctaGhost'
+    | 'ctaOnInvert';
+  size?: 'sm' | 'md' | 'lg';
+  loading?: boolean;
+  fullWidth?: boolean;
+  href?: string;
+  target?: string;
+  icon?: boolean;
+}
+
+const {
+  variant = 'primary',
+  size = 'md',
+  loading = false,
+  fullWidth = false,
+  href,
+  target,
+  icon = false,
+  class: className,
+  disabled,
+  ...attrs
+} = Astro.props;
+
+// Auto-detect external URLs and apply appropriate attributes
+const isExternal = href ? isExternalUrl(href) : false;
+const linkTarget = target ?? (isExternal ? '_blank' : undefined);
+// Derived from the resolved target, so an explicit `target="_blank"` on a
+// non-http href still gets the opener protection.
+const linkRel = linkTarget === '_blank' ? 'noopener noreferrer' : undefined;
+
+const Element = href ? 'a' : 'button';
+const isDisabled = disabled || loading;
+const isDisabledLink = href && isDisabled;
+
+const classes = cn(
+  buttonVariants({ variant, size, fullWidth, icon }),
+  isDisabledLink && 'pointer-events-none',
+  className
+);
+---
+
+<Element
+  class={classes}
+  disabled={!href ? isDisabled : undefined}
+  href={isDisabledLink ? undefined : href}
+  target={isDisabledLink ? undefined : linkTarget}
+  rel={isDisabledLink ? undefined : linkRel}
+  aria-disabled={isDisabledLink ? 'true' : undefined}
+  tabindex={isDisabledLink ? '-1' : undefined}
+  {...attrs}
+>
+  {loading ? (
+    <svg
+      class="animate-spin"
+      xmlns="http://www.w3.org/2000/svg"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+    </svg>
+  ) : null}
+  <slot />
+</Element>

@@ -1,0 +1,173 @@
+---
+/**
+ * LibraryDirectory
+ *
+ * Forest-toned reading hub: two panels pairing the latest Insights posts with
+ * the questions those posts answer. Copy, posts and questions all arrive from
+ * the page — nothing is hardcoded here beyond layout and the numeric row marks.
+ */
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+
+interface DirectoryCopy {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  insightsTitle: string;
+  insightsNote: string;
+  questionsTitle: string;
+  questionsNote: string;
+  viewAllLabel: string;
+  postsEmpty: string;
+  questionsEmpty: string;
+}
+
+interface DirectoryPost {
+  href: string;
+  title: string;
+  category: string;
+  date: Date;
+  description: string;
+}
+
+interface DirectoryQuestion {
+  href: string;
+  question: string;
+  postTitle: string;
+}
+
+interface Props {
+  copy: DirectoryCopy;
+  /**
+   * The window, already chosen by the page.
+   *
+   * The homepage pins its `featured` post into the window and fills the
+   * remaining slots by category breadth and then recency, because a bare
+   * newest-first slice dropped the buyer-verification guide the page's own
+   * "Visit and verify" step links to. It used to `slice(0, 4)` here as well —
+   * a second place deciding how many posts show, agreeing only while the page's
+   * own `LIBRARY_WINDOW` happened to be 4, and silently truncating any other
+   * window it chose. The count belongs to the page that has the posts; this
+   * renders whatever it is handed.
+   */
+  posts: DirectoryPost[];
+  questions: DirectoryQuestion[];
+  viewAllHref: string;
+}
+
+const { copy, posts, questions, viewAllHref } = Astro.props;
+
+/*
+ * The whole section paints `bg-surface-invert` directly rather than going
+ * through `.invert-section`, so `--color-accent-ink` is never remapped and
+ * every one of these rows is the DARK gold — `#8f5d04`, which measured 1.72:1
+ * on the `brand-600` plate inside the panels and 2.12:1 on the `brand-700`
+ * field (2026-09-30). Both fail AA badly. `--color-accent` is the light gold,
+ * 7.7:1 on the field and 6.4:1 on the plate, which is the step the inverted
+ * sections use for exactly this reason. So: no `accent-ink` anywhere in this
+ * file. `.eyebrow-on-invert` is the same flip for the eyebrow pill.
+ */
+const panelHeadingClasses = 'text-accent text-[0.72rem] font-extrabold tracking-[0.15em] uppercase';
+const panelNoteClasses = 'text-on-invert-secondary mt-1 text-[0.78rem]';
+const rowNumberClasses =
+  'text-on-invert-secondary pt-0.5 text-[0.7rem] font-extrabold tracking-[0.08em] tabular-nums';
+const rowMetaClasses = 'text-accent text-[0.7rem] font-bold tracking-[0.04em]';
+const rowTitleClasses = 'display-xs';
+const rowBodyClasses = 'text-on-invert-secondary text-sm leading-snug';
+const rowArrowClasses = 'text-accent pt-0.5 text-base';
+const rowClasses = [
+  'group grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-4 py-5',
+  'text-on-invert transition-[color,padding-left] duration-base ease-quint',
+  'hover:text-accent hover:pl-1.5 focus-visible:text-accent focus-visible:pl-1.5',
+].join(' ');
+---
+
+<section class="home-library bg-surface-invert text-on-invert">
+  <div class="section mx-auto max-w-6xl px-6">
+    <header class="max-w-2xl">
+      <p class={panelHeadingClasses}>{copy.eyebrow}</p>
+      <h2 class="display-md text-on-invert mt-6">{copy.title}</h2>
+      <p class="text-on-invert-secondary mt-4 text-lg">{copy.intro}</p>
+    </header>
+
+    <div class="mt-10 grid gap-6 md:grid-cols-2">
+      <section class="shell shell-invert" aria-labelledby="directory-insights-title">
+        <div class="shell-core h-full p-6 md:p-8">
+          <header class="border-border-invert flex items-start justify-between gap-4 border-b pb-5">
+            <div>
+              <h3 id="directory-insights-title" class={panelHeadingClasses}>
+                {copy.insightsTitle}
+              </h3>
+              <p class={panelNoteClasses}>{copy.insightsNote}</p>
+            </div>
+            <a
+              class="text-on-invert hover:text-accent focus-visible:text-accent shrink-0 text-[0.78rem] font-bold transition-colors"
+              href={viewAllHref}
+            >
+              {copy.viewAllLabel}
+              <Icon name="arrow-up-right" size="xs" class="ml-1 inline-block align-middle" />
+            </a>
+          </header>
+
+          {posts.length > 0 ? (
+            <ul class="list-none">
+              {posts.map((post, index) => (
+                <li class="border-border-invert [&:not(:first-child)]:border-t">
+                  <a class={rowClasses} href={post.href}>
+                    <span class={rowNumberClasses} aria-hidden="true">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <span class="grid gap-1.5">
+                      <span class={rowMetaClasses}>
+                        {post.category} ·{' '}
+                        {post.date.toLocaleDateString('en-IN', { dateStyle: 'medium' })}
+                      </span>
+                      <strong class={rowTitleClasses}>{post.title}</strong>
+                      <span class={rowBodyClasses}>{post.description}</span>
+                    </span>
+                    <span class={rowArrowClasses} aria-hidden="true">
+                      <Icon name="arrow-up-right" size="xs" />
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p class="text-on-invert-secondary mt-5 text-sm">{copy.postsEmpty}</p>
+          )}
+        </div>
+      </section>
+
+      <section class="shell shell-invert" aria-labelledby="directory-questions-title">
+        <div class="shell-core h-full p-6 md:p-8">
+          <header class="border-border-invert border-b pb-5">
+            <h3 id="directory-questions-title" class={panelHeadingClasses}>
+              {copy.questionsTitle}
+            </h3>
+            <p class={panelNoteClasses}>{copy.questionsNote}</p>
+          </header>
+
+          {questions.length > 0 ? (
+            <ul class="list-none">
+              {questions.map((entry, index) => (
+                <li class="border-border-invert [&:not(:first-child)]:border-t">
+                  <a class={rowClasses} href={entry.href}>
+                    <span class={rowNumberClasses} aria-hidden="true">{`Q${index + 1}`}</span>
+                    <span class="grid gap-1.5">
+                      <span class={rowMetaClasses}>From {entry.postTitle}</span>
+                      <strong class={rowTitleClasses}>{entry.question}</strong>
+                    </span>
+                    <span class={rowArrowClasses} aria-hidden="true">
+                      <Icon name="arrow-up-right" size="xs" />
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p class="text-on-invert-secondary mt-5 text-sm">{copy.questionsEmpty}</p>
+          )}
+        </div>
+      </section>
+    </div>
+  </div>
+</section>

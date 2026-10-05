@@ -1,0 +1,114 @@
+---
+/**
+ * MobileContactBar Component
+ *
+ * Fixed bottom bar with the primary contact actions, shown below the
+ * navigation breakpoint (`nav:`, 60rem). Actions are supplied by the caller —
+ * the component carries no copy. The page body gets bottom clearance while the
+ * bar is rendered.
+ *
+ * Stacking contract with the consent banner (`ui/overlay/ConsentBanner`), which
+ * is itself `position: fixed; bottom: 0`. The bar publishes its height as
+ * `--mobile-contact-bar-height` on `:root`; the banner offsets itself above the
+ * bar with `:root:has([data-mobile-contact-bar]) .consent-banner--bottom`. Both
+ * hooks are in the static HTML and the custom property is set from this
+ * component's stylesheet, so the offset applies at first paint with no
+ * JavaScript and no class toggling. The bar is `z-30`, the banner `z-60` and a
+ * dialog `z-70`, so neither the bar nor an open form is ever covered.
+ *
+ * The height is a fixed 3.5rem plus the safe area rather than a measurement,
+ * because the banner's offset has to be known before layout to avoid a visible
+ * jump: `env(safe-area-inset-bottom)` resolves at first paint, `getBoundingClientRect`
+ * would not.
+ */
+import type { HTMLAttributes } from 'astro/types';
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+import type { EnquiryRequestType } from '~/lib/enquiry-cta';
+
+export interface ContactBarAction {
+  label: string;
+  href: string;
+  /** Icon name for non-primary actions */
+  icon: string;
+  /** Analytics hook; the tracking layer reads `data-track` when it lands. */
+  track?: string;
+  /**
+   * Dialog element to open instead of navigating — the `href` stays the no-JS
+   * and no-dialog fallback.
+   */
+  dialog?: string;
+  /** What the action is asking for; the dialog opens on that request. */
+  requestType?: EnquiryRequestType;
+  /** Renders as the filled primary action, taking the remaining width */
+  primary?: boolean;
+  /** `whatsapp` fills the icon square with the vendor green (white glyph) */
+  variant?: 'whatsapp';
+}
+
+interface Props extends HTMLAttributes<'nav'> {
+  actions: ContactBarAction[];
+}
+
+const { actions, class: className, ...attrs } = Astro.props;
+---
+
+<nav
+  class:list={[
+    // The only other element on the page allowed a backdrop filter, because it
+    // is fixed. The hairline replaces the 1px top border so the bar reads as a
+    // machined edge rather than a drawn line.
+    'bg-background/95 fixed inset-x-0 bottom-0 z-30 backdrop-blur-xl nav:hidden shadow-[0_-1px_0_var(--color-border)]',
+    className,
+  ]}
+  aria-label="Quick contact actions"
+  data-mobile-contact-bar
+  {...attrs}
+>
+  <div class="mx-auto flex max-w-6xl items-center gap-2 px-3 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
+    {actions.map((action) =>
+      action.primary ? (
+        <a
+          href={action.href}
+          data-track={action.track}
+          data-dialog-trigger={action.dialog}
+          data-dialog-request-type={action.requestType}
+          class="bg-accent text-accent-foreground hover:bg-accent-hover flex h-11 min-w-0 flex-1 items-center justify-center rounded-full px-5 text-sm font-semibold transition-[background-color,transform] duration-base ease-quint active:scale-[0.97] active:duration-instant [box-shadow:inset_0_1px_1px_rgb(255_255_255/0.35),inset_0_0_0_1px_rgb(16_62_51/0.12)]"
+        >
+          {action.label}
+        </a>
+      ) : (
+        <a
+          href={action.href}
+          data-track={action.track}
+          data-dialog-trigger={action.dialog}
+          data-dialog-request-type={action.requestType}
+          aria-label={action.label}
+          class:list={[
+            'flex size-11 shrink-0 items-center justify-center rounded-full transition-[background-color,color,transform] duration-base ease-quint active:scale-[0.94] active:duration-instant',
+            action.variant === 'whatsapp'
+              ? 'bg-whatsapp text-white hover:bg-whatsapp-hover'
+              : 'text-foreground-secondary hover:bg-secondary hover:text-foreground [box-shadow:inset_0_0_0_1px_var(--color-border)]',
+          ]}
+        >
+          <Icon name={action.icon} size="sm" />
+        </a>
+      )
+    )}
+  </div>
+</nav>
+
+<style is:global>
+  /* The bar's own height (0.5rem top + 2.5rem control + 0.5rem bottom + the
+     safe area), published so the fixed consent banner can sit above it instead
+     of behind it. */
+  :root {
+    --mobile-contact-bar-height: calc(3.5rem + env(safe-area-inset-bottom));
+  }
+
+  /* Clearance for the fixed bar; the bar itself is hidden from nav up. */
+  @media (width < 60rem) {
+    body {
+      padding-bottom: calc(var(--mobile-contact-bar-height) + 0.75rem);
+    }
+  }
+</style>

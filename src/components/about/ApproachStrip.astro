@@ -1,0 +1,49 @@
+---
+/**
+ * ApproachStrip
+ *
+ * The three promises that govern how project information is shared, each under
+ * a hairline rule with its own row mark. Copy arrives from the page.
+ */
+import SectionHeading from '~/components/patterns/SectionHeading.astro';
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  items: Array<{ number: string; title: string; body: string }>;
+}
+
+const { eyebrow, title, items } = Astro.props;
+---
+
+<section
+  id="about-approach"
+  class="bg-background-secondary border-border border-y"
+  aria-labelledby="about-approach-title"
+>
+  <div class="section mx-auto max-w-6xl px-6">
+    <SectionHeading eyebrow={eyebrow} title={title} id="about-approach-title" />
+
+    {/*
+     * Three shells separated by exactly one `--shell-padding` gap, so the
+     * hairline between them is the same weight as the bezels around them and
+     * the row reads as one machined plate divided into three, not three cards.
+     */}
+    <ul class="mt-16 grid gap-[var(--shell-padding)] sm:grid-cols-3">
+      {items.map((item, index) => (
+        <li class:list={['shell', `reveal-${Math.min(index + 1, 5)}`]}>
+          <div class="shell-core h-full p-6">
+            <span
+              class="text-accent-ink font-mono text-[0.72rem] font-medium tracking-[0.16em] tabular-nums"
+              aria-hidden="true"
+            >
+              {item.number}
+            </span>
+            <h3 class="display-xs text-foreground mt-6">{item.title}</h3>
+            <p class="text-foreground-muted mt-3 text-sm leading-relaxed">{item.body}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

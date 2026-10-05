@@ -351,3 +351,12 @@ function afterLoadIdle(callback: () => void): void {
   if (document.readyState === 'complete') run();
   else window.addEventListener('load', run, { once: true });
 }
+
+/**
+ * One `page_not_found` event per 404 render. Fired from `src/pages/404.astro`
+ * on `astro:page-load` (never reached by client-side routing), after
+ * BaseLayout's script has run `gtag('config')`.
+ */
+export function trackNotFound(path: string): void {
+  pushEvent('page_not_found', { page_path: path, page_location: window.location.href });
+}

@@ -1,0 +1,246 @@
+---
+import { PUBLIC_FORMSPREE_FORM_ID } from 'astro:env/client';
+/**
+ * The enquiry form. `id="contact-form"` is the hash target the site-wide "Book a
+ * site visit" CTA scrolls to (`src/lib/enquiry-cta.ts`), so the form carries
+ * `scroll-mt` to clear the sticky header — without it the top of the form lands
+ * under the header, hiding the first field. Scroll margin is not inherited from
+ * an enclosing section, so it has to live on the element that is targeted.
+ */
+import Input from '~/components/ui/form/Input/Input.astro';
+import Select from '~/components/ui/form/Select/Select.astro';
+import Textarea from '~/components/ui/form/Textarea/Textarea.astro';
+import Button from '~/components/ui/form/Button/Button.astro';
+import siteConfig from '~/config/site.config';
+import {
+  ENQUIRY_SUCCESS_MESSAGE,
+  PHONE_CTA_LABEL,
+  PHONE_INPUT_PATTERN,
+  PHONE_INPUT_TITLE,
+  REQUEST_TYPE_OPTIONS,
+  WHATSAPP_CTA_LABEL,
+} from '~/lib/enquiry-cta';
+import { cn } from '~/lib/cn';
+
+interface Props {
+  /** Overrides the env-configured Formspree form (one form per surface). */
+  action?: string;
+  successMessage?: string;
+  class?: string;
+}
+
+const {
+  action = `https://formspree.io/f/${PUBLIC_FORMSPREE_FORM_ID}`,
+  successMessage = ENQUIRY_SUCCESS_MESSAGE,
+  class: className,
+} = Astro.props;
+
+// The failure state has to reach the team without this form: a visitor whose
+// enquiry never landed still has a phone.
+const telHref = siteConfig.phoneE164 ? `tel:${siteConfig.phoneE164}` : undefined;
+---
+
+<form
+  id="contact-form"
+  action={action}
+  method="POST"
+  class={cn('scroll-mt-24 space-y-6', className)}
+  data-success-message={successMessage}
+>
+  <Input label="Name" name="name" type="text" required maxlength="100" autocomplete="name" />
+
+  <Input label="Email" name="email" type="email" required autocomplete="email" />
+
+  <Input
+    label="Phone"
+    name="phone"
+    type="tel"
+    required
+    maxlength="20"
+    inputmode="tel"
+    pattern={PHONE_INPUT_PATTERN}
+    title={PHONE_INPUT_TITLE}
+    autocomplete="tel"
+    hint="We call back during business hours."
+  />
+
+  <!-- Visible, because an untriageable lead is an untriaged lead: without this
+       the sales inbox only sees "New enquiry", whichever CTA the visitor came
+       from. The project page's intent buttons set the same control. -->
+  <Select
+    label="What would you like?"
+    name="request_type"
+    options={REQUEST_TYPE_OPTIONS}
+    hint="Pick the brochure and we will email you the PDF instead of a confirmation."
+  />
+
+  <!-- The commercial point of "Book a site visit". This form is the enquiry
+       surface on the project and contact pages, so the date the buyer asked to
+       visit has to be collectable here too — not only in the dialog. The
+       minimum is set by the script at first interaction because the pages are
+       static and a build-time "today" would freeze the earliest bookable day. -->
+  <div data-visit-date-field>
+    <Input
+      label="Preferred visit date"
+      name="visit_date"
+      type="date"
+      hint="We confirm the slot by phone; weekends are usually the busiest."
+    />
+  </div>
+
+  <Input
+    label="Subject"
+    name="enquiry_subject"
+    type="text"
+    maxlength="200"
+    hint="Optional — the plot size or budget you have in mind."
+  />
+
+  <Textarea label="Message" name="message" maxlength="5000" rows={5} />
+
+  <!-- Formspree reads `subject` as the notification subject; the script composes
+       it from the request type (the static value covers a submission without JS). -->
+  <input type="hidden" name="subject" value="New website enquiry" />
+  <input type="hidden" name="form_type" value="Contact enquiry" />
+
+  <!-- Honeypot field for spam protection -->
+  <div class="hidden" aria-hidden="true">
+    <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" />
+  </div>
+
+  <!-- `text-foreground` is explicit for the same reason the field labels are:
+       this form is rendered on the forest enquiry column of `/contact-us/`, so
+       an inherited colour is paper-on-paper and the success and failure
+       messages — the only feedback the visitor gets — disappear. -->
+  <div id="form-message" class="text-foreground text-sm" role="status" aria-live="polite"></div>
+
+  <!-- The status line says what went wrong; this says where to go instead. A
+       rejected POST is the one failure the visitor cannot retry their way out
+       of, so the two channels that do not depend on this form are one tap away. -->
+  <div
+    data-lead-fallback
+    hidden
+    class="text-foreground space-y-2 rounded-md p-4 text-sm [box-shadow:inset_0_0_0_1px_color-mix(in_oklch,var(--color-destructive)_32%,transparent),inset_0_1px_2px_rgb(0_0_0/0.04)]"
+  >
+    <p class="font-semibold">That did not reach us. Reach the sales desk directly:</p>
+    <ul class="space-y-1">
+      {telHref && siteConfig.phone && (
+        <li>
+          <a href={telHref} data-track="phone" class="underline underline-offset-2">
+            {PHONE_CTA_LABEL}: {siteConfig.phone}
+          </a>
+        </li>
+      )}
+      {siteConfig.whatsapp && (
+        <li>
+          <a
+            href={siteConfig.whatsapp}
+            data-track="whatsapp"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="underline underline-offset-2"
+          >
+            {WHATSAPP_CTA_LABEL}
+          </a>
+        </li>
+      )}
+    </ul>
+  </div>
+
+  <Button type="submit" fullWidth id="submit-button">
+    {' '}
+    Submit{' '}
+  </Button>
+</form>
+
+<script>
+  import { BROCHURE_DOWNLOAD_HREF } from '~/lib/enquiry-cta';
+  import { bindLeadForm, enquirySubject } from '~/lib/leads';
+
+  /** Today as `YYYY-MM-DD` in the visitor's own timezone, not UTC. */
+  function todayIso(): string {
+    const now = new Date();
+    const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+    return local.toISOString().slice(0, 10);
+  }
+
+  /**
+   * The date is required for a site visit and irrelevant for everything else:
+   * a brochure request should not make the visitor pick a day. A date typed by
+   * hand is itself a site-visit request, so it flips the control to match.
+   */
+  function syncVisitDate(field: HTMLInputElement | null, select: HTMLSelectElement | null): void {
+    if (!field) return;
+    const wrapper = field.closest<HTMLElement>('[data-visit-date-field]');
+    const isSiteVisit = (select?.value ?? 'site_visit') === 'site_visit';
+
+    field.min = todayIso();
+    field.required = isSiteVisit;
+    if (wrapper) wrapper.hidden = !isSiteVisit;
+    if (!isSiteVisit) field.value = '';
+  }
+
+  function initContactForm() {
+    const form = document.getElementById('contact-form') as HTMLFormElement | null;
+    const button = document.getElementById('submit-button') as HTMLButtonElement | null;
+    const message = document.getElementById('form-message') as HTMLElement | null;
+    const fallback = form?.querySelector<HTMLElement>('[data-lead-fallback]');
+
+    if (!form || !button || !message) return;
+
+    const requestType = form.querySelector<HTMLSelectElement>('select[name="request_type"]');
+    // Remember what the control starts on, so the reset after a submission
+    // leaves the next visitor on the site's primary request rather than on
+    // whichever option the last one happened to pick.
+    const defaultRequestType = requestType?.value ?? '';
+
+    const visitDate = form.querySelector<HTMLInputElement>('input[name="visit_date"]');
+
+    if (visitDate && requestType) {
+      const sync = () => syncVisitDate(visitDate, requestType);
+      requestType.addEventListener('change', sync);
+      visitDate.addEventListener('input', () => {
+        if (visitDate.value && requestType.value !== 'site_visit') {
+          requestType.value = 'site_visit';
+          sync();
+        }
+      });
+      sync();
+    }
+
+    bindLeadForm({
+      form,
+      button,
+      message,
+      kind: 'contact',
+      submitLabel: 'Submit',
+      // The same subject the dialog composes, so a request triages the same way
+      // whichever surface it arrived on; the visitor's own subject line rides
+      // along after it (the project page's intent buttons fill that one).
+      composeSubject: ({
+        name,
+        requestType: type,
+        visitDate: date,
+        enquirySubject: subjectInput,
+      }) => {
+        const subject = enquirySubject({ name, requestType: type, visitDate: date });
+        return subjectInput ? `${subject} — ${subjectInput}` : subject;
+      },
+      // The brochure email is the one failure the visitor can act on
+      // themselves, so the PDF is offered in the status line.
+      brochureFallback: { href: BROCHURE_DOWNLOAD_HREF, label: 'Download the brochure' },
+      onSuccess: () => {
+        if (fallback) fallback.hidden = true;
+        if (requestType) requestType.value = defaultRequestType;
+        if (visitDate) visitDate.value = '';
+        if (visitDate) syncVisitDate(visitDate, requestType ?? null);
+      },
+      onFailure: () => {
+        if (fallback) fallback.hidden = false;
+      },
+    });
+  }
+
+  initContactForm();
+  document.addEventListener('astro:page-load', initContactForm);
+</script>

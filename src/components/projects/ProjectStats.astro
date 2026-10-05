@@ -1,0 +1,94 @@
+---
+/**
+ * ProjectStats
+ *
+ * The at-a-glance belt under the hero: plot sizes, total plots and the published
+ * approval references. Values arrive from the page (project config), so the
+ * component carries no project copy. A stat with an `href` renders its value as
+ * a link to the official portal where it can be checked.
+ */
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+import { breakableReference } from '~/lib/breakable-reference';
+
+interface Props {
+  stats: Array<{ label: string; value: string; href?: string }>;
+  label?: string;
+  /** Anchor id; the project hero's scroll cue targets it */
+  id?: string;
+}
+
+const { stats, label = 'Tranquill City at a glance', id = 'project-stats' } = Astro.props;
+
+---
+
+{stats.length > 0 && (
+  <section id={id} class="border-border bg-card border-y scroll-mt-24" aria-label={label}>
+    {/*
+      One column below `sm`, two to `md`, four above.
+      The narrow end is not a cosmetic choice: at 320px a two-column split
+      leaves 120px per cell, and `2103/HMDA/SWDL/2026` set in the mono face at
+      the display step is 274px — it can only be broken, twice, with a two-digit
+      orphan somewhere. A single column gives each stat the full 272px, which is
+      the whole number on one line, and it is the same narrow-end adjustment
+      every other multi-panel section on the site already makes.
+    */}
+    <dl class="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-6 py-8 sm:grid-cols-2 sm:gap-px md:grid-cols-4 md:gap-px md:py-10">
+      {stats.map((stat) => (
+        <div class="flex min-w-0 flex-col gap-1.5 pr-4">
+          <dt class="text-foreground-muted text-[0.7rem] font-extrabold tracking-[0.13em] uppercase">
+            {stat.label}
+          </dt>
+          {/*
+            `break-word`, not `anywhere`: `anywhere` also lowers the element's
+            min-content contribution to a single character, which is what let a
+            long value push the grid's implicit track past its container. The
+            `<wbr>` breaks carry the real load; this is only the safety net.
+          */}
+          <dd class="display-xs text-foreground [overflow-wrap:break-word]">
+            {stat.href ? (
+              /*
+               * A value that is a link is a reference the visitor is expected to
+               * check, and it is set in the mono face with `tabular-nums` for
+               * two reasons. Equal advances make it unambiguous to transcribe,
+               * and — the point of it here — the line count of a RERA or HMDA
+               * number no longer depends on the metrics of the display face at
+               * all. Serif and mono measure a 19-character number differently
+               * enough to rewrap it: the project H1 gained a whole line and
+               * each of these `<dd>`s another line when the face swapped to its
+               * fallback, ~194px of reflow on the page a buyer commits life
+               * savings on. Pinning these to the mono face removes the variable
+               * without touching `font-display` or inventing a metric override
+               * for a face whose real metrics could not be verified.
+               */
+              <a
+                class="stat-reference hover:text-accent-ink focus-visible:text-accent-ink inline-flex max-w-full items-baseline gap-1.5 transition-colors"
+                href={stat.href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span class="min-w-0" set:html={breakableReference(stat.value)} />
+                <Icon name="external-link" size="sm" />
+              </a>
+            ) : (
+              stat.value
+            )}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  </section>
+)}
+
+<style>
+  /*
+   * The mono face for a published reference. Declared here rather than as a
+   * `font-mono` utility because `.display-xs` — also a utility, later in
+   * global.css — sets `font-family`, and a same-layer utility cannot out-specify
+   * it without an `!important`. A scoped rule carries the component's own
+   * attribute selector and wins cleanly.
+   */
+  .stat-reference {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+</style>

@@ -1,0 +1,100 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+import { cn } from '~/lib/cn';
+import { generateId } from '../utils';
+import { inputVariants, inputSizeConfig } from './input.variants';
+
+interface Props extends HTMLAttributes<'input'> {
+  label?: string;
+  error?: string;
+  hint?: string;
+  size?: 'sm' | 'md' | 'lg';
+  /** Icon name to display at the start of the input */
+  leadingIcon?: string;
+  /** Icon name to display at the end of the input */
+  trailingIcon?: string;
+}
+
+const {
+  label,
+  error,
+  hint,
+  size = 'md',
+  leadingIcon,
+  trailingIcon,
+  class: className,
+  id,
+  ...attrs
+} = Astro.props;
+
+const inputId = id || generateId('input');
+const config = inputSizeConfig[size];
+
+const inputStyles = cn(
+  inputVariants({ size }),
+  error && 'border-destructive focus-visible:ring-destructive',
+  leadingIcon ? config.leadingPadding : config.baseLeftPadding,
+  trailingIcon ? config.trailingPadding : config.baseRightPadding
+);
+
+const iconStyles = cn(
+  'absolute top-0 flex items-center justify-center h-full pointer-events-none',
+  'text-foreground-muted',
+  config.iconWrapper
+);
+
+// Dynamic icon import
+import Icon from '../../primitives/Icon/Icon.astro';
+---
+
+<div class={cn('space-y-1.5', className)}>
+  {label && (
+    /*
+     * `text-foreground` is explicit, never inherited. The control itself already
+     * paints the light-surface ramp (`bg-background text-foreground` in
+     * inputVariants), so a label that took its colour from the ancestor made the
+     * two halves of one field disagree: drop the form on any dark surface — the
+     * `/contact-us/` enquiry column sits on `bg-surface-invert` — and the field
+     * stayed legible while its label rendered paper-on-paper and vanished
+     * (measured 2026-09-30). The control and its label must be set by the same
+     * decision, so they are set by the same component.
+     */
+    <label for={inputId} class="text-foreground text-sm leading-none font-medium">
+      {label}
+    </label>
+  )}
+
+  <div class="relative">
+    {leadingIcon && (
+      <div class={cn(iconStyles, 'left-0')}>
+        <Icon name={leadingIcon} size="sm" />
+      </div>
+    )}
+
+    <input
+      id={inputId}
+      class={inputStyles}
+      aria-invalid={error ? 'true' : undefined}
+      aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
+      {...attrs}
+    />
+
+    {trailingIcon && (
+      <div class={cn(iconStyles, 'right-0')}>
+        <Icon name={trailingIcon} size="sm" />
+      </div>
+    )}
+  </div>
+
+  {error && (
+    <p id={`${inputId}-error`} class="text-destructive text-sm">
+      {error}
+    </p>
+  )}
+
+  {hint && !error && (
+    <p id={`${inputId}-hint`} class="text-muted-foreground text-sm">
+      {hint}
+    </p>
+  )}
+</div>

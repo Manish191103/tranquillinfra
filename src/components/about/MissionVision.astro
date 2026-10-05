@@ -1,0 +1,42 @@
+---
+/**
+ * MissionVision
+ *
+ * The mission and vision statements side by side, the first flagged as the
+ * primary statement. Copy arrives from the page.
+ */
+import SectionHeading from '~/components/patterns/SectionHeading.astro';
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  cards: Array<{ label: string; title: string; body: string; featured?: boolean }>;
+}
+
+const { eyebrow, title, intro, cards } = Astro.props;
+---
+
+<section class="bg-background" aria-labelledby="about-mission-title">
+  <div class="section mx-auto max-w-6xl px-6">
+    <SectionHeading eyebrow={eyebrow} title={title} intro={intro} id="about-mission-title" />
+
+    <div class="mt-16 grid gap-[var(--shell-padding)] md:grid-cols-2">
+      {cards.map((card) => (
+        /*
+         * The featured card is a deeper shell rather than a left accent bar.
+         * A 4px border on one edge is the single most template-ish thing a card
+         * can do; a wider bezel with a warmer core says "this is the primary
+         * statement" without drawing a stripe down the left of it.
+         */
+        <article class:list={['shell', card.featured && 'shell-featured']}>
+          <div class="shell-core h-full p-6 md:p-8">
+            <p class="eyebrow">{card.label}</p>
+            <h3 class="display-sm text-foreground">{card.title}</h3>
+            <p class="text-foreground-muted mt-4 text-pretty">{card.body}</p>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>

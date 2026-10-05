@@ -9,7 +9,6 @@ import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import mdx from '@astrojs/mdx';
 import partytown from '@astrojs/partytown';
-import icon from 'astro-icon';
 import cloudflare from '@astrojs/cloudflare';
 import compress from 'astro-compress';
 import type { AstroIntegration } from 'astro';
@@ -25,16 +24,31 @@ const whenExternalScripts = (items: (() => AstroIntegration) | (() => AstroInteg
   hasExternalScripts ? (Array.isArray(items) ? items.map((item) => item()) : [items()]) : [];
 
 export default defineConfig({
-  // Type-safe environment. Only the runtime secrets are declared here: the
-  // PUBLIC_* measurement/form values are read through `import.meta.env` (the
-  // Cloudflare adapter loads the wrangler `vars` block into the build env), and
-  // the GA4 property id lives in src/config.yaml. Optional secrets keep the
-  // graceful degradation the site is designed around — a missing Resend key
-  // makes /api/customer-mail answer an honest 502, a missing CAPI token leaves
-  // the pixel working alone — instead of blocking the deploy the way
-  // `secrets.required` would.
+  // Type-safe environment. Runtime secrets are declared with access 'secret';
+  // build-time public values (measurement ids, Formspree form id, consent
+  // flag) are declared as 'client' and inlined by the compiler — the
+  // Cloudflare build loads the wrangler `vars` block into the build env, and
+  // the GA4 property id additionally lives in src/config.yaml. Optional
+  // secrets keep the graceful degradation the site is designed around — a
+  // missing Resend key makes /api/customer-mail answer an honest 502, a
+  // missing CAPI token leaves the pixel working alone — instead of blocking
+  // the deploy the way `secrets.required` would.
   env: {
     schema: {
+      // Site identity / verification, read by src/config/site.config.ts.
+      // SITE_URL also feeds the `site` setting above (process.env fallback).
+      SITE_URL: envField.string({ context: 'server', access: 'public', optional: true }),
+      GOOGLE_SITE_VERIFICATION: envField.string({
+        context: 'server',
+        access: 'public',
+        optional: true,
+      }),
+      BING_SITE_VERIFICATION: envField.string({
+        context: 'server',
+        access: 'public',
+        optional: true,
+      }),
+
       // Customer mail delivery (Resend). RESEND_FROM_EMAIL and CONTACT_TO_EMAIL
       // are values, not credentials, but they stay server-side so they are
       // never inlined into a browser bundle.
@@ -55,6 +69,56 @@ export default defineConfig({
         context: 'server',
         access: 'secret',
         optional: true,
+      }),
+
+      // Build-time public values, read through astro:env/client by
+      // src/config/analytics.config.ts and the GoogleMap component. The
+      // Cloudflare build loads the wrangler `vars` block into the build env.
+      PUBLIC_GA_MEASUREMENT_ID: envField.string({
+        context: 'client',
+        access: 'public',
+        optional: true,
+      }),
+      PUBLIC_GOOGLE_ADS_ID: envField.string({
+        context: 'client',
+        access: 'public',
+        optional: true,
+      }),
+      PUBLIC_GOOGLE_ADS_CONVERSION_LABEL: envField.string({
+        context: 'client',
+        access: 'public',
+        optional: true,
+      }),
+      PUBLIC_META_PIXEL_ID: envField.string({
+        context: 'client',
+        access: 'public',
+        optional: true,
+      }),
+      PUBLIC_GOOGLE_MAPS_API_KEY: envField.string({
+        context: 'client',
+        access: 'public',
+        optional: true,
+        default: '',
+      }),
+      // Consent gating is off for this site (India-only audience; see
+      // AGENTS.md "Measurement"). The flag exists so the ported consent
+      // library degrades to always-allowed instead of gating the map/GA.
+      PUBLIC_CONSENT_ENABLED: envField.boolean({
+        context: 'client',
+        access: 'public',
+        optional: true,
+        default: false,
+      }),
+      // Formspree form id shared by the contact, enquiry-dialog and newsletter
+      // forms. Public by design (it appears in the form markup); required so a
+      // deploy that lost the var fails the build instead of posting leads to a
+      // throwaway form.
+      PUBLIC_FORMSPREE_FORM_ID: envField.string({ context: 'client', access: 'public' }),
+      PUBLIC_PRIVACY_POLICY_URL: envField.string({
+        context: 'client',
+        access: 'public',
+        optional: true,
+        default: '/privacy-policy/',
       }),
     },
   },
@@ -128,24 +192,6 @@ export default defineConfig({
   integrations: [
     sitemap(),
     mdx(),
-    icon({
-      // Local SVG icons (used as <Icon name="file-name" />) live next to the other assets.
-      iconDir: 'src/assets/icons',
-      include: {
-        tabler: ['*'],
-        'flat-color-icons': [
-          'template',
-          'gallery',
-          'approval',
-          'document',
-          'advertising',
-          'currency-exchange',
-          'voice-presentation',
-          'business-contact',
-          'database',
-        ],
-      },
-    }),
 
     ...whenExternalScripts(() =>
       partytown({
@@ -176,22 +222,10 @@ export default defineConfig({
   ],
 
   image: {
-    // Astro's default Sharp service handles local images.
-    //
-    // Most remote CDN images (Unsplash, Cloudinary, Imgix…) are routed by
-    // src/components/common/Image.astro through `unpic`, which rewrites the
-    // URL with CDN-side query parameters and serves it straight from the
-    // provider — Astro never downloads it, so they don't need to be listed.
-    //
-    // `domains` only matters for remote URLs that fall through to Astro's
-    // native <Image /> (i.e. providers Unpic can't detect, like Pixabay).
-    // Listed entries are authorized to be processed by Sharp.
-    // Unsplash is listed so post covers can be rendered as real 1200×626 Open Graph images.
-    domains: ['cdn.pixabay.com', 'images.unsplash.com'],
-
-    // Emit responsive styles for the native <Image layout=…> used by
-    // src/components/common/Image.astro (local images). Utility classes on
-    // each usage still win, since these styles use low-specificity selectors.
+    // Astro's default Sharp service handles local images. Every component in
+    // this repo renders local assets through astro:assets (`Picture` /
+    // `getImage`); there is no remote-CDN image path left, so no `domains`
+    // allow-list is needed.
     responsiveStyles: true,
   },
 
@@ -201,7 +235,8 @@ export default defineConfig({
       rehypePlugins: [responsiveTablesRehypePlugin],
     }),
     shikiConfig: {
-      // Code blocks follow the site theme; see the `.astro-code` rules in tailwind.css.
+      // Code blocks follow the site theme; see the `.astro-code` rules in
+      // src/styles/global.css.
       themes: { light: 'github-light', dark: 'github-dark' },
     },
   },

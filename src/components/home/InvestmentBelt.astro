@@ -1,0 +1,113 @@
+---
+/**
+ * InvestmentBelt
+ *
+ * Paper-toned band that grounds the project in the Patancheru–Sangareddy
+ * industrial belt and lists our disclosure commitments as pills.
+ */
+interface Props {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  /** Trusted, author-authored copy; may carry inline markup such as <strong>. */
+  stat?: string;
+  pillars: string[];
+}
+
+const { eyebrow, title, intro, stat, pillars } = Astro.props;
+---
+
+<section
+  class="home-investment bg-card border-border border-y"
+  aria-labelledby="home-investment-belt-title"
+>
+  <div class="mx-auto max-w-6xl px-6">
+    <header class="max-w-3xl">
+      <p class="eyebrow reveal">{eyebrow}</p>
+      <h2 id="home-investment-belt-title" class="display-md reveal-2">
+        {title}
+      </h2>
+      <p class="text-foreground-muted reveal-3 mt-6 max-w-[52ch] text-lg text-pretty">{intro}</p>
+    </header>
+
+    {/*
+     * The stat and the pillars share one shell. Wrapping them together rather
+     * than styling each separately is what makes the band read as a single
+     * machined plate: the pillars sit inside the same bezel as the prose above
+     * them instead of floating as loose chips on a page-coloured field.
+     */}
+    <div class="home-investment-body shell reveal-4">
+      <div class="shell-core">
+        {stat && <p class="investment-stat" set:html={stat} />}
+
+        {pillars.length > 0 && (
+          <ul class="investment-pillars" aria-label="What we publish and do not">
+            {pillars.map((pillar) => (
+              /*
+               * Each pillar is a well inside the plate — a slightly darker
+               * concave depression, not a bordered chip. The inset shadow is
+               * what sells it as pressed into the surface rather than stuck on.
+               */
+              <li class="investment-pillar">{pillar}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .home-investment {
+    padding-block: var(--space-section-lg);
+  }
+
+  .home-investment-body {
+    margin-top: var(--space-16);
+  }
+
+  .home-investment-body .shell-core {
+    padding: clamp(1.75rem, 3.4vw, 3rem);
+  }
+
+  .investment-stat {
+    max-width: 46rem;
+    margin-bottom: var(--space-8);
+    color: var(--color-foreground-secondary);
+    font-size: 1.125rem;
+    line-height: 1.65;
+    text-wrap: pretty;
+  }
+
+  .investment-stat :global(strong) {
+    color: var(--color-foreground);
+    font-weight: 600;
+  }
+
+  .investment-pillars {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /*
+   * A pressed well rather than a bordered chip: an inset top edge darkens and
+   * an inset bottom edge lightens, which is how a real depression catches
+   * light. No border at all.
+   */
+  .investment-pillar {
+    padding: 0.625rem 1.125rem;
+    border-radius: var(--radius-full);
+    background-color: var(--color-secondary);
+    box-shadow:
+      inset 0 1px 1px rgb(16 62 51 / 8%),
+      inset 0 -1px 0 rgb(255 255 255 / 40%);
+    color: var(--color-secondary-foreground);
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+  }
+</style>

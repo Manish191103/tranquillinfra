@@ -1,0 +1,61 @@
+---
+/**
+ * ProjectAmenities
+ *
+ * The advertised features, grouped by the role they play in the layout. Icons
+ * come from the shared Icon primitive; the copy, groups and icon names arrive
+ * from the content entry.
+ */
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+import SectionHeading from '~/components/patterns/SectionHeading.astro';
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  note: string;
+  groups: Array<{
+    title: string;
+    items: Array<{ name: string; description: string; icon: string }>;
+  }>;
+}
+
+const { eyebrow, title, intro, note, groups } = Astro.props;
+---
+
+<!--
+  The id is what the layout plan's figures table points at. The advertised road
+  widths, park areas and the rest of the layout's features are published here and
+  only here, so the plan section names this section instead of copying a second
+  set of numbers that could drift out of step with these.
+-->
+<section
+  id="project-amenities"
+  class="section mx-auto max-w-6xl scroll-mt-24 px-6"
+  aria-labelledby="project-amenities-title"
+>
+  <SectionHeading eyebrow={eyebrow} title={title} intro={intro} id="project-amenities-title" />
+
+  <div class="mt-10 grid gap-10 md:grid-cols-3 md:gap-8">
+    {groups.map((group) => (
+      <section class="border-border border-t pt-6">
+        <h3 class="display-xs">{group.title}</h3>
+        <ul class="mt-5 space-y-4">
+          {group.items.map((item) => (
+            <li class="flex gap-3">
+              <span class="bg-secondary text-secondary-foreground mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
+                <Icon name={item.icon} size="sm" />
+              </span>
+              <span class="flex flex-col gap-0.5">
+                <strong class="text-foreground text-sm font-bold">{item.name}</strong>
+                <span class="text-foreground-muted text-sm">{item.description}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </div>
+
+  <p class="text-foreground-subtle mt-10 max-w-[64rem] text-sm">{note}</p>
+</section>

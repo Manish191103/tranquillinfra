@@ -1,0 +1,102 @@
+---
+/**
+ * SiteHeader
+ *
+ * Site chrome: the announcement bar plus the design-system header wired to the
+ * site's config — navigation from `nav.config.ts`, contact actions from
+ * `site.config.ts`.
+ */
+import Header, { type HeaderAction } from '~/components/ui/navigation/Header.astro';
+import AnnouncementBar, { type AnnouncementMessage } from './AnnouncementBar.astro';
+import siteConfig from '~/config/site.config';
+import projectConfig from '~/config/project.config';
+import {
+  enquiryCtaTarget,
+  PHONE_CTA_LABEL,
+  SITE_VISIT_CTA_LABEL,
+  WHATSAPP_CTA_LABEL,
+} from '~/lib/enquiry-cta';
+
+// Page-aware "Book a site visit" target: the dialog on pages that carry it,
+// the on-page enquiry form on the pages that render one instead.
+const enquiryCta = enquiryCtaTarget(Astro.url.pathname);
+
+// The published facts come from `project.config.ts`, not from copy typed here:
+// the RERA and HMDA numbers and the plot range are statutory, and a bar that
+// quotes an old number is worse than no bar. Every message is a link with its
+// own destination, which is why the bar no longer rotates them.
+const announcements: AnnouncementMessage[] = [
+  {
+    text: `Book a site visit at ${projectConfig.name} — pick the day that suits you.`,
+    href: enquiryCta.href,
+    dialog: enquiryCta.dialog,
+    requestType: 'site_visit',
+    track: 'site_visit',
+  },
+  {
+    text: `Villa plots of ${projectConfig.plotSizes} in ${projectConfig.locality.village}.`,
+    href: '/projects/tranquill-city/',
+  },
+  {
+    text: `Verify RERA ${projectConfig.approvals.rera.number} and HMDA ${projectConfig.approvals.hmda.number} yourself.`,
+    href: '/projects/tranquill-city/',
+  },
+  {
+    text: 'Request the brochure and the latest project details.',
+    href: '/projects/tranquill-city/#project-brochure',
+    track: 'brochure',
+  },
+];
+
+// Quick-contact actions. Below the `nav:` breakpoint they collapse so the logo
+// and CTA keep the row — the mobile contact bar carries call/WhatsApp there.
+const phoneHref = siteConfig.phoneE164 ? `tel:${siteConfig.phoneE164}` : undefined;
+
+const actions: HeaderAction[] = [];
+
+if (phoneHref && siteConfig.phone) {
+  actions.push({
+    icon: 'phone',
+    href: phoneHref,
+    label: PHONE_CTA_LABEL,
+    iconOnly: true,
+    hideOnMobile: true,
+    track: 'phone',
+  });
+}
+
+if (siteConfig.whatsapp) {
+  actions.push({
+    icon: 'brand-whatsapp',
+    href: siteConfig.whatsapp,
+    label: WHATSAPP_CTA_LABEL,
+    iconOnly: true,
+    variant: 'whatsapp',
+    hideOnMobile: true,
+    track: 'whatsapp',
+  });
+}
+---
+
+<AnnouncementBar messages={announcements} />
+
+<Header
+  position="sticky"
+  size="lg"
+  showActiveState
+  showCta
+  cta={{
+    label: SITE_VISIT_CTA_LABEL,
+    href: enquiryCta.href,
+    track: 'site_visit',
+    dialog: enquiryCta.dialog,
+    requestType: 'site_visit',
+  }}
+  menuIntro={{ kicker: 'Tranquill Infra', note: 'Thoughtful places, built for living.' }}
+  menuContact={
+    phoneHref && siteConfig.phone
+      ? { label: PHONE_CTA_LABEL, value: siteConfig.phone, href: phoneHref, track: 'phone' }
+      : undefined
+  }
+  actions={actions}
+/>

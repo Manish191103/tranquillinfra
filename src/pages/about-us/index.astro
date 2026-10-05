@@ -1,0 +1,188 @@
+---
+/**
+ * About us
+ *
+ * Eight sections built from the approved copy: the content entry supplies the
+ * hero prose (its `#` heading is the page's H1) inside the full-viewport
+ * entrance view, and the section components below carry everything else,
+ * presentation-only. The facts section re-reads
+ * the published statics from `project.config.ts` and the NAP from
+ * `site.config.ts` so this page can never drift from the project page; the FAQ
+ * answers restate those same published details and are emitted as FAQPage —
+ * for machine understanding and AI answer extraction, not for a rich result,
+ * since Google withdrew the FAQ rich result for all publishers. Those answers
+ * are disclosure-first and must stay that way: FAQPage must never carry
+ * promotional copy.
+ */
+import { getEntry, render } from 'astro:content';
+import PageLayout from '~/layouts/PageLayout.astro';
+import Breadcrumbs from '~/components/seo/Breadcrumbs.astro';
+import JsonLd from '~/components/seo/JsonLd.astro';
+import { createFAQSchema } from '~/lib/schema';
+import AboutHero from '~/components/about/AboutHero.astro';
+import ApproachStrip from '~/components/about/ApproachStrip.astro';
+import MissionVision from '~/components/about/MissionVision.astro';
+import ProcessSection from '~/components/about/ProcessSection.astro';
+import ValuesSection from '~/components/about/ValuesSection.astro';
+import DifferenceSection from '~/components/about/DifferenceSection.astro';
+import Prose from '~/components/patterns/Prose.astro';
+import FactsSection from '~/components/patterns/FactsSection.astro';
+import FaqSection from '~/components/patterns/FaqSection.astro';
+import HomeCta from '~/components/home/HomeCta.astro';
+import {
+  approachItems,
+  companyFaqs,
+  differenceItems,
+  missionVisionCards,
+  processSteps,
+  values,
+} from '~/config/about.config';
+import { projectIdentityFacts } from '~/config/project.config';
+import siteConfig from '~/config/site.config';
+import aboutHero from '~/assets/images/projects/tranquill-city/about-hero.webp';
+
+const about = await getEntry('pages', 'about-us');
+if (!about) {
+  throw new Error('Missing required pages entry "about-us".');
+}
+const { Content } = await render(about);
+
+// The hero renders the page's single H1 and lede from frontmatter, so the body
+// below the fold never repeats them. Same contract as the homepage.
+if (!about.data.heroTitle) {
+  throw new Error('The "about-us" pages entry needs a heroTitle for the hero heading.');
+}
+
+const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'About us' }];
+
+const publishedFacts = projectIdentityFacts(siteConfig.author);
+---
+
+<PageLayout title="About Tranquill Infra" description={about.data.description}>
+  <AboutHero
+    title={about.data.heroTitle ?? 'About Tranquill Infra'}
+    intro={about.data.heroIntro ?? about.data.description}
+    eyebrow="About Tranquill Infra"
+    hero={{
+      image: aboutHero,
+      alt: 'Illustrative golden-hour view of the planned Tranquill City entrance, with the lit canopy over the driveway, the illuminated sign wall and villas along the street beyond',
+      caption: 'Planned entrance · Rudraram, near Patancheru',
+    }}
+    note={{
+      label: 'Our premium project',
+      title: 'Tranquill City',
+      body: 'Premium villa plots shaped around everyday life.',
+    }}
+  >
+    <Breadcrumbs slot="breadcrumbs" items={breadcrumbs} tone="invert" />
+  </AboutHero>
+
+  {/*
+    The rest of the entry's body. The hero takes the heading and the lede; the
+    project detail, the published trust line and the closing links belong in the
+    page — a hero plate is a scrim-sized object and cannot hold an article
+    (measured 2026-09-30: the last sentence was clipped at the fold).
+  */}
+  <section
+    id="about-story"
+    class="section scroll-mt-24 bg-background"
+    aria-labelledby="about-story-title"
+  >
+    <div class="mx-auto max-w-6xl px-6">
+      <div class="grid gap-10 lg:grid-cols-[minmax(0,0.6fr)_minmax(0,1fr)] lg:gap-16">
+        <div class="lg:sticky lg:top-28 lg:self-start">
+          <p class="eyebrow reveal">The detail</p>
+          <h2 id="about-story-title" class="display-md reveal-2 mt-6">
+            What we publish, and what we hold back
+          </h2>
+          <p class="text-foreground-muted reveal-3 mt-6 max-w-[38ch] text-pretty">
+            The project, the approval references, and the two figures we would rather the team
+            confirm than print.
+          </p>
+        </div>
+
+        <div class="reveal-4">
+          <Prose>
+            <Content />
+          </Prose>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <ApproachStrip
+    eyebrow="Our approach"
+    title="Useful information should arrive before the sales pitch."
+    items={approachItems}
+  />
+
+  <MissionVision
+    eyebrow="Why we exist"
+    title="A clearer standard for plotted development"
+    intro="We are building a company where the quality of the place and the clarity of the information support each other."
+    cards={missionVisionCards}
+  />
+
+  <ProcessSection
+    eyebrow="How we work"
+    title="The buyer should leave with better questions."
+    intro="A good enquiry is not a rushed yes. It is a clearer next step."
+    steps={processSteps}
+    guide={{
+      eyebrow: 'A useful starting point',
+      title: 'How to verify a plot before you buy in Hyderabad',
+      body: 'Our developer-neutral guide turns the first conversation into a practical document checklist.',
+      href: '/blog/verify-plot-hyderabad/',
+      linkLabel: 'Read the guide',
+    }}
+  />
+
+  <ValuesSection
+    eyebrow="The standard behind the work"
+    title="Quiet values, visible in the details."
+    intro="The way we work should be noticeable in the plans, the conversations, and the follow-through."
+    imageAlt="Illustrative dusk render of an internal layout road in the planned community, annotated with the five infrastructure features: street lighting across the internal layout roads, individual water access points, rainwater harvesting, the underground drainage system concealed within the layout, and 24/7 security"
+    feature={{
+      eyebrow: 'What we keep close',
+      title: 'Confidence starts with clear information.',
+      body: 'From the first conversation to the documents that support a decision, we focus on making ownership feel more straightforward.',
+    }}
+    values={values}
+  />
+
+  <DifferenceSection
+    eyebrow="The Tranquill difference"
+    title="What you can expect from us"
+    items={differenceItems}
+  />
+
+  <FactsSection
+    id="about-facts"
+    eyebrow="Published details"
+    title="The details a buyer asks for first."
+    intro="Project type, plot sizes, approvals and location are published here and on the project page. The documents behind them — approval letter, layout plan, title information — are shared on request."
+    facts={publishedFacts}
+  />
+
+  <FaqSection
+    id="about-faq"
+    eyebrow="Common questions"
+    title="Questions we are asked about the company."
+    intro="Straight answers about who we are, where to find us and how a conversation with the team usually goes."
+    items={companyFaqs}
+  />
+
+  <HomeCta
+    title="Talk to the team."
+    body="Ask for current availability, pricing, or a site visit in Rudraram — the team walks you through the documents behind the published details."
+    href="/contact-us/"
+    label="Book a site visit"
+    track="site_visit"
+    dialog="enquiry-dialog"
+  />
+
+  {/* The RealEstateAgent node is not emitted here: SEO.astro already ships it
+      on every page, and this page used to emit a second byte-identical copy of
+      the same @id in the same document. */}
+  <JsonLd schema={createFAQSchema(companyFaqs)} />
+</PageLayout>

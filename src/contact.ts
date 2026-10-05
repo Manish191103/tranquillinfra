@@ -7,7 +7,7 @@
  * a value typed anywhere else is a second copy waiting to drift.
  *
  * The RERA and HMDA numbers are statutory: they also appear in the prose of
- * `src/data/project/tranquill-city.md` (the FAQ answers quote them in
+ * `src/content/projects/tranquill-city.md` (the FAQ answers quote them in
  * sentences that cannot interpolate a module value). When a number changes,
  * update both — the prose quote is verified content, not a duplicate source.
  */

@@ -1,0 +1,302 @@
+---
+/**
+ * Blog index — Insights
+ *
+ * Posts come from the `blog` collection (drafts excluded by `getPublishedPosts`)
+ * and paginate six to a page: `/blog/` is page one, later pages live at
+ * `/blog/2/` and so on. The entry carrying `featured: true` leads page one as a
+ * full-width card; every other card lists its category, reading time and date.
+ * The category chips filter what is on the page in place and are purely
+ * progressive enhancement — with JavaScript off the whole list stays visible.
+ * The page closes on the newsletter signup, with the RSS feed for readers who
+ * prefer a feed.
+ */
+import type { GetStaticPaths } from 'astro';
+import PageLayout from '~/layouts/PageLayout.astro';
+import Breadcrumbs from '~/components/seo/Breadcrumbs.astro';
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+import Pagination from '~/components/ui/data-display/Pagination/Pagination.astro';
+import NewsletterForm from '~/components/patterns/NewsletterForm.astro';
+import Button from '~/components/ui/form/Button/Button.astro';
+import JsonLd from '~/components/seo/JsonLd.astro';
+import { canonicalUrl } from '~/lib/canonical';
+import siteConfig from '~/config/site.config';
+import { createItemListSchema } from '~/lib/schema';
+import { getPublishedPosts, getReadingMinutes, BLOG_PAGE_SIZE } from '~/lib/blog';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const posts = await getPublishedPosts();
+  return paginate(posts, { pageSize: BLOG_PAGE_SIZE });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+const posts = page.data;
+const featured = page.currentPage === 1 ? posts.find((post) => post.data.featured) : undefined;
+const rest = featured ? posts.filter((post) => post !== featured) : posts;
+const categories = [...new Set(posts.map((post) => post.data.category))].sort();
+const dateFormatter = new Intl.DateTimeFormat('en', { dateStyle: 'medium' });
+
+// The archive's own listing. `createItemListSchema` re-sorts the items into
+// date order, so the schema describes the collection of posts rather than the
+// page's visual layout: `featured` leads page one as a promotion card, but it
+// is not the newest post and the collection's real order is still newest-first.
+// Listing them in the template's order and letting the schema sort is what keeps
+// the declared `itemListOrder` truthful at position 1. The dates travel with the
+// items so it can do that rather than asserting an order.
+const itemListSchema = createItemListSchema(
+  [...(featured ? [featured] : []), ...rest].map((post) => ({
+    name: post.data.title,
+    url: canonicalUrl(`/blog/${post.id}/`, siteConfig.url),
+    date: post.data.publishedAt,
+  })),
+  page.currentPage > 1 ? `Insights — page ${page.currentPage}` : 'Insights'
+);
+---
+
+<PageLayout
+  title={
+    page.currentPage > 1
+      ? `Insights: Plot Buying Guides — Page ${page.currentPage}`
+      : 'Insights: Plot Buying Guides & Project Updates'
+  }
+  description="Guides on plot buying, approvals, registration and verification in Telangana, plus Tranquill City project updates."
+>
+  <div class="mx-auto max-w-6xl px-6 pt-8">
+    <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Insights' }]} />
+  </div>
+
+  <section class="mx-auto max-w-6xl px-6 pt-10 pb-16 md:pb-24">
+    <h1 class="display-xl">Insights: plot buying guides &amp; project updates</h1>
+    <p class="text-foreground-muted mt-4 max-w-2xl text-lg">
+      Guides, notes and project updates from the Tranquill Infra team — published as the details are
+      reviewed.
+    </p>
+    <JsonLd schema={itemListSchema} />
+
+    {posts.length > 0 ? (
+      <>
+        {categories.length > 1 && (
+          <div class="mt-8" data-blog-filter hidden>
+            <div
+              class="flex flex-wrap items-center gap-2"
+              role="group"
+              aria-label="Filter posts by category"
+            >
+              <button
+                type="button"
+                class="border-border bg-card hover:border-border-strong aria-pressed:bg-foreground aria-pressed:text-background aria-pressed:border-foreground inline-flex items-center rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors"
+                data-blog-filter-button="all"
+                aria-pressed="true"
+              >
+                All posts
+              </button>
+              {categories.map((category) => (
+                <button
+                  type="button"
+                  class="border-border bg-card hover:border-border-strong aria-pressed:bg-foreground aria-pressed:text-background aria-pressed:border-foreground inline-flex items-center rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors"
+                  data-blog-filter-button={category}
+                  aria-pressed="false"
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+            <p
+              class="text-foreground-subtle mt-3 text-sm"
+              data-blog-filter-status
+              aria-live="polite"
+            />
+          </div>
+        )}
+
+        <div class="mt-14" data-blog-posts>
+          {featured && (
+            <article
+              class="shell shell-featured"
+              data-blog-post
+              data-category={featured.data.category}
+            >
+              <div class="shell-core p-6 md:p-8">
+                <p class="eyebrow">Featured · {featured.data.category}</p>
+                <h2 class="display-md">
+                  <a class="hover:text-accent-ink transition-colors" href={`/blog/${featured.id}/`}>
+                    {featured.data.title}
+                  </a>
+                </h2>
+                <p class="text-foreground-muted mt-4 max-w-[46rem] text-lg text-pretty">
+                  {featured.data.description}
+                </p>
+                <div class="border-border mt-8 flex flex-wrap items-center gap-x-4 gap-y-2 border-t pt-5 text-sm">
+                  <time datetime={featured.data.publishedAt.toISOString().slice(0, 10)}>
+                    {dateFormatter.format(featured.data.publishedAt)}
+                  </time>
+                  <span class="text-foreground-subtle">{getReadingMinutes(featured)} min read</span>
+                  <span class="text-foreground-subtle">{featured.data.author}</span>
+                  <a
+                    class="text-foreground hover:text-accent-ink ml-auto inline-flex items-center gap-1 font-bold transition-colors"
+                    href={`/blog/${featured.id}/`}
+                  >
+                    Read the guide
+                    <Icon name="arrow-right" size="sm" />
+                  </a>
+                </div>
+              </div>
+            </article>
+          )}
+
+          {rest.length > 0 && (
+            <ul
+              class:list={[
+                'grid gap-[var(--shell-padding)] md:grid-cols-2',
+                featured && 'mt-[calc(var(--shell-padding)*3)]',
+              ]}
+            >
+              {rest.map((post) => {
+                const href = `/blog/${post.id}/`;
+                return (
+                  <li class="shell lift" data-blog-post data-category={post.data.category}>
+                    <article class="shell-core flex h-full flex-col p-6 md:p-7">
+                      <p class="eyebrow">{post.data.category}</p>
+                      <h2 class="display-sm">
+                        <a class="hover:text-accent-ink transition-colors" href={href}>
+                          {post.data.title}
+                        </a>
+                      </h2>
+                      <p class="text-foreground-muted mt-3 text-sm">{post.data.description}</p>
+                      <div class="border-border mt-auto flex items-center justify-between gap-4 border-t pt-4 text-sm">
+                        <span class="text-foreground-muted flex flex-wrap items-center gap-x-2">
+                          <time datetime={post.data.publishedAt.toISOString().slice(0, 10)}>
+                            {dateFormatter.format(post.data.publishedAt)}
+                          </time>
+                          <span aria-hidden="true">·</span>
+                          <span>{getReadingMinutes(post)} min read</span>
+                        </span>
+                        <a
+                          class="text-foreground hover:text-accent-ink inline-flex items-center gap-1 font-bold transition-colors"
+                          href={href}
+                          aria-label={`Read: ${post.data.title}`}
+                        >
+                          Read
+                          <Icon name="arrow-right" size="sm" />
+                        </a>
+                      </div>
+                    </article>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
+        {page.lastPage > 1 && (
+          <Pagination
+            currentPage={page.currentPage}
+            totalPages={page.lastPage}
+            pageHref={(number) => (number === 1 ? '/blog/' : `/blog/${number}/`)}
+            class="mt-12 justify-center"
+          />
+        )}
+      </>
+    ) : (
+      <p class="text-foreground-muted mt-14">No posts published yet.</p>
+    )}
+  </section>
+
+  <section
+    class="border-border bg-background-secondary border-y"
+    aria-labelledby="insights-subscribe-title"
+  >
+    <div class="section mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:items-center lg:gap-16">
+      <div>
+        <h2 id="insights-subscribe-title" class="display-md">
+          New guides, as they are published.
+        </h2>
+        <p class="text-foreground-muted mt-4 max-w-[42rem] text-pretty">
+          Occasional notes on plot buying, verification and the project as details are reviewed — no
+          sales pressure. Prefer a feed reader?
+          <a class="text-accent-ink font-bold hover:underline" href="/rss.xml">
+            Subscribe via RSS
+          </a>
+          .
+        </p>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <Button
+            href="/contact-us/"
+            data-track="site_visit"
+            data-dialog-trigger="enquiry-dialog"
+            class="rounded-sm"
+          >
+            Book a site visit
+          </Button>
+          <Button href="/projects/tranquill-city/" variant="ctaOutline" class="cta">
+            <span class="cta-label">Explore Tranquill City</span>
+            <span class="cta-icon" aria-hidden="true">
+              <Icon name="arrow-right" size="sm" />
+            </span>
+          </Button>
+        </div>
+      </div>
+
+      <div class="shell self-start">
+        <div class="shell-core p-6 md:p-7">
+          <NewsletterForm />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    /*
+     * Blog category chips.
+     *
+     * Filters the posts already on this page and announces the result. Purely
+     * progressive enhancement: without JavaScript the chips stay hidden and every
+     * post shows. `astro:page-load` covers the initial load as well as every
+     * client-side navigation, and is the only hook used — calling this directly
+     * as well would bind each chip's listener twice on the first render.
+     */
+    function initBlogFilters(): void {
+      const filter = document.querySelector<HTMLElement>('[data-blog-filter]');
+      const posts = Array.from(document.querySelectorAll<HTMLElement>('[data-blog-post]'));
+
+      if (!filter || posts.length === 0) return;
+
+      const buttons = Array.from(
+        filter.querySelectorAll<HTMLButtonElement>('[data-blog-filter-button]')
+      );
+      const status = filter.querySelector<HTMLElement>('[data-blog-filter-status]');
+
+      filter.hidden = false;
+
+      const applyFilter = (category: string | undefined) => {
+        let visible = 0;
+
+        posts.forEach((post) => {
+          const matches = !category || post.dataset.category === category;
+          post.hidden = !matches;
+          if (matches) visible += 1;
+        });
+
+        buttons.forEach((button) => {
+          const isActive = (button.dataset.blogFilterButton ?? 'all') === (category ?? 'all');
+          button.setAttribute('aria-pressed', String(isActive));
+        });
+
+        if (status) {
+          status.textContent = category
+            ? `Showing ${visible} of ${posts.length} posts in ${category}.`
+            : `Showing all ${posts.length} posts.`;
+        }
+      };
+
+      buttons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const value = button.dataset.blogFilterButton;
+          applyFilter(!value || value === 'all' ? undefined : value);
+        });
+      });
+    }
+
+    document.addEventListener('astro:page-load', initBlogFilters);
+  </script>
+</PageLayout>

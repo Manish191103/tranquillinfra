@@ -1,0 +1,610 @@
+---
+/**
+ * Header Component
+ * Flexible navigation header with variant-based configuration
+ *
+ * Variants:
+ * - layout: 'default' | 'centered' | 'minimal'
+ * - position: 'fixed' | 'sticky' | 'static'
+ * - size: 'sm' | 'md' | 'lg'
+ * - variant: 'default' | 'solid' | 'transparent'
+ * - colorScheme: 'default' | 'invert' (use 'invert' for dark backgrounds)
+ * - shape: 'bar' | 'floating' (use 'floating' for capsule header)
+ *
+ * Features:
+ * - Dynamic navigation from nav.config.ts (default) or custom nav prop
+ * - Optional CTA button with customization
+ * - Mobile menu with Escape key support
+ * - GitHub/action buttons
+ * - Full slot support for customization
+ * - Inverted color scheme for use on dark/image backgrounds
+ * - Floating capsule shape with scroll-reactive bg + color flip
+ */
+import type { HTMLAttributes } from 'astro/types';
+import { cn } from '~/lib/cn';
+import { navItems as siteNavItems } from '~/config/nav.config';
+import { headerVariants, headerInnerVariants } from './header.variants';
+import Button from '~/components/ui/form/Button/Button.astro';
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+import Logo from '~/components/ui/marketing/Logo/Logo.astro';
+import { SITE_VISIT_CTA_LABEL, type EnquiryRequestType } from '~/lib/enquiry-cta';
+
+export interface NavItem {
+  label: string;
+  href: string;
+}
+
+export interface HeaderAction {
+  icon: string;
+  href: string;
+  label: string;
+  iconOnly?: boolean;
+  target?: string;
+  /** Button variant override (default `ghost`) */
+  variant?: 'primary' | 'secondary' | 'whatsapp' | 'outline' | 'ghost' | 'link' | 'destructive';
+  /** Hidden below the `nav:` breakpoint — pages repeat these actions elsewhere */
+  hideOnMobile?: boolean;
+  /** Analytics hook; the tracking layer reads `data-track` when it lands. */
+  track?: string;
+}
+
+interface Props extends HTMLAttributes<'header'> {
+  /** Layout style: default (logo left, nav right), centered (logo center), minimal (logo + cta only) */
+  layout?: 'default' | 'centered' | 'minimal';
+  /** Position behavior */
+  position?: 'fixed' | 'sticky' | 'static';
+  /** Header height */
+  size?: 'sm' | 'md' | 'lg';
+  /** Background variant */
+  variant?: 'default' | 'solid' | 'transparent';
+  /** Color scheme for text/icons - use 'invert' for dark backgrounds */
+  colorScheme?: 'default' | 'invert';
+  /** Shape: 'bar' (full-width, default) or 'floating' (centered capsule) */
+  shape?: 'bar' | 'floating';
+  /** Override default navigation (replaces getNavRoutes()) */
+  nav?: NavItem[];
+  /** Additional navigation items (e.g., #features for landing pages) */
+  extraNav?: NavItem[];
+  /** Show CTA button */
+  showCta?: boolean;
+  /** CTA button configuration (rendered in the header row and the mobile panel) */
+  cta?: {
+    label?: string;
+    href?: string;
+    track?: string;
+    dialog?: string;
+    /** What the CTA is asking for; the dialog opens on that request. */
+    requestType?: EnquiryRequestType;
+  };
+  /** Action buttons (GitHub, etc.) */
+  actions?: HeaderAction[];
+  /** Mobile panel intro block (kicker + display note) */
+  menuIntro?: { kicker: string; note: string };
+  /** Mobile panel contact row, rendered above the CTA */
+  menuContact?: { label: string; value: string; href: string; track?: string };
+  /** Show mobile menu (default: true) */
+  showMobileMenu?: boolean;
+  /** Show active state for current page (default: true) */
+  showActiveState?: boolean;
+  /** Logo text override */
+  logoText?: string;
+  /** Hide logo entirely */
+  hideLogo?: boolean;
+  /** Show language switcher */
+  showLanguageSwitcher?: boolean;
+}
+
+const {
+  layout = 'default',
+  position = 'sticky',
+  size = 'md',
+  variant = 'default',
+  colorScheme = 'default',
+  shape = 'bar',
+  nav,
+  extraNav = [],
+  showCta = false,
+  cta = { label: SITE_VISIT_CTA_LABEL, href: '/contact-us/', track: 'site_visit' },
+  actions = [],
+  menuIntro,
+  menuContact,
+  showMobileMenu = true,
+  showActiveState = true,
+  logoText,
+  hideLogo = false,
+  class: className,
+  ...attrs
+} = Astro.props;
+
+// Shape + color scheme helpers
+const isFloating = shape === 'floating';
+const isInvert = colorScheme === 'invert';
+
+// Get navigation items
+const navItems: NavItem[] = nav || [...extraNav, ...siteNavItems];
+
+// Current path for active state
+const currentPath = Astro.url.pathname;
+
+// Check if we're on the landing page
+const isLandingPage = currentPath === '/';
+
+// Process CTA href for landing page anchor links
+const ctaHref = cta.href?.startsWith('#') && !isLandingPage ? `/${cta.href}` : cta.href;
+
+// Check slots
+const hasLogoSlot = Astro.slots.has('logo');
+const hasNavSlot = Astro.slots.has('nav');
+const hasActionsSlot = Astro.slots.has('actions');
+const hasMobileMenuSlot = Astro.slots.has('mobile-menu');
+
+// Compute header classes
+const headerClasses = cn(
+  headerVariants({ position, variant, shape }),
+  isInvert && !isFloating && 'invert-section',
+  className
+);
+
+// Compute inner container classes
+const innerClasses = headerInnerVariants({ size, shape });
+
+// Check if a nav item is active
+function isActive(href: string): boolean {
+  if (!showActiveState) return false;
+  if (href.startsWith('#')) return false;
+  return currentPath === href || currentPath.startsWith(href + '/');
+}
+
+// Generate unique ID for this header instance
+const menuId = `mobile-menu-${Math.random().toString(36).slice(2, 9)}`;
+const buttonId = `${menuId}-button`;
+---
+
+<header
+  class={headerClasses}
+  data-menu-id={menuId}
+  data-button-id={buttonId}
+  data-header-shape={shape}
+  data-header-variant={variant}
+  data-header-color-scheme={colorScheme}
+  {...attrs}
+>
+  <div class={innerClasses}>
+    {/* Logo */}
+    {!hideLogo &&
+      (hasLogoSlot ? (
+        <slot name="logo" />
+      ) : (
+        <a href="/" class="flex min-w-0 items-center gap-2">
+          <Logo size={size} loading="eager" />
+          {logoText && (
+            <span
+              class={cn(
+                'display-xs font-semibold',
+                isFloating ? 'hdr-logo-text' : isInvert ? 'text-on-invert' : 'text-brand-500'
+              )}
+            >
+              {logoText}
+            </span>
+          )}
+        </a>
+      ))}
+
+    {/* Desktop Navigation */}
+    {layout !== 'minimal' &&
+      (hasNavSlot ? (
+        <nav class="hidden items-center gap-1 nav:flex" aria-label="Main navigation">
+          <slot name="nav" />
+        </nav>
+      ) : (
+        <nav class="hidden items-center gap-1 nav:flex" aria-label="Main navigation">
+          {navItems.map(({ label, href }) => (
+            <a
+              href={href.startsWith('#') && !isLandingPage ? `/${href}` : href}
+              class={cn(
+                'nav-link relative rounded-full px-3 py-2 text-sm',
+                // Colour and weight only. `transition-all` was making the nav
+                // link animate its own layout box on every hover, which shows
+                // up as a faint reflow flicker in the header.
+                'transition-[color,opacity] duration-fast ease-quart',
+                isFloating && 'hdr-invert-text',
+                isFloating
+                  ? isActive(href)
+                    ? 'hdr-nav-active font-semibold'
+                    : 'font-medium opacity-80 hover:opacity-100'
+                  : isActive(href)
+                    ? 'nav-link-active text-foreground bg-secondary font-semibold'
+                    : 'nav-link-inactive text-foreground-muted hover:text-foreground hover:bg-secondary/70 font-medium'
+              )}
+              aria-current={isActive(href) ? 'page' : undefined}
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
+      ))}
+
+    {/* Actions Area */}
+    <div class="flex items-center gap-2">
+      {hasActionsSlot ? (
+        <slot name="actions" />
+      ) : (
+        <>
+          {actions.length > 0 && (
+            <div
+              class={cn(
+                'flex items-center gap-2',
+                actions.every((action) => action.hideOnMobile) && 'hidden nav:flex'
+              )}
+              role="group"
+              aria-label="Quick contact"
+            >
+              {actions.map((action) => (
+                <Button
+                  variant={action.variant ?? 'ghost'}
+                  size="sm"
+                  icon={action.iconOnly}
+                  href={action.href}
+                  target={action.target}
+                  aria-label={action.label}
+                  data-track={action.track}
+                  class={cn(
+                    'rounded-sm',
+                    isFloating ? 'hdr-invert-text' : undefined,
+                    action.hideOnMobile && 'hidden nav:inline-flex'
+                  )}
+                >
+                  <Icon name={action.icon} size="sm" />
+                  {!action.iconOnly && action.label}
+                </Button>
+              ))}
+            </div>
+          )}
+
+          {showCta && (
+            <Button
+              size="sm"
+              href={ctaHref}
+              data-track={cta.track}
+              data-dialog-request-type={cta.requestType}
+              data-dialog-trigger={cta.dialog}
+              class={cn(
+                'rounded-sm',
+                'whitespace-nowrap',
+                isFloating ? 'hdr-invert-cta rounded-full' : undefined
+              )}
+            >
+              {cta.label}
+            </Button>
+          )}
+        </>
+      )}
+
+      {/* Mobile Menu Toggle */}
+      {showMobileMenu && layout !== 'minimal' && (
+        <button
+          type="button"
+          id={buttonId}
+          class={cn(
+            'inline-flex size-11 items-center justify-center rounded-md nav:hidden',
+            'transition-colors',
+            'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
+            isFloating
+              ? 'hdr-invert-text'
+              : 'text-foreground-muted hover:text-foreground hover:bg-secondary'
+          )}
+          aria-expanded="false"
+          aria-controls={menuId}
+          aria-label="Open navigation menu"
+        >
+          <span class="menu-icon">
+            <Icon name="menu" size="md" />
+          </span>
+          <span class="close-icon hidden">
+            <Icon name="x" size="md" />
+          </span>
+        </button>
+      )}
+    </div>
+  </div>
+
+  {/* Mobile Menu — compact navigation only, anchored below the sticky header */}
+  {showMobileMenu && layout !== 'minimal' && (
+    <nav
+      id={menuId}
+      class={cn('mobile-panel', isFloating && 'mobile-panel-floating')}
+      data-mobile-menu-panel
+      data-open="false"
+      aria-label="Mobile navigation"
+      aria-hidden="true"
+      inert
+    >
+      <div class="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-[clamp(1.25rem,4vh,2.5rem)]">
+        {hasMobileMenuSlot ? (
+          <slot name="mobile-menu" />
+        ) : (
+          <>
+            {menuIntro && (
+              <div class="max-w-[22rem]">
+                <p class="text-accent-ink mb-2.5 text-xs font-extrabold tracking-[0.18em] uppercase">
+                  {menuIntro.kicker}
+                </p>
+                <p class="display-lg text-on-invert-secondary">{menuIntro.note}</p>
+              </div>
+            )}
+
+            <div class="border-[var(--border-invert)] grid border-t">
+              {navItems.map(({ label, href }) => (
+                <a
+                  href={href.startsWith('#') && !isLandingPage ? `/${href}` : href}
+                  class="mobile-panel-link"
+                  aria-current={isActive(href) ? 'page' : undefined}
+                >
+                  {label}
+                  <Icon name="arrow-up-right" size="md" class="text-accent-ink shrink-0" />
+                </a>
+              ))}
+            </div>
+
+            <div class="mt-auto grid gap-4">
+              {menuContact && (
+                <a
+                  href={menuContact.href}
+                  data-track={menuContact.track}
+                  class="text-on-invert-secondary hover:text-on-invert flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-xs"
+                >
+                  <span>{menuContact.label}</span>
+                  <span class="text-on-invert font-bold">{menuContact.value}</span>
+                </a>
+              )}
+
+              {showCta && (
+                <a
+                  href={ctaHref}
+                  data-track={cta.track}
+                  data-dialog-request-type={cta.requestType}
+                  data-dialog-trigger={cta.dialog}
+                  class="text-accent-foreground bg-accent hover:bg-accent-hover flex min-h-14 items-center justify-between gap-4 rounded-sm px-4 text-sm font-extrabold transition hover:-translate-y-0.5"
+                >
+                  {cta.label}
+                  <Icon name="arrow-up-right" size="sm" />
+                </a>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    </nav>
+  )}
+</header>
+
+<script>
+  import { initMobileMenu, resetMobileMenu } from './mobile-menu';
+
+  initMobileMenu();
+  document.addEventListener('astro:page-load', initMobileMenu);
+  document.addEventListener('astro:after-swap', initMobileMenu);
+  // Close (and unlock) before the swap so the lock and `inert` never outlive
+  // the page that opened the menu.
+  document.addEventListener('astro:before-swap', resetMobileMenu);
+</script>
+
+<script>
+  const SCROLL_THRESHOLD = 60;
+
+  function initScrollWatcher() {
+    document
+      .querySelectorAll<HTMLElement>('header[data-header-shape="floating"]')
+      .forEach((header) => {
+        if (header.dataset.scrollInit) return;
+        header.dataset.scrollInit = 'true';
+
+        let ticking = false;
+
+        function onScroll() {
+          if (ticking) return;
+          ticking = true;
+
+          requestAnimationFrame(() => {
+            if (window.scrollY > SCROLL_THRESHOLD) {
+              header.setAttribute('data-scrolled', '');
+            } else {
+              // Don't remove while the mobile menu is open
+              const menuId = header.dataset.menuId;
+              const menu = menuId ? document.getElementById(menuId) : null;
+              if (menu?.dataset.open !== 'true') {
+                header.removeAttribute('data-scrolled');
+              }
+            }
+            ticking = false;
+          });
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+
+        // Set initial state
+        onScroll();
+      });
+  }
+
+  initScrollWatcher();
+  document.addEventListener('astro:page-load', initScrollWatcher);
+  document.addEventListener('astro:after-swap', initScrollWatcher);
+</script>
+
+<style is:global>
+  /* ===== Floating header: scroll state ===== */
+  [data-header-shape='floating'][data-scrolled] {
+    background: color-mix(in oklch, var(--color-background) 92%, transparent);
+    backdrop-filter: blur(24px);
+    border-color: var(--color-border);
+    box-shadow: 0 4px 20px -6px rgba(0, 0, 0, 0.1);
+  }
+
+  /* ===== Floating header: color flip (invert → normal on scroll) ===== */
+
+  /* Text elements: on-invert → foreground */
+  [data-header-shape='floating'][data-header-color-scheme='invert'] .hdr-invert-text {
+    color: var(--color-on-invert);
+    transition: color 300ms;
+  }
+  [data-header-shape='floating'][data-header-color-scheme='invert'][data-scrolled]
+    .hdr-invert-text {
+    color: var(--color-foreground);
+  }
+
+  /* Logo text: on-invert → brand-500 */
+  [data-header-shape='floating'][data-header-color-scheme='invert'] .hdr-logo-text {
+    color: var(--color-on-invert);
+    transition: color 300ms;
+  }
+  [data-header-shape='floating'][data-header-color-scheme='invert'][data-scrolled] .hdr-logo-text {
+    color: var(--color-brand-500);
+  }
+
+  /* Non-invert floating: use normal colors */
+  [data-header-shape='floating'][data-header-color-scheme='default'] .hdr-logo-text {
+    color: var(--color-brand-500);
+  }
+  [data-header-shape='floating'][data-header-color-scheme='default'] .hdr-invert-text {
+    color: var(--color-foreground-muted);
+    transition: color 300ms;
+  }
+  [data-header-shape='floating'][data-header-color-scheme='default'] .hdr-invert-text:hover {
+    color: var(--color-foreground);
+  }
+
+  /* ===== Floating nav link underline indicators ===== */
+  [data-header-shape='floating'] .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    right: 50%;
+    height: 2px;
+    background: currentColor;
+    border-radius: 1px;
+    transition:
+      left 200ms,
+      right 200ms;
+  }
+
+  [data-header-shape='floating'] .nav-link:hover::after,
+  [data-header-shape='floating'] .nav-link.hdr-nav-active::after {
+    left: 12px;
+    right: 12px;
+  }
+
+  /* ===== CTA: invert color flip ===== */
+  [data-header-shape='floating'][data-header-color-scheme='invert'] .hdr-invert-cta {
+    background: white;
+    color: #111;
+    border-color: transparent;
+    transition:
+      background 300ms,
+      color 300ms,
+      border-color 300ms;
+  }
+  [data-header-shape='floating'][data-header-color-scheme='invert'] .hdr-invert-cta:hover {
+    background: rgba(255, 255, 255, 0.9);
+  }
+  [data-header-shape='floating'][data-header-color-scheme='invert'][data-scrolled] .hdr-invert-cta {
+    background: var(--color-primary);
+    color: var(--color-primary-foreground);
+    border-color: transparent;
+  }
+  [data-header-shape='floating'][data-header-color-scheme='invert'][data-scrolled]
+    .hdr-invert-cta:hover {
+    opacity: 0.9;
+  }
+
+  /* ===== Reduced motion ===== */
+  @media (prefers-reduced-motion: reduce) {
+    [data-header-shape='floating'],
+    [data-header-shape='floating'] .hdr-invert-text,
+    [data-header-shape='floating'] .hdr-logo-text,
+    [data-header-shape='floating'] .hdr-invert-cta,
+    [data-header-shape='floating'] .nav-link::after {
+      transition: none !important;
+    }
+  }
+</style>
+
+<style>
+  /* Mobile panel — compact navigation only. Geometry anchors it below the
+     sticky header; `--mobile-nav-top` is published by mobile-menu.ts. */
+  .mobile-panel {
+    position: absolute;
+    inset-inline: 0;
+    top: 100%;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - var(--mobile-nav-top, 4rem));
+    height: calc(100dvh - var(--mobile-nav-top, 4rem));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--surface-invert);
+    color: var(--on-invert);
+    box-shadow: var(--site-shadow-xl);
+    padding: clamp(1.4rem, 5vw, 2.5rem) 1.5rem max(1.25rem, env(safe-area-inset-bottom));
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-0.75rem);
+    transition:
+      opacity 180ms ease,
+      transform 220ms ease,
+      visibility 0s linear 220ms;
+  }
+
+  .mobile-panel[data-open='true'] {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+    transition-delay: 0s;
+  }
+
+  .mobile-panel-floating {
+    border-bottom-left-radius: var(--radius-md);
+    border-bottom-right-radius: var(--radius-md);
+  }
+
+  .mobile-panel-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: clamp(3.7rem, 10vw, 4.75rem);
+    padding: 0.9rem 0;
+    border-bottom: 1px solid var(--border-invert);
+    color: var(--on-invert);
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 6vw, 3.2rem);
+    font-weight: 500;
+    letter-spacing: -0.025em;
+    transition:
+      color 180ms ease,
+      padding-left var(--site-duration-fast) var(--ease-out-quart);
+  }
+
+  .mobile-panel-link:hover,
+  .mobile-panel-link:focus-visible,
+  .mobile-panel-link[aria-current='page'] {
+    color: var(--accent);
+    padding-left: 0.5rem;
+  }
+
+  /* The desktop header takes over at the navigation breakpoint. */
+  @media (min-width: 60rem) {
+    .mobile-panel {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-panel {
+      transition: none;
+    }
+  }
+</style>

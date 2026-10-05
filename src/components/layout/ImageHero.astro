@@ -1,0 +1,432 @@
+---
+/**
+ * ImageHero
+ *
+ * Shared full-viewport photographic opener for interior pages. The cover image
+ * fills the frame behind a bottom-weighted scrim, the breadcrumb slot and the
+ * image caption sit on the top row, and the page copy in the default slot is
+ * anchored to the bottom of the frame with a cue that jumps to the first
+ * section below the fold. The image is the page's LCP element, so it renders
+ * through <Picture> with `priority` (eager + high fetchpriority). The sizes
+ * hint asks phones for roughly double the CSS width: `object-cover` scales a
+ * wide image by height on a tall frame, so the width the browser would
+ * otherwise request renders soft.
+ *
+ * `video` layers a muted looping clip over that still — the still should be
+ * frame 0 of the clip so the cut at playtime is invisible. The still stays the
+ * LCP element and remains the whole hero whenever playback cannot or must not
+ * start; ./image-hero-video.ts waits for window `load`, honours reduced motion
+ * and `saveData`, and stops the clip when the hero leaves the viewport or the
+ * tab hides. The round toggle beside the scroll cue is the WCAG 2.2.2 pause
+ * mechanism and stays visible at every width.
+ *
+ * The frame height is the viewport less the sticky header (`--header-height`,
+ * published by `mobile-menu.ts`) and, below the `nav:` breakpoint, less the
+ * fixed contact bar and the device safe area.
+ */
+import { Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+
+interface Props {
+  image: ImageMetadata;
+  alt: string;
+  /** Shown against the image on the top row; page-level context for the view */
+  caption: string;
+  /** Id of the heading in the copy slot; names the section landmark */
+  labelId?: string;
+  /** Accessible name for the section when the copy slot carries no id-able heading */
+  label?: string;
+  /** In-page anchor the scroll cue jumps to */
+  cueHref: string;
+  /** Accessible name of the scroll cue, e.g. "Skip to contact details" */
+  cueLabel: string;
+  /** Widths generated for the cover image; the largest should match the source */
+  widths: number[];
+  /** Muted looping background clip over the still; omitted for still-only heroes */
+  video?: { src: string; mobileSrc?: string };
+}
+
+const { image, alt, caption, labelId, label, cueHref, cueLabel, widths, video } = Astro.props;
+
+const hasBreadcrumbs = Astro.slots.has('breadcrumbs');
+---
+
+<section
+  class="image-hero"
+  data-image-hero
+  aria-labelledby={labelId}
+  aria-label={labelId ? undefined : label}
+>
+  <div class="image-hero-media">
+    <Picture
+      src={image}
+      alt={alt}
+      widths={widths}
+      sizes="(width < 60rem) 200vw, 100vw"
+      fallbackFormat="webp"
+      formats={['avif', 'webp']}
+      priority
+    />
+    {video && (
+      <video
+        class="image-hero-video"
+        data-hero-video
+        muted
+        playsinline
+        loop
+        preload="none"
+        disablepictureinpicture
+        aria-hidden="true"
+      >
+        {video.mobileSrc && (
+          <source src={video.mobileSrc} media="(max-width: 42rem)" type="video/mp4" />
+        )}
+        <source src={video.src} type="video/mp4" />
+      </video>
+    )}
+  </div>
+
+  <div class="image-hero-scrim" aria-hidden="true"></div>
+
+  <div class="image-hero-inner">
+    <div class="image-hero-top mx-auto flex w-full max-w-6xl items-center justify-between gap-6 px-6 pt-6 md:pt-8">
+      {hasBreadcrumbs ? <slot name="breadcrumbs" /> : <span></span>}
+      <p class="image-hero-caption hidden text-xs tracking-[0.08em] uppercase md:block">
+        {caption}
+      </p>
+    </div>
+
+    <div class="image-hero-copy">
+      <div class="image-hero-copy-frame mx-auto w-full max-w-6xl px-6 pt-16 pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-20">
+        <div class="image-hero-copy-plate">
+          <div class="image-hero-copy-content">
+            <slot />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="image-hero-controls">
+      {video && (
+        <button
+          type="button"
+          class="image-hero-round"
+          data-hero-video-toggle
+          aria-pressed="false"
+          aria-label="Play background video"
+        >
+          <span class="image-hero-toggle-play">
+            <Icon name="play" size="sm" />
+          </span>
+          <span class="image-hero-toggle-pause">
+            <Icon name="pause" size="sm" />
+          </span>
+        </button>
+      )}
+      <a class="image-hero-round image-hero-cue" href={cueHref} aria-label={cueLabel}>
+        <Icon name="chevron-down" size="sm" />
+      </a>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { initImageHeroVideos } from './image-hero-video';
+
+  initImageHeroVideos();
+  document.addEventListener('astro:page-load', initImageHeroVideos);
+  document.addEventListener('astro:after-swap', initImageHeroVideos);
+</script>
+
+<style>
+  .image-hero {
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
+    background: var(--surface-invert);
+    color: var(--on-invert);
+
+    /*
+     * The focus ring, the one thing `.invert-section` remaps that this shell
+     * cannot inherit: it sets `bg-surface-invert` directly rather than taking
+     * the modifier, so `--color-ring` stays the clay it is everywhere on the
+     * light site — and clay on the forest hero measured 1.92:1 (2026-09-30,
+     * `/contact-us/`), against a 3:1 floor. The breadcrumb links and the
+     * scroll cue both take the global `:focus-visible` outline, so that number
+     * was the whole indicator.
+     *
+     * `--color-background` comes with it because the ring is never used alone:
+     * the design-system Button paints `ring-offset-background` between the
+     * plate and the ring. Left on the page's cream, a near-white ring would sit
+     * on a cream offset and vanish into it. Remapping the offset to the same
+     * forest the hero is painted in turns every indicator on the frame — the
+     * outline users and the ring-plus-offset buttons — into one dark gap with a
+     * light edge, which clears 3:1 against the gold, WhatsApp-green, forest and
+     * frosted-glass plates the hero's actions can land on.
+     */
+    --color-ring: var(--on-invert);
+    --color-background: var(--surface-invert);
+  }
+
+  .image-hero-media {
+    position: absolute;
+    inset: 0;
+  }
+
+  .image-hero-media :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Hidden until the clip is actually playing: the still under it is the
+     poster, and a refused or blocked play() leaves this layer invisible. */
+  .image-hero-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity var(--site-duration-base) var(--ease-in-out-quint);
+  }
+
+  .image-hero[data-video-state='playing'] .image-hero-video {
+    opacity: 1;
+  }
+
+  /* Frame-wide scrim: capped at 20% (2026-09-19 review) so the green wash
+     never dominates the photo. The bottom band (20% → 0) is only a light
+     seating for the copy; legibility over bright covers is carried by the
+     frosted plate behind the copy stack (.image-hero-copy-plate), not by a
+     heavy green gradient.
+
+     The top band is the exception, because the top row has no plate. The
+     breadcrumbs and the caption sit straight on the photograph, and every
+     cover this component is used with is a bright sky (the about entrance,
+     the contact walkway, the project aerial). At 18% fading out by 30% the
+     caption measured unreadable against those skies — it is small text, and
+     `on-invert-muted` has only 5.8:1 on the forest it is tuned for, so a
+     photograph behind it divides that again. The band is now deep at the very
+     top and falls away faster: strong enough to seat the row, gone by 26% so
+     the photograph starts immediately under it. */
+  .image-hero-scrim {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--surface-invert) 46%, transparent) 0%,
+        color-mix(in srgb, var(--surface-invert) 22%, transparent) 14%,
+        transparent 26%
+      ),
+      linear-gradient(
+        to top,
+        color-mix(in srgb, var(--surface-invert) 20%, transparent) 0%,
+        color-mix(in srgb, var(--surface-invert) 16%, transparent) 30%,
+        color-mix(in srgb, var(--surface-invert) 10%, transparent) 56%,
+        transparent 100%
+      );
+  }
+
+  .image-hero-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    min-height: calc(100svh - var(--header-height, 4rem));
+    flex-direction: column;
+  }
+
+  .image-hero-copy {
+    position: relative;
+    margin-top: auto;
+  }
+
+  /* The copy's legibility carrier (2026-09-25 review): a frosted plate that
+     hugs the text column only — the home hero's copy-card pattern — so the
+     photo stays visible everywhere the copy does not reach. Deliberately
+     light: a soft tint plus a short blur and a slight brightness pull, with
+     no heavy gradient, so the cover reads through the glass. Backdrop-filter
+     handles every background, including the video layer, and works without
+     JavaScript; the copy inside is the element's own content, so the filter
+     never blurs it. Width is the copy measure plus padding — the slot's
+     max-w-[36rem] paragraphs keep their measure, and the contact hero's
+     three actions stay on one row as they did before the plate became a
+     card. */
+  .image-hero-copy-plate {
+    max-width: 44rem;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid color-mix(in srgb, var(--on-invert) 22%, transparent);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--brand-950) 18%, transparent);
+    -webkit-backdrop-filter: blur(6px) brightness(0.92) saturate(0.95);
+    backdrop-filter: blur(6px) brightness(0.92) saturate(0.95);
+    box-shadow: 0 12px 32px color-mix(in srgb, var(--brand-950) 18%, transparent);
+  }
+
+  /* Without backdrop-filter support the tint alone carries the plate, so it
+     runs a little heavier; the box shape stays identical. */
+  @supports not (backdrop-filter: blur(1px)) {
+    .image-hero-copy-plate {
+      background: color-mix(in srgb, var(--brand-950) 30%, transparent);
+    }
+  }
+
+  .image-hero-copy-content {
+    position: relative;
+    /* A soft dark halo under the copy keeps the light type legible where the
+       cover runs bright (the contact walkway especially) now that the plate
+       is this light. text-shadow inherits, so every line gets it. */
+    text-shadow:
+      0 1px 2px color-mix(in srgb, var(--brand-950) 75%, transparent),
+      0 0 12px color-mix(in srgb, var(--brand-950) 45%, transparent);
+  }
+
+  /*
+     The eyebrow is the one element on the plate that cannot rely on the halo:
+     it is a pill with a 14% accent wash of its own, so over a bright cover the
+     wash and the dark-gold ink both wash out and the label reads as a smudge
+     (measured 2026-09-30 on the contact and about heroes, whose covers are both
+     blown-out sky at the top of the frame).
+
+     So the hero's eyebrow gets the plate treatment instead: a solid dark
+     ground, the light gold that is legible on it, and the light hairline that
+     separates it from a bright cover. This is `.eyebrow-on-invert` with the
+     transparency removed — the plate's own tint is only 18% and lets the
+     photograph through, which is exactly what this pill must not do.
+  */
+  .image-hero-copy-content :global(.eyebrow) {
+    background-color: color-mix(in srgb, var(--brand-950) 58%, transparent);
+    box-shadow: var(--hairline-invert);
+    color: var(--accent);
+  }
+
+  /* One round control style for the video toggle and the scroll cue. */
+  .image-hero-round {
+    display: inline-flex;
+    width: 2.75rem;
+    height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-invert-strong);
+    border-radius: var(--radius-full);
+    color: var(--on-invert);
+    transition: background-color var(--site-duration-fast) var(--ease-in-out-quint);
+  }
+
+  .image-hero-round:hover {
+    background: color-mix(in srgb, var(--on-invert) 12%, transparent);
+  }
+
+  .image-hero-controls {
+    position: absolute;
+    right: clamp(1rem, 3vw, 3rem);
+    bottom: clamp(1.5rem, 5vh, 2.5rem);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  /* Without the controller (JavaScript off) there is nothing to play, so the
+     button must not ship as a dead control; ./image-hero-video.ts sets the
+     attribute as it mounts. */
+  .image-hero:not([data-hero-video-init='true']) [data-hero-video-toggle] {
+    display: none;
+  }
+
+  /* The toggle's glyph follows the button's own state: pressed means the clip
+     is playing, so the button offers "pause". The glyphs sit in spans the
+     component owns — a class handed to <Icon> would be scoped out of reach. */
+  .image-hero-toggle-pause,
+  .image-hero-round[aria-pressed='true'] .image-hero-toggle-play {
+    display: none;
+  }
+
+  .image-hero-round[aria-pressed='true'] .image-hero-toggle-pause {
+    display: inline-flex;
+  }
+
+  .image-hero-cue {
+    display: none;
+    /* A continuous ambient loop. It gets the site's expo curve rather than
+       `ease-in-out` so the bob settles at each end instead of accelerating
+       through it, and it is transform-only so it stays on the compositor. */
+    animation: hero-cue-bob 2.6s var(--ease-out-quart) infinite alternate;
+  }
+
+  /*
+   * `alternate` on the animation means the 0%/100% keyframes below only need to
+   * describe the two extremes — the browser plays them forward, then backward,
+   * which halves the interpolation and removes the visible direction change at
+   * the loop seam.
+   */
+  @keyframes hero-cue-bob {
+    from {
+      transform: translateY(0);
+    }
+
+    to {
+      transform: translateY(0.3rem);
+    }
+  }
+
+  /* The fixed contact bar owns the bottom of the viewport below the nav
+     breakpoint, so the frame makes room for it. The frame's top padding also
+     gives up the plate's inner height here, so the taller copy stacks (the
+     about note) keep clearing the bar exactly as they did before the plate
+     became a card. */
+  @media (width < 60rem) {
+    .image-hero-copy-frame {
+      padding-top: 1.5rem;
+    }
+
+    /* The top row: breadcrumbs and caption, seated by the scrim's top band. The
+     halo is the same treatment the copy plate gets, so a cover that is brighter
+     than the band accounts for — a blown-out sky, a specular render — still has
+     a shadow to sit on. `text-shadow` inherits, so the slotted breadcrumbs pick
+     it up without knowing this rule exists. Only the two properties the utility
+     classes do not carry are declared here; the rest stay on the element. */
+    .image-hero-top {
+      text-shadow:
+        0 1px 2px color-mix(in srgb, var(--brand-950) 75%, transparent),
+        0 0 12px color-mix(in srgb, var(--brand-950) 45%, transparent);
+    }
+
+    /* The caption is page-level context, not body copy, but at 12px it is the
+     first thing to disappear. `on-invert-secondary` (9.4:1 on the forest)
+     rather than `on-invert-muted` (5.8:1) buys that back without making it
+     compete with the H1 below it. */
+    .image-hero-caption {
+      color: var(--on-invert-secondary);
+      text-align: right;
+      text-wrap: balance;
+    }
+
+    .image-hero-inner {
+      min-height: calc(100svh - var(--header-height, 4rem) - 4.25rem - env(safe-area-inset-bottom));
+    }
+
+    /* The controls row clears the fixed bar too; the toggle is the clip's pause
+       mechanism and must stay reachable at every width. */
+    .image-hero-controls {
+      bottom: calc(4.25rem + env(safe-area-inset-bottom) + 1rem);
+    }
+  }
+
+  @media (width >= 60rem) {
+    .image-hero-cue {
+      display: inline-flex;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .image-hero-cue {
+      animation: none;
+    }
+
+    .image-hero-video {
+      transition: none;
+    }
+  }
+</style>

@@ -1,0 +1,243 @@
+---
+import siteConfig from '~/config/site.config';
+import { canonicalUrl } from '~/lib/canonical';
+import { createRealEstateAgentSchema } from '~/lib/schema';
+import JsonLd from './JsonLd.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  imageAlt?: string;
+  article?: {
+    publishedTime?: Date;
+    modifiedTime?: Date;
+    authors?: string[];
+    tags?: string[];
+  };
+  noindex?: boolean;
+  nofollow?: boolean;
+}
+
+const {
+  title,
+  description = siteConfig.description,
+  image,
+  imageAlt,
+  article,
+  noindex = false,
+  nofollow = false,
+} = Astro.props;
+
+/**
+ * Search engines truncate a title around 600px — roughly 60 characters. The
+ * brand suffix is 25 of them, so appending it unconditionally pushed every
+ * query-carrying title into the ellipsis and buried the words that made the
+ * page match. It is now appended only while the whole title still fits, and
+ * never when the title already names the brand.
+ */
+const TITLE_BUDGET = 60;
+const brandStem = siteConfig.name.split(' ').slice(0, 2).join(' ');
+const brandSuffix = ` — ${siteConfig.name}`;
+const pageTitle = title
+  ? title.includes(brandStem) || title.length + brandSuffix.length > TITLE_BUDGET
+    ? title
+    : `${title}${brandSuffix}`
+  : siteConfig.name;
+
+// Trailing-slash normalisation shared with structured data (see ~/lib/canonical).
+const canonicalURL = canonicalUrl(Astro.url.pathname, siteConfig.url);
+
+/*
+ * The two `alternate` representations this site publishes, resolved through the
+ * same helper the canonical uses so all three share one normalisation and one
+ * origin. `canonicalUrl` treats a path with a file extension as a file and
+ * leaves it un-slashed, which is what `/llms.txt` and `/rss.xml` need — string
+ * concatenation onto the origin would be correct only while the origin ends in
+ * a slash, and the case a fallback exists for is precisely the origin being
+ * unset, which is the failure `src/pages/robots.txt.ts` already documents.
+ */
+const llmsTxtURL = canonicalUrl('/llms.txt', siteConfig.url);
+const rssURL = canonicalUrl('/rss.xml', siteConfig.url);
+
+/*
+ * Whether this page is a share target, which is the same question `noindex`
+ * already answers.
+ *
+ * A noindex page is not something to link to, quote or cache: on the 404 there
+ * is no URL of its own to point at, and an image that claims a card for it is a
+ * crawlable asset with nothing to be a card for. `og:image` used to be emitted
+ * regardless, so the guard was wrong in principle even once the 404 was removed
+ * from the OG route's static pages — the next `noindex` page anyone added would
+ * have shipped the same dangling image. Every image-asserting tag now follows
+ * `og:url` under this one condition, including `twitter:image`, which is the
+ * same image on the same platforms: leaving it would tell X to fetch a PNG
+ * this page no longer claims to have.
+ */
+const isShareTarget = !noindex;
+
+// Process image - use dynamic OG image if no custom image provided
+let ogImage: string;
+if (image) {
+  ogImage = image.startsWith('http') ? image : new URL(image, Astro.site).toString();
+} else {
+  // Generate dynamic OG image path based on current URL
+  const pathname = Astro.url.pathname.replace(/^\/|\/$/g, '') || 'index';
+  ogImage = new URL(`/og/${pathname}.png`, Astro.site).toString();
+}
+
+const robotsContent = [noindex ? 'noindex' : 'index', nofollow ? 'nofollow' : 'follow'].join(', ');
+
+// Normalize BCP-47 locale (e.g. "en") to OG language_TERRITORY format (e.g. "en_US")
+const localeMap: Record<string, string> = {
+  en: 'en_US',
+  fr: 'fr_FR',
+  de: 'de_DE',
+  es: 'es_ES',
+  it: 'it_IT',
+  pt: 'pt_BR',
+  nl: 'nl_NL',
+  ja: 'ja_JP',
+  ko: 'ko_KR',
+  zh: 'zh_CN',
+  ru: 'ru_RU',
+  ar: 'ar_SA',
+  hi: 'hi_IN',
+  pl: 'pl_PL',
+  sv: 'sv_SE',
+};
+// ogp.me recognises only en_US/en_GB for English, so the OG locale stays
+// en_US for an Indian audience — the HTML lang and the RSS language carry the
+// en-IN signal instead.
+const rawLocale = Astro.currentLocale || 'en_US';
+const locale =
+  rawLocale.includes('_') || rawLocale.includes('-')
+    ? rawLocale.replace('-', '_')
+    : localeMap[rawLocale] || `${rawLocale}_${rawLocale.toUpperCase()}`;
+
+// Determine OG image metadata — only emit width/height/type for the auto-generated fallback
+const isGeneratedOgImage = !image;
+const extToMime: Record<string, string> = {
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+};
+function getImageType(url: string): string | undefined {
+  const ext = url.match(/(\.\w+)(?:\?|$)/)?.[1]?.toLowerCase();
+  return ext ? extToMime[ext] : undefined;
+}
+const ogImageType = isGeneratedOgImage ? 'image/png' : getImageType(ogImage);
+---
+
+<!-- Primary Meta Tags -->
+<title>{pageTitle}</title>
+<meta name="description" content={description} />
+{!noindex && <link rel="canonical" href={canonicalURL} />}
+
+<!--
+  The alternate representations, declared here because the document head is the
+  only place a crawler is documented to look for them.
+
+  `llms.txt` is the site's agent-readable summary — the published numbers, the
+  approvals, the links a buyer can check. `robots.txt` also names it, but the
+  `LLM-Reference:` line is not a directive in any spec, not in llmstxt.org, and
+  not honoured by GPTBot, PerplexityBot, ClaudeBot or Google-Extended: all four
+  discard it as an unknown record. Until this link existed there was no other
+  pointer to the file anywhere in the head either, so the most machine-readable
+  document the site has was unreachable from the site. That robots line stays as
+  a textual breadcrumb; discovery is owned here, not there.
+
+  Both are emitted on noindex pages too. They are site-level pointers, not
+  claims about this page's canonical address, so the 404 pointing at them
+  asserts nothing false.
+-->
+<link rel="alternate" type="text/plain" title="llms.txt" href={llmsTxtURL} />
+<link
+  rel="alternate"
+  type="application/rss+xml"
+  title={`${siteConfig.name} RSS Feed`}
+  href={rssURL}
+/>
+
+<meta name="robots" content={robotsContent} />
+
+<!-- Open Graph -->
+<meta property="og:title" content={pageTitle} />
+<meta property="og:type" content={article ? 'article' : 'website'} />
+{isShareTarget && <meta property="og:url" content={canonicalURL} />}
+<meta property="og:description" content={description} />
+<meta property="og:site_name" content={siteConfig.name} />
+<meta property="og:locale" content={locale} />
+{/* The image group follows `isShareTarget` for the reason above: a card
+    describes a picture, and the dimensions, media type and alt text here all
+    describe the one `og:image` names. Suppressing only `og:image` would leave
+    markup asserting the size and type of an image the page no longer claims. */}
+{isShareTarget && <meta property="og:image" content={ogImage} />}
+{isShareTarget && <meta property="og:image:alt" content={imageAlt || pageTitle} />}
+{isShareTarget && isGeneratedOgImage && <meta property="og:image:width" content="1200" />}
+{isShareTarget && isGeneratedOgImage && <meta property="og:image:height" content="630" />}
+{isShareTarget && ogImageType && <meta property="og:image:type" content={ogImageType} />}
+
+<!-- Article Metadata -->
+{article?.publishedTime && (
+  <meta property="article:published_time" content={article.publishedTime.toISOString()} />
+)}
+{article?.modifiedTime && (
+  <meta property="article:modified_time" content={article.modifiedTime.toISOString()} />
+)}
+{article?.authors?.map((author) => (
+  <meta property="article:author" content={author} />
+))}
+{article?.tags?.map((tag) => (
+  <meta property="article:tag" content={tag} />
+))}
+
+<!-- Twitter Card -->
+{/* `summary` rather than `summary_large_image` on a noindex page: the card type
+    is a promise of an image, and that image is suppressed with the rest of the
+    share group above. `title`, `description` and `card` stay — a card with no
+    picture is still a readable card, and a 404 that renders as an empty
+    `large_image` box reads as a broken share. */}
+<meta name="twitter:card" content={isShareTarget ? 'summary_large_image' : 'summary'} />
+<meta name="twitter:title" content={pageTitle} />
+<meta name="twitter:description" content={description} />
+{isShareTarget && <meta name="twitter:image" content={ogImage} />}
+{/*
+  `twitter:site` and `twitter:creator` are attribution, not content: they decide
+  which account a card is attributed to on X. The business publishes no handle,
+  so `siteConfig.twitter` is declared and deliberately left unset — the
+  commented-out placeholder that used to sit in that config named an account
+  nobody owns, which is worse than no scaffolding, so it is gone.
+
+  The emitter stays, and this is a deliberate choice rather than an oversight.
+  The field is part of the published `SiteConfig` interface, so the wiring is
+  real rather than hypothetical: when the business supplies a handle it is one
+  config edit, not a template edit, and these two tags are the only way an X
+  card can be attributed to anyone. Omitting them costs nothing today — the
+  tags are optional in the protocol and a `summary` card is complete without
+  them — so nothing is emitted rather than a plausible-looking handle.
+*/}
+{siteConfig.twitter?.site && <meta name="twitter:site" content={siteConfig.twitter.site} />}
+{siteConfig.twitter?.creator && (
+  <meta name="twitter:creator" content={siteConfig.twitter.creator} />
+)}
+
+<!-- Verification -->
+{siteConfig.verification?.google && (
+  <meta name="google-site-verification" content={siteConfig.verification.google} />
+)}
+{siteConfig.verification?.bing && (
+  <meta name="msvalidate.01" content={siteConfig.verification.bing} />
+)}
+
+<!--
+  The local-business entity is emitted from here because this component is the
+  only one every page renders. It used to appear on /about-us/ and
+  /contact-us/ alone — the two pages least likely to surface for a local plot
+  query — so the homepage and the project page carried the inventory without
+  the NAP, hours and service area that qualify it.
+-->
+<JsonLd schema={createRealEstateAgentSchema()} />

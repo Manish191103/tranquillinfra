@@ -1,0 +1,42 @@
+---
+/**
+ * DifferenceSection
+ *
+ * Four expectations set on the inverted surface, each with an icon from the
+ * shared Icon primitive. Copy and icon names arrive from the page.
+ */
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  items: Array<{ icon: string; title: string; body: string }>;
+}
+
+const { eyebrow, title, items } = Astro.props;
+---
+
+<section class="bg-surface-invert text-on-invert" aria-labelledby="about-difference-title">
+  <div class="section mx-auto max-w-6xl px-6">
+    <div class="max-w-[46rem]">
+      <p class="eyebrow eyebrow-on-invert">{eyebrow}</p>
+      <h2 id="about-difference-title" class="display-md text-on-invert">
+        {title}
+      </h2>
+    </div>
+
+    <ul class="mt-10 grid gap-8 md:grid-cols-2 md:gap-10">
+      {items.map((item) => (
+        <li class="border-border-invert flex gap-4 border-t pt-6">
+          <span class="bg-surface-invert-secondary text-accent-ink flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
+            <Icon name={item.icon} size="md" />
+          </span>
+          <div>
+            <h3 class="display-xs text-on-invert">{item.title}</h3>
+            <p class="text-on-invert-secondary mt-2 text-sm leading-relaxed">{item.body}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

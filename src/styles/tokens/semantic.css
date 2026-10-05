@@ -1,0 +1,215 @@
+/* =============================================================================
+   Design Tokens - Semantic
+   =============================================================================
+   The site's semantic tokens: sand and paper surfaces, forest-green ink, with
+   gold and clay accents. Typography is Manrope for body with a system serif for
+   display; radii and shadows follow the warm editorial look.
+
+   Components only use these tokens (and the Tailwind utilities built from
+   them); the raw scales live in tokens/primitives.css.
+   ============================================================================= */
+
+:root {
+  /* -------------------------------------------------------------------------
+     Colors
+     ------------------------------------------------------------------------- */
+  --background: var(--sand-100); /* page sand */
+  --background-secondary: var(--sand-200);
+  --background-elevated: var(--sand-50); /* paper */
+
+  --foreground: var(--brand-800); /* 12.6:1 on sand — WCAG AAA */
+  --foreground-secondary: var(--brand-600); /*  8.5:1 on sand — WCAG AAA */
+  --foreground-muted: var(--brand-500); /*  7.0:1 on sand — WCAG AAA */
+  --foreground-subtle: var(--sage-700); /*  7.6:1 on sand — WCAG AAA */
+
+  --border: var(--sand-300); /* hairline */
+  --border-strong: var(--sand-400);
+  --border-subtle: var(--sand-200);
+
+  --primary: var(--brand-700); /* forest-dark actions */
+  --primary-hover: var(--brand-500);
+  --primary-foreground: var(--sand-50); /* 11.5:1 on brand-700 — WCAG AAA */
+
+  --secondary: var(--sage-200); /* sage-light wash */
+  --secondary-hover: var(--sage-300);
+  --secondary-foreground: var(--brand-700); /*  9.4:1 on sage-light — WCAG AAA */
+
+  --accent: var(--gold-500); /* brand gold */
+  --accent-hover: var(--gold-600);
+  --accent-foreground: var(--brand-800); /* 11.0:1 on gold-300 — WCAG AAA */
+
+  /*
+   * Accent ink for LIGHT surfaces. `--accent` is the brand gold, which is a
+   * light colour and only legible on dark: on the hero's translucent card it
+   * measured 1.5:1, and the eyebrow that uses it was effectively invisible
+   * (measured 2026-09). This is the same hue stepped down for use as text on
+   * paper/sand — 4.65:1 on `--card` — so accent-coloured text stays on-brand
+   * without depending on the surface behind it being dark.
+   */
+  --accent-ink: oklch(52% 0.11 72);
+
+  --muted: var(--sand-200);
+  --muted-foreground: var(--sage-700); /*  7.0:1 on muted — WCAG AAA */
+
+  --card: var(--sand-50); /* paper */
+
+  --ring: var(--clay-500); /* classic clay focus ring */
+
+  /* Destructive - for delete/remove actions and form error states */
+  --destructive: var(--error);
+  --destructive-foreground: var(--sand-50);
+
+  /* -------------------------------------------------------------------------
+     Inverted/Contrast Section - dark surfaces for visual hierarchy
+     ------------------------------------------------------------------------- */
+  --surface-invert: var(--brand-700); /* bg for .invert-section */
+  --surface-invert-secondary: var(--brand-600);
+  --surface-invert-tertiary: var(--brand-500);
+  --on-invert: var(--sand-50); /* 11.5:1 on brand-700 — WCAG AAA */
+  --on-invert-secondary: var(--sage-200); /*  9.4:1 on brand-700 — WCAG AAA */
+  --on-invert-muted: var(--sage-400); /*  5.8:1 on brand-700 — WCAG AA  */
+  --border-invert: color-mix(in srgb, var(--sage-200) 24%, transparent);
+  --border-invert-strong: color-mix(in srgb, var(--sage-200) 40%, transparent);
+
+  /* -------------------------------------------------------------------------
+     Typography
+     ------------------------------------------------------------------------- */
+  --site-font-sans:
+    var(--font-manrope), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
+  --site-font-display:
+    var(--font-fraunces), 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, 'Times New Roman',
+    serif;
+  --site-font-mono:
+    var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
+
+  /*
+   * Display type is optically sized, not just weighted. `opsz` tracks the
+   * rendered size so a 4.5rem headline gets the high-contrast cut Fraunces is
+   * drawn for, while a 1.5rem sub-head gets the sturdier, wider-aperture cut
+   * that stays legible small. `--text-display-*` in typography.css carries the
+   * matching values; the base rule below is the fallback for any display
+   * element whose size is not on the scale.
+   */
+  --site-heading-weight: 500;
+  --site-heading-tracking: -0.02em;
+  --site-body-leading: 1.65;
+
+  /* Display optical-size defaults, overridden per size in typography.css */
+  --site-display-opsz: 48;
+  --site-display-tracking: -0.03em;
+  --site-display-leading: 1.04;
+
+  /* -------------------------------------------------------------------------
+     Motion
+     -------------------------------------------------------------------------
+     Four curves instead of one. Each is doing a specific job, and using
+     `ease-out` for all of them is what makes most interfaces read as generic:
+
+     --ease-out-quart  a decelerating arrival. Fast departure, long settle.
+                        Elements entering the viewport decelerate into rest.
+     --ease-out-expo   the cinematic one. Almost all of the movement happens
+                        early, then a very slow final approach. Used for
+                        overlays, dialogs and the mobile menu.
+     --ease-spring     near-zero end velocity with a hint of overshoot in the
+                        curve's tail. For presses and anything the finger is
+                        still in contact with.
+     --ease-in-out-quint  symmetric and heavy at both ends. For state swaps
+                        that should feel like a physical state change rather
+                        than a fade — colour, border, surface swaps.
+
+     Durations are deliberately long. Anything under ~200 ms reads as a state
+     change; 300–700 ms reads as movement.
+     */
+  --site-duration-instant: 120ms;
+  --site-duration-fast: 220ms;
+  --site-duration-base: 380ms;
+  --site-duration-slow: 620ms;
+  --site-duration-lazy: 900ms;
+
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
+
+  /*
+   * One canonical transition. Everything that moves composes this so the whole
+   * site shares a single motion signature; individual properties override only
+   * the duration when they need to feel faster or lazier than the default.
+   */
+  --site-transition: var(--site-duration-base) var(--ease-out-quart);
+  --site-transition-spring: var(--site-duration-fast) var(--ease-spring);
+  --site-transition-state: var(--site-duration-base) var(--ease-in-out-quint);
+
+  /* -------------------------------------------------------------------------
+     Shadows
+     -------------------------------------------------------------------------
+     Brand-tinted, and built in two parts: a tight contact shadow that grounds
+     the element plus a wide, very diffuse ambient shadow that lifts it off the
+     surface. A single-layer shadow is what reads as "generic card"; the pairing
+     is what reads as a physical object sitting on paper.
+     ------------------------------------------------------------------------- */
+  --site-shadow-sm: 0 1px 2px rgb(16 62 51 / 6%);
+  --site-shadow-md: 0 1px 2px rgb(16 62 51 / 4%), 0 4px 12px -2px rgb(16 62 51 / 6%);
+  --site-shadow-lg: 0 1px 3px rgb(16 62 51 / 4%), 0 16px 32px -8px rgb(16 62 51 / 10%);
+  --site-shadow-xl: 0 2px 4px rgb(16 62 51 / 3%), 0 32px 64px -12px rgb(16 62 51 / 14%);
+
+  /*
+   * The lift. Applied on hover to anything that reads as a physical control —
+   * cards, list rows, pressable tiles. A translate plus a deepened ambient
+   * shadow, on the shared curve. Both parts matter: the shadow alone reads as
+   * a glow, the translate alone reads as a slide.
+   */
+  --site-lift: 0 28px 56px -20px rgb(16 62 51 / 22%);
+  --site-lift-lift: -2px;
+
+  /* -------------------------------------------------------------------------
+     Border Radii
+     -------------------------------------------------------------------------
+     Generous, near-square curves. The larger steps are sized so a nested
+     inner core can sit inside an outer shell and keep concentric corners:
+     `.shell` is `--radius-shell`, `.shell-core` is `--radius-core`, and the
+     two differ by exactly the shell padding.
+     ------------------------------------------------------------------------- */
+  --site-radius-sm: 0.3rem;
+  --site-radius-md: 1rem;
+  --site-radius-lg: 1.5rem;
+  --site-radius-xl: 2rem;
+  --site-radius-shell: 2.5rem; /* outer shell of a double-bezel */
+  --site-radius-core: 2rem; /* inner core; shell padding is 0.375rem */
+  --site-radius-full: 9999px;
+
+  /* -------------------------------------------------------------------------
+     Double-Bezel Surfaces
+     -------------------------------------------------------------------------
+     A card is never painted flat on the page. It is a machined inner plate
+     seated inside a slightly larger, slightly darker tray: the tray reads as
+     the bezel, the plate as the surface. Two values are enough — a translucent
+     wash that sits over whatever is behind it, and an inner top highlight that
+     catches light along the plate's upper edge.
+     ------------------------------------------------------------------------- */
+  --shell-padding: 0.375rem;
+  --shell-surface: rgb(16 62 51 / 4%);
+  --shell-edge: inset 0 0 0 1px rgb(16 62 51 / 7%);
+  --core-highlight: inset 0 1px 1px rgb(255 255 255 / 55%);
+
+  /* On an inverted (forest) surface the tray goes light instead of dark, and
+     the plate's highlight becomes a shadow — light comes from above on a dark
+     object the same way it does on a light one, but the falloff inverts. */
+  --shell-surface-invert: rgb(253 251 246 / 8%);
+  --shell-edge-invert: inset 0 0 0 1px rgb(253 251 246 / 12%);
+  --core-highlight-invert: inset 0 1px 1px rgb(0 0 0 / 18%);
+
+  /* -------------------------------------------------------------------------
+     Hairlines
+     -------------------------------------------------------------------------
+     Generic borders are the fastest way to look template-made. These are the
+     replacement: a hairline is a 1px rule at low alpha with a matching inset
+     highlight underneath it, which is what a real machined edge looks like.
+     ------------------------------------------------------------------------- */
+  --hairline: inset 0 0 0 1px rgb(16 62 51 / 9%);
+  --hairline-strong: inset 0 0 0 1px rgb(16 62 51 / 16%);
+  --hairline-invert: inset 0 0 0 1px rgb(253 251 246 / 16%);
+}

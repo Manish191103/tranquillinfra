@@ -1,0 +1,245 @@
+---
+/**
+ * Hero
+ *
+ * Homepage opener: the cinematic carousel with a glass copy panel that sits over
+ * the media on desktop and overlaps its bottom edge as a sheet on mobile, so the
+ * two read as one object rather than stacked cards.
+ *
+ * The panel takes the page's `heroIntro` — one paragraph — rather than the whole
+ * content entry. The full body belongs in the page, not above the fold:
+ * rendering all of it pushed the media and the primary action off the first
+ * screen on a phone (measured 2026-09: a 1,440px hero in an 844px viewport).
+ * The heading is passed separately so the panel keeps its type scale without
+ * needing a compiled Markdown body.
+ */
+import Carousel from '~/components/ui/overlay/Carousel/Carousel.astro';
+import type { CarouselSlide } from '~/components/ui/overlay/Carousel/carousel';
+import Button from '~/components/ui/form/Button/Button.astro';
+
+import type { EnquiryRequestType } from '~/lib/enquiry-cta';
+
+interface HeroAction {
+  label: string;
+  href: string;
+  variant?: 'primary' | 'secondary' | 'link';
+  /** Analytics hook; the tracking layer reads `data-track` when it lands. */
+  track?: string;
+  /**
+   * Dialog element to open instead of navigating — the `href` stays the no-JS
+   * and no-dialog fallback (same contract as `HomeCta`).
+   */
+  dialog?: string;
+  /**
+   * What the action is asking for. Defaults to a site visit, because that is
+   * the promise the dialog makes; a brochure trigger has to say so.
+   */
+  requestType?: EnquiryRequestType;
+}
+
+interface Props {
+  clips: CarouselSlide[];
+  /** The page's H1, rendered at the panel's display scale. */
+  title: string;
+  /** The single-paragraph lede — see the module docblock. */
+  intro: string;
+  eyebrow: string;
+  actions: HeroAction[];
+}
+
+const { clips, title, intro, eyebrow, actions } = Astro.props;
+---
+
+<section class="home-hero bg-background">
+  <div class="hero-stage">
+    <div class="hero-media">
+      <Carousel slides={clips} autoplay={false} />
+    </div>
+
+    <div class="hero-copy shell">
+      <div class="hero-panel shell-core">
+        <p class="eyebrow">{eyebrow}</p>
+
+        <div class="hero-prose">
+          <h1>{title}</h1>
+          <p>{intro}</p>
+        </div>
+
+        {actions.length > 0 && (
+          <div class="hero-actions">
+            {/*
+              `cta*` variants rather than `variant="primary"` plus a
+              `cta-primary` class. Two surface systems on one element only
+              resolved because of emission order, and inside an inverted token
+              scope the Button default's `bg-foreground` remaps to paper.
+            */}
+            {actions.map((action) => {
+              const isTextLink = action.variant === 'link';
+              return (
+                <Button
+                  href={action.href}
+                  variant={isTextLink ? 'ctaGhost' : 'ctaPrimary'}
+                  data-track={action.track}
+                  data-dialog-trigger={action.dialog}
+                  data-dialog-request-type={action.requestType ?? 'site_visit'}
+                  class:list={[
+                    'cta',
+                    // A text link is a CTA whose plate is omitted: the well
+                    // and the travel are unchanged, so the two actions in
+                    // this row still read as a matched set.
+                    isTextLink && '!px-0 !py-0',
+                  ]}
+                >
+                  <span class="cta-label">{action.label}</span>
+                  <span class="cta-icon" aria-hidden="true">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M7 17L17 7M7 7h10v10" />
+                    </svg>
+                  </span>
+                </Button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .home-hero {
+    padding: clamp(0.75rem, 1.4vw, 1.25rem);
+  }
+
+  .hero-stage {
+    position: relative;
+    width: 100%;
+  }
+
+  .hero-media {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-copy {
+    position: absolute;
+    top: clamp(1.5rem, 5vw, 4rem);
+    left: clamp(1rem, 3.2vw, 3.5rem);
+    z-index: 4;
+    width: min(40rem, 46%);
+  }
+
+  /*
+   * The panel is opaque paper rather than frosted glass. Two reasons: a
+   * `backdrop-blur` over a full-bleed carousel forces the compositor to
+   * re-blur every frame the carousel animates, and against a moving image a
+   * translucent panel shifts legibility frame to frame. Solid paper is both
+   * cheaper and calmer — and the bezel does the work the blur was doing.
+   */
+  .hero-panel {
+    padding: clamp(1.25rem, 2.7vw, 2.75rem);
+  }
+
+  .hero-prose :global(h1) {
+    max-width: 20ch;
+    margin-bottom: var(--space-5);
+    margin-top: var(--space-5);
+    font-family: var(--font-display);
+    font-size: clamp(2.4rem, 3.7vw, 3.6rem);
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    font-variation-settings: 'opsz' 60;
+    text-wrap: balance;
+  }
+
+  .hero-prose :global(p) {
+    max-width: 34rem;
+    color: var(--color-foreground-muted);
+    font-size: clamp(0.98rem, 1.35vw, 1.1rem);
+  }
+
+  .hero-prose :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4);
+    margin-top: var(--space-8);
+  }
+
+  @media (max-width: 48rem) {
+    .home-hero {
+      padding: 0.75rem;
+    }
+
+    .hero-stage {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /*
+     * Media first on a phone. Copy-first pushed the image and the primary action
+     * below the fold entirely (measured 2026-09: a first screen with no image
+     * and no CTA), and a visitor arriving from a search result for plots cannot
+     * judge the product from a paragraph. Instead of stacking two detached
+     * rounded cards, the panel overlaps the media's bottom edge as a narrower
+     * sheet — one hero object. The carousel keeps its navigation clear of the
+     * overlap by lifting the strip above the panel edge.
+     */
+    .hero-media {
+      order: 1;
+    }
+
+    .hero-copy {
+      position: relative;
+      top: auto;
+      left: auto;
+      order: 2;
+      z-index: 2;
+      width: calc(100% - 2rem);
+      margin: -1.6rem auto 0;
+    }
+
+    .hero-panel {
+      padding: clamp(1rem, 4.5vw, 1.35rem);
+    }
+
+    .hero-prose :global(h1) {
+      margin-bottom: var(--space-3);
+      font-size: clamp(1.9rem, 8.7vw, 2.55rem);
+      letter-spacing: -0.035em;
+      line-height: 0.99;
+      font-variation-settings: 'opsz' 36;
+    }
+
+    .hero-prose :global(p) {
+      margin-bottom: 0;
+      font-size: clamp(0.92rem, 3.8vw, 1rem);
+      line-height: 1.5;
+      text-wrap: pretty;
+    }
+
+    .hero-actions {
+      gap: 0.75rem 1.25rem;
+      margin-top: var(--space-5);
+    }
+  }
+
+  @media (max-width: 28rem) {
+    /* The secondary action is a text link now, so both actions share one row
+       where they fit and wrap left-aligned where they do not. */
+    .hero-actions {
+      gap: 0.5rem 1.1rem;
+    }
+  }
+</style>

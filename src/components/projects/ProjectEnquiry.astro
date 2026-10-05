@@ -1,0 +1,156 @@
+---
+/**
+ * ProjectEnquiry
+ *
+ * The closing conversion block: direct contact routes beside the shared contact
+ * form, on the inverted surface. The two intent buttons prefill the form subject
+ * so the team can triage site visits and brochure requests apart. The
+ * `#project-brochure` anchor is kept for links already in the wild.
+ */
+import ContactForm from '~/components/patterns/ContactForm.astro';
+import Button from '~/components/ui/form/Button/Button.astro';
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+import siteConfig from '~/config/site.config';
+import { PHONE_CTA_LABEL, SITE_VISIT_CTA_LABEL, WHATSAPP_CTA_LABEL } from '~/lib/enquiry-cta';
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  intro: string;
+}
+
+const { eyebrow, title, intro } = Astro.props;
+
+const telHref = siteConfig.phoneE164 ? `tel:${siteConfig.phoneE164}` : undefined;
+---
+
+<section
+  id="project-enquiry"
+  class="section bg-surface-invert text-on-invert scroll-mt-24"
+  aria-labelledby="project-enquiry-title"
+>
+  <div class="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-14">
+    <div>
+      <p class="eyebrow eyebrow-on-invert">{eyebrow}</p>
+      <h2 id="project-enquiry-title" class="display-md text-on-invert">
+        {title}
+      </h2>
+      <p class="text-on-invert-secondary mt-4 max-w-[34rem]">{intro}</p>
+
+      <ul class="mt-8 space-y-4 text-sm">
+        <li class="flex items-center gap-2">
+          <Icon name="phone" size="sm" class="text-accent-ink" />
+          {telHref ? (
+            <a
+              class="hover:text-on-invert-secondary underline underline-offset-2"
+              href={telHref}
+              data-track="phone"
+            >
+              {PHONE_CTA_LABEL}
+              {siteConfig.phone && <span class="text-on-invert-muted">· {siteConfig.phone}</span>}
+            </a>
+          ) : (
+            <span>{siteConfig.phone}</span>
+          )}
+        </li>
+        {siteConfig.whatsapp && (
+          <li class="flex items-center gap-2">
+            <Icon name="brand-whatsapp" size="sm" class="text-accent-ink" />
+            <a
+              class="hover:text-on-invert-secondary underline underline-offset-2"
+              href={siteConfig.whatsapp}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-track="whatsapp"
+            >
+              {WHATSAPP_CTA_LABEL}
+            </a>
+          </li>
+        )}
+        <li class="flex items-center gap-2">
+          <Icon name="mail" size="sm" class="text-accent-ink" />
+          <a
+            class="hover:text-on-invert-secondary underline underline-offset-2"
+            href={`mailto:${siteConfig.email}`}
+            data-track="email"
+          >
+            Email {siteConfig.email}
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div
+      id="project-brochure"
+      class="bg-card text-foreground scroll-mt-28 rounded-lg p-6 shadow-lg md:p-8"
+    >
+      <div class="flex flex-wrap gap-3">
+        <Button
+          variant="secondary"
+          type="button"
+          data-enquiry-intent="Site visit request"
+          data-enquiry-type="site_visit"
+          data-track="site_visit"
+        >
+          {SITE_VISIT_CTA_LABEL}
+        </Button>
+        <Button
+          variant="outline"
+          type="button"
+          data-enquiry-intent="Brochure request"
+          data-enquiry-type="brochure"
+          data-track="brochure"
+        >
+          Request the brochure
+        </Button>
+      </div>
+
+      <!--
+        A PAPER plate on the forest field, not a dark one. ContactForm paints its
+        fields with the light-surface tokens (`bg-background`, `text-foreground`),
+        so a dark plate would put a dark form on a dark section. A light plate is
+        also the correct affordance: it tells the visitor this is the one place
+        on the page where they type.
+      -->
+      <div class="shell reveal-3">
+        <div class="shell-core p-6 md:p-8">
+          <ContactForm />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  /**
+   * Prefill the enquiry subject and the visible request-type control from the
+   * intent buttons so the team can triage site visits and brochure requests
+   * apart — and so a brochure request also gets the PDF mailed to the address
+   * in the form. Focus lands on the first required field so the click moves the
+   * visitor into the form rather than the optional subject line the button just
+   * filled. Re-initialised after view-transition swaps, matching the
+   * ContactForm script.
+   */
+  function initEnquiryIntents() {
+    const form = document.querySelector<HTMLFormElement>('#contact-form');
+    const subject = form?.querySelector<HTMLInputElement>('input[name="enquiry_subject"]');
+    // A `<select>`: the form asks the visitor what they want, and the buttons
+    // only pre-answer it.
+    const requestType = form?.querySelector<HTMLSelectElement>('select[name="request_type"]');
+    // Focus the first required field, not the optional subject the button fills.
+    const firstRequired = form?.querySelector<HTMLInputElement>(
+      'input[name="name"], input[name="email"], input[name="phone"]'
+    );
+
+    document.querySelectorAll<HTMLElement>('[data-enquiry-intent]').forEach((button) => {
+      button.addEventListener('click', () => {
+        if (requestType) requestType.value = button.dataset.enquiryType ?? 'enquiry';
+        if (subject) subject.value = button.dataset.enquiryIntent ?? '';
+        firstRequired?.focus({ preventScroll: true });
+      });
+    });
+  }
+
+  initEnquiryIntents();
+  document.addEventListener('astro:after-swap', initEnquiryIntents);
+</script>

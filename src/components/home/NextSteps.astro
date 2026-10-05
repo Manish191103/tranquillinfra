@@ -1,0 +1,218 @@
+---
+/**
+ * NextSteps
+ *
+ * Three numbered steps under hairline top rules, each with an optional link
+ * rendered after the body copy.
+ */
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+import type { EnquiryRequestType } from '~/lib/enquiry-cta';
+
+interface NextStep {
+  title: string;
+  body: string;
+  link?: {
+    href: string;
+    label: string;
+    /** Analytics hook; the tracking layer reads `data-track` when it lands. */
+    track?: string;
+    /** Dialog element to open instead of navigating, where the page renders one. */
+    dialog?: string;
+    /** What the link is asking for; the dialog opens on that request. */
+    requestType?: EnquiryRequestType;
+  };
+}
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  steps: NextStep[];
+}
+
+const { eyebrow, title, intro, steps } = Astro.props;
+---
+
+<section class="home-next-steps bg-background" aria-labelledby="home-next-steps-title">
+  <div class="mx-auto max-w-6xl px-6">
+    <header class="max-w-3xl">
+      <p class="eyebrow reveal">{eyebrow}</p>
+      <h2 id="home-next-steps-title" class="display-md reveal-2">
+        {title}
+      </h2>
+      <p class="text-foreground-muted reveal-3 mt-6 max-w-[46ch] text-lg text-pretty">{intro}</p>
+    </header>
+
+    {/*
+     * Asymmetric bento: one large plate spanning two rows on the left, two
+     * stacked plates on the right. The asymmetry is doing real work — it
+     * ranks the three steps by prominence without an "featured" flag, and it
+     * gives every card a width at least half the container so a display heading
+     * never breaks into a three-line stack.
+     */}
+    <div class="steps-grid">
+      {steps.map((step, index) => (
+        <article class:list={['shell', 'step-card', index === 0 && 'step-card-lead']}>
+          <div class="shell-core step-core">
+            <span
+              class:list={['step-number', index === 0 && 'step-number-mark']}
+              aria-hidden="true"
+            >
+              {String(index + 1).padStart(2, '0')}
+            </span>
+            <h3 class="display-sm">{step.title}</h3>
+            <p class="text-foreground-muted mt-4 max-w-[46ch] text-pretty">{step.body}</p>
+            {step.link && (
+              /*
+               * `mt-auto` pins the link to the bottom of the plate. Without it
+               * the tall lead card ends in a pool of empty paper, because the
+               * grid makes all three plates the height of the tallest content.
+               */
+              <a
+                class="cta cta-ghost link-arrow text-foreground hover:text-accent-ink focus-visible:text-accent-ink mt-auto pt-8"
+                href={step.link.href}
+                data-track={step.link.track}
+                data-dialog-trigger={step.link.dialog}
+                data-dialog-request-type={step.link.dialog ? step.link.requestType : undefined}
+              >
+                <span class="cta-label">{step.link.label}</span>
+                <span class="cta-icon" aria-hidden="true">
+                  <Icon name="arrow-up-right" size="sm" class="link-arrow-icon" />
+                </span>
+              </a>
+            )}
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .home-next-steps {
+    padding-block: var(--space-section-lg);
+  }
+
+  /*
+   * Six tracks, not four. The lead plate claims three of them and both rows;
+   * the other two fill the remaining three, one per row. The plates are
+   * separated by exactly one `--shell-padding`, so the gap between them is the
+   * same value as the bezel around each — the whole grid reads as one machined
+   * object divided into three panels rather than as three cards on a page.
+   */
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: var(--shell-padding);
+    margin-top: var(--space-16);
+  }
+
+  .step-card {
+    grid-column: span 3;
+  }
+
+  /* Flex, not block: `mt-auto` on the link needs a column to push against. */
+  .step-core {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    padding: clamp(1.5rem, 2.6vw, 2.25rem);
+  }
+
+  .step-number {
+    display: block;
+    margin-bottom: var(--space-6);
+    color: var(--color-accent-ink);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+  }
+
+  /*
+   * The lead plate gets its index at display scale in the gold accent, set
+   * tight against the title. It anchors the top of the tallest plate in the
+   * section and gives the asymmetry something to express.
+   */
+  .step-number-mark {
+    margin-bottom: var(--space-4);
+    color: var(--color-accent);
+    font-family: var(--font-display);
+    font-size: clamp(3.5rem, 6vw, 5.5rem);
+    font-variation-settings: 'opsz' 96;
+    font-weight: 500;
+    letter-spacing: -0.04em;
+    line-height: 0.9;
+  }
+
+  .link-arrow {
+    font-weight: 600;
+  }
+
+  .link-arrow-icon {
+    transition: transform var(--site-duration-fast) var(--ease-out-quart);
+  }
+
+  .link-arrow:hover .link-arrow-icon {
+    transform: translate(0.125rem, -0.125rem) scale(1.08);
+  }
+
+  /*
+   * `.cta` is `white-space: nowrap`, which is right for a control whose label
+   * is three words and wrong for one this long. Inside the step plates the
+   * content box is the plate minus its own padding, and at 320px that is 212px
+   * — the longest label, "How to verify a plot before you buy", measured 31px
+   * wider than the plate it sits in, so the text ran out through the bezel.
+   *
+   * Scoped to `.step-card` and to the narrow end on purpose: the pill keeps its
+   * single line everywhere the label fits, and only the plate whose copy is a
+   * full sentence gives it two. `text-wrap: balance` on the label keeps the two
+   * lines even rather than leaving "buy" alone on the second.
+   */
+  @media (width < 26rem) {
+    .step-card .cta {
+      white-space: normal;
+    }
+
+    .step-card .cta-label {
+      text-wrap: balance;
+    }
+  }
+
+  /* Tablet: the lead goes full width across the top and the other two sit
+     beneath it. The row span is dropped here — a two-row lead at this width
+     would be taller than its own content by a long way. */
+  @media (min-width: 48rem) and (max-width: 60rem) {
+    .steps-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .step-card-lead {
+      grid-column: span 2;
+      grid-row: span 1;
+    }
+  }
+
+  @media (min-width: 60rem) {
+    .step-card-lead {
+      grid-row: span 2;
+    }
+  }
+
+  @media (max-width: 48rem) {
+    /* Single column below the nav breakpoint, with the whitespace between the
+       plates doing the work the bento composition does on desktop. */
+    .steps-grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-4);
+      margin-top: var(--space-12);
+    }
+
+    .step-card,
+    .step-card-lead {
+      grid-column: span 1;
+      grid-row: span 1;
+    }
+  }
+</style>

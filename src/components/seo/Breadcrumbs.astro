@@ -1,0 +1,85 @@
+---
+import { cn } from '~/lib/cn';
+import JsonLd from './JsonLd.astro';
+import { createBreadcrumbSchema } from '~/lib/schema';
+import { canonicalUrl } from '~/lib/canonical';
+import siteConfig from '~/config/site.config';
+
+interface BreadcrumbItem {
+  label: string;
+  href?: string;
+}
+
+interface Props {
+  items: BreadcrumbItem[];
+  /** `invert` renders light-on-dark for photographic or inverted surfaces */
+  tone?: 'default' | 'invert';
+  class?: string;
+}
+
+const { items, tone = 'default', class: className } = Astro.props;
+
+const tones = {
+  default: {
+    nav: 'text-sm',
+    link: 'text-muted-foreground hover:text-foreground',
+    current: 'text-foreground',
+    chevron: 'text-muted-foreground',
+  },
+  invert: {
+    nav: 'text-sm',
+    link: 'text-on-invert-secondary hover:text-on-invert',
+    current: 'text-on-invert',
+    chevron: 'text-on-invert-muted',
+  },
+}[tone];
+
+// Build schema items with full URLs. The crumb without an href is the current
+// page — schema.org omits `item` for it (see createBreadcrumbSchema), so no
+// URL is synthesised here and two trail levels cannot share one URL.
+const schemaItems = items.map((item) => ({
+  name: item.label,
+  url: item.href ? canonicalUrl(item.href, siteConfig.url) : undefined,
+}));
+
+const schema = createBreadcrumbSchema(schemaItems);
+---
+
+<JsonLd schema={schema} />
+
+<nav aria-label="Breadcrumb" class={cn(tones.nav, className)}>
+  <ol class="flex flex-wrap items-center gap-2">
+    {items.map((item, index) => (
+      <li class="flex items-center gap-2">
+        {index > 0 && (
+          <svg
+            class={cn('h-4 w-4', tones.chevron)}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        )}
+        {item.href && index !== items.length - 1 ? (
+          <a href={item.href} class={cn(tones.link, 'transition-colors')}>
+            {item.label}
+          </a>
+        ) : (
+          <span
+            class={cn(tones.current, 'font-medium')}
+            aria-current={index === items.length - 1 ? 'page' : undefined}
+          >
+            {item.label}
+          </span>
+        )}
+      </li>
+    ))}
+  </ol>
+</nav>

@@ -1,365 +1,218 @@
 ---
-import { render, getCollection } from 'astro:content';
+/**
+ * Project page — one route per `projects` entry (`/projects/<slug>/`)
+ *
+ * The page assembles the section components from the `projects` content
+ * entry (editorial copy, images, FAQ) and `project.config.ts` (the published
+ * statics: plot sizes, total plots, site area, approval references).
+ * Structured data: BreadcrumbList (from Breadcrumbs), the project listing
+ * graph (RealEstateListing, its Offer, the GatedResidenceCommunity Place and
+ * the RERA/HMDA identifiers), a VideoObject per testimonial clip, and FAQPage.
+ *
+ * The FAQPage node is kept for machine understanding and AI answer extraction,
+ * not for a rich result — Google withdrew the FAQ rich result for all
+ * publishers, so it buys nothing in the SERP. Its answers are disclosure-first
+ * ("what is not published", "how do I verify this") and must stay that way:
+ * FAQPage must never carry promotional copy. The same node states the
+ * approved-layout / renders-not-photographs / no-possession-date disclosure
+ * through the listing's `disambiguatingDescription` and the Place's "Current
+ * development stage" entry, so a summary of the graph cannot imply otherwise.
+ *
+ * Hero: the illustrative aerial of the planned layout opens the page in the
+ * shared ImageHero frame — breadcrumbs on the frame's top row, the copy and
+ * the two intent actions over a bottom-weighted scrim, the background clip
+ * over the frame-0 still, and the stats belt as the scroll cue's target
+ * (docs/project-imagery-plan.md, docs/hero-swap-plan.md). The layout section
+ * carries the delivered plotting plan.
+ *
+ * Testimonials: buyer video clips and quotes render between the location and
+ * facts sections, and only when the entry carries consented items (see
+ * ProjectTestimonials and docs/project-testimonials-plan.md).
+ */
+import { getCollection, render } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
+import PageLayout from '~/layouts/PageLayout.astro';
+import Breadcrumbs from '~/components/seo/Breadcrumbs.astro';
+import JsonLd from '~/components/seo/JsonLd.astro';
+import ProjectHero from '~/components/projects/ProjectHero.astro';
+import ProjectStats from '~/components/projects/ProjectStats.astro';
+import ProjectStory from '~/components/projects/ProjectStory.astro';
+import ProjectPlan from '~/components/projects/ProjectPlan.astro';
+import ProjectAmenities from '~/components/projects/ProjectAmenities.astro';
+import ProjectLocation from '~/components/projects/ProjectLocation.astro';
+import ProjectTestimonials from '~/components/projects/ProjectTestimonials.astro';
+import FactsSection from '~/components/patterns/FactsSection.astro';
+import FaqSection from '~/components/patterns/FaqSection.astro';
+import ProjectEnquiry from '~/components/projects/ProjectEnquiry.astro';
+import projectConfig, { projectFacts, projectStats } from '~/config/project.config';
+import { canonicalUrl } from '~/lib/canonical';
+import siteConfig from '~/config/site.config';
+import { createFAQSchema, createProjectSchema, createVideoSchema } from '~/lib/schema';
 
-import { Icon } from 'astro-icon/components';
+export const getStaticPaths = (async () => {
+  const projects = await getCollection('projects');
 
-import Layout from '~/layouts/PageLayout.astro';
-import WidgetWrapper from '~/components/ui/WidgetWrapper.astro';
-import Headline from '~/components/ui/Headline.astro';
-import Image from '~/components/common/Image.astro';
-import Video from '~/components/widgets/Video.astro';
-import FAQs from '~/components/widgets/FAQs.astro';
-import CallToAction from '~/components/widgets/CallToAction.astro';
-import type { MetaData } from '~/types';
-
-export const prerender = true;
-
-export async function getStaticPaths() {
-  const projects = (await getCollection('project')).filter(({ data }) => !data.draft);
-  return projects.map((entry) => ({
-    params: { slug: entry.id },
-    props: { entry },
+  return projects.map((project) => ({
+    params: { slug: project.id },
+    props: { project },
   }));
-}
+}) satisfies GetStaticPaths;
 
-type ProjectEntry = Awaited<ReturnType<typeof getStaticPaths>>[number]['props']['entry'];
+const { project } = Astro.props;
+const { Content } = await render(project);
+const data = project.data;
 
-// The project schema stores widget sections as `z.record(z.unknown())`, so the
-// inferred types are unworkable for the template. The shapes below describe
-// what the renderer actually reads and what Decap's config.yml edits.
-interface SectionHead {
-  eyebrow?: string;
-  title?: string;
-  intro?: string;
-  note?: string;
-}
-interface ProjectData {
-  title: string;
-  displayTitle?: string;
-  description: string;
-  projectType?: string;
-  location?: string;
-  intro?: string;
-  layout?: string;
-  verificationNote?: string;
-  hero?: {
-    image?: string;
-    alt?: string;
-    caption?: string;
-    video?: { src?: string; mobileSrc?: string };
-  };
-  plan?: SectionHead & { image?: string; alt?: string; caption?: string };
-  story?: SectionHead & { images?: Array<{ image: string; alt: string; caption?: string }> };
-  amenities?: SectionHead & {
-    groups?: Array<{
-      title?: string;
-      items?: Array<{ name: string; description?: string; icon?: string }>;
-    }>;
-  };
-  locationSection?: SectionHead & {
-    groups?: Array<{ title?: string; landmarks?: string[] }>;
-  };
-  facts?: SectionHead;
-  faq?: SectionHead & { items?: Array<{ question: string; answer: string }> };
-  enquiry?: SectionHead;
-  testimonials?: SectionHead & {
-    items?: Array<{
-      id?: string;
-      video?: {
-        src?: string;
-        poster?: string;
-        posterAlt?: string;
-        duration?: string;
-        orientation?: string;
-      };
-    }>;
-  };
-  directionsUrl?: string;
-  coordinates?: { latitude: number; longitude: number };
-}
+// Two levels only: Breadcrumbs.astro keeps one URL per trail level, and the
+// /projects/ root is a redirect to this page (docs/project-slug-routes-plan.md).
+const breadcrumbs = [{ label: 'Home', href: '/' }, { label: data.displayTitle }];
 
-const { entry } = Astro.props as { entry: ProjectEntry };
+const stats = projectStats();
 
-// Content entries reference images relative to `src/data/project/…`; the
-// AstroWind <Image /> resolves `~/assets/…` paths only. Normalise once here so
-// every image goes through Sharp's optimisation like the rest of the site.
-const toAsset = (p?: string) => (p ? p.replace(/^(\.\.\/)+assets\//, '~/assets/') : p);
+// Statutory and price rows come from config; the editorial rows from the entry.
+const facts = projectFacts({
+  location: data.location,
+  layout: data.layout,
+  verificationNote: data.verificationNote,
+});
 
-// Amenity icon names in the content data that the installed tabler set does
-// not ship, mapped to the nearest existing icon. Extend here, not in the data.
-const ICON_ALIASES: Record<string, string> = {
-  'door-open': 'door',
-  footprints: 'walk',
-  baby: 'confetti',
-  lightbulb: 'bulb',
-  waves: 'ripple',
+// `projectStats()` publishes the total parcel count, which on its own reads as
+// "82 plots for sale". Both halves of the inventory belong on the page, so the
+// saleable figure is stated here from the same config the Offer node uses.
+const { availability } = projectConfig;
+const saleableFact = {
+  label: 'Plots available',
+  value: `${availability.saleable} saleable of ${availability.total} (${availability.mortgageHeld} held under HMDA Mortgage conditions)`,
 };
-const amenityIcon = (icon?: string) => `tabler:${ICON_ALIASES[icon ?? ''] ?? icon ?? 'star'}`;
 
-const d = entry.data as unknown as ProjectData;
-const { Content } = await render(entry);
+const siteUrl = Astro.site ?? new URL('https://www.tranquillinfra.com');
+const projectUrl = canonicalUrl(`/projects/${project.id}/`, siteConfig.url);
 
-const metadata: MetaData = {
-  title: d.title,
-  description: d.description,
-  openGraph: {
-    type: 'article',
-  },
-};
+const projectSchema = createProjectSchema({
+  name: data.displayTitle,
+  description: data.description,
+  url: projectUrl,
+  // The advertised features are published in the entry; the listing carries the
+  // same names so the two cannot drift.
+  amenities: data.amenities.groups.flatMap((group) => group.items.map((item) => item.name)),
+  // The published total, from the same config the facts table renders, so the
+  // graph can state the layout's area without the copy restating it.
+  siteArea: projectConfig.siteArea,
+  // First publication, not last review: a copy edit must not re-date the
+  // listing. `publishedAt` is optional on the entry, and an entry without it
+  // emits no date at all rather than a wrong one.
+  datePosted: data.publishedAt,
+  dateModified: data.updatedAt,
+});
+
+// VideoObject nodes for the buyer testimonial clips only.
+//
+// The hero background clip is deliberately not marked up: it is a muted loop
+// behind a scrim, not the page's main content video, and it carries no
+// duration, so a VideoObject would describe something the visitor cannot watch
+// as a video. The testimonial clips are real, consent-recorded footage a
+// buyer can play, so they stay.
+const videoSchemas = (data.testimonials?.items ?? [])
+  .filter((item) => item.video)
+  .map((item) =>
+    createVideoSchema({
+      name: item.quote
+        ? `${data.displayTitle} buyer testimonial`
+        : `${data.displayTitle} buyer testimonial (${item.id})`,
+      description:
+        item.quote ??
+        item.context ??
+        `A buyer describes their experience with ${data.displayTitle}, recorded at the site.`,
+      contentUrl: new URL(item.video!.src, siteUrl).toString(),
+      thumbnailUrl: new URL(item.video!.poster.src, siteUrl).toString(),
+      // The date the signed release was filed, which is the only real answer
+      // for when a clip went up. No release record means no `uploadDate`: an
+      // omitted field is honest, a fallback to `updatedAt` is not.
+      uploadDate: item.consentRecordedAt,
+      durationClock: item.video!.duration,
+    })
+  );
 ---
 
-<Layout metadata={metadata}>
-  <WidgetWrapper id="project-hero" containerClass="max-w-6xl mx-auto pb-8">
-    <div class="text-center">
-      {
-        d.projectType && (
-          <p class="text-secondary text-base font-bold tracking-wide uppercase">{d.projectType}</p>
-        )
-      }
-      <h1
-        class="leading-tighter font-heading text-heading mb-4 text-4xl font-bold tracking-tighter md:text-6xl"
-      >
-        {d.displayTitle ?? d.title}
-      </h1>
-      {d.intro && <p class="text-muted mx-auto max-w-3xl text-xl">{d.intro}</p>}
-      {
-        d.location && (
-          <p class="text-muted mt-3 text-base">
-            <Icon class="inline-block h-4 w-4 align-[-2px]" name="tabler:map-pin" /> {d.location}
-          </p>
-        )
-      }
-    </div>
-    {
-      d.layout && (
-        <p class="text-muted mt-6 text-center text-base">
-          <Icon class="inline-block h-4 w-4 align-[-2px]" name="tabler:brightness-2" /> {d.layout}
-        </p>
-      )
-    }
-  </WidgetWrapper>
+<PageLayout title={data.title} description={data.description} enquiryDialog={false}>
+  <ProjectHero
+    eyebrow={data.projectType}
+    title={data.title}
+    location={data.location}
+    intro={data.intro}
+    hero={data.hero}
+  >
+    <Breadcrumbs slot="breadcrumbs" items={breadcrumbs} tone="invert" />
+  </ProjectHero>
 
-  {
-    d.hero && (
-      <WidgetWrapper containerClass="max-w-5xl mx-auto pt-0">
-        <Video
-          src={d.hero.video?.src}
-          poster={{ src: toAsset(d.hero.image) ?? '', alt: d.hero.alt ?? '' }}
-          caption={d.hero.caption}
-          videoTitle={d.displayTitle ?? d.title}
-        />
-      </WidgetWrapper>
-    )
-  }
+  <ProjectStats stats={stats} />
 
-  {
-    d.verificationNote && (
-      <WidgetWrapper containerClass="max-w-4xl mx-auto py-4">
-        <div class="bg-primary/10 border-primary/30 text-heading rounded-lg border px-5 py-4 text-base">
-          <Icon class="inline-block h-4 w-4 align-[-2px]" name="tabler:shield-check" />
-          <strong class="font-semibold"> Verify before you rely:</strong> {d.verificationNote}
-        </div>
-      </WidgetWrapper>
-    )
-  }
+  <ProjectStory
+    eyebrow={data.story.eyebrow}
+    title={data.story.title}
+    intro={data.story.intro}
+    note={data.story.note}
+    images={data.story.images}
+    Content={Content}
+  />
 
-  <section class="mx-auto max-w-4xl px-4 py-8 sm:px-6">
-    <div
-      class="prose prose-lg prose-headings:font-heading prose-a:text-primary dark:prose-headings:text-slate-300 prose-headings:leading-tighter prose-headings:tracking-tighter prose-img:rounded-md mx-auto"
-    >
-      <Content />
-    </div>
-  </section>
+  <ProjectPlan
+    eyebrow={data.plan.eyebrow}
+    title={data.plan.title}
+    intro={data.plan.intro}
+    plan={data.plan}
+  />
 
-  {
-    d.plan && (
-      <WidgetWrapper id="project-plan" containerClass="max-w-5xl mx-auto">
-        <Headline tagline={d.plan.eyebrow} title={d.plan.title} subtitle={d.plan.intro} />
-        <Image
-          src={toAsset(d.plan.image)}
-          alt={d.plan.alt ?? ''}
-          widths={[768, 1024]}
-          sizes="(max-width: 1023px) 100vw, 1024px"
-          width={1024}
-          class="rounded-2xl shadow-lg"
-          format="webp"
-        />
-        {d.plan.caption && <p class="text-muted mt-3 text-center text-sm">{d.plan.caption}</p>}
-        {d.plan.note && <p class="text-muted mt-4 text-sm">{d.plan.note}</p>}
-      </WidgetWrapper>
-    )
-  }
+  <ProjectAmenities
+    eyebrow={data.amenities.eyebrow}
+    title={data.amenities.title}
+    intro={data.amenities.intro}
+    note={data.amenities.note}
+    groups={data.amenities.groups}
+  />
 
-  {
-    d.story && (
-      <WidgetWrapper id="project-story" containerClass="max-w-6xl mx-auto">
-        <Headline tagline={d.story.eyebrow} title={d.story.title} subtitle={d.story.intro} />
-        <div class="grid gap-8 md:grid-cols-2">
-          {(d.story.images ?? []).map((img) => (
-            <figure>
-              <Image
-                src={toAsset(img.image)}
-                alt={img.alt}
-                widths={[640, 1024]}
-                sizes="(max-width: 767px) 100vw, 50vw"
-                width={1024}
-                class="rounded-2xl shadow-lg"
-                format="webp"
-              />
-              {img.caption && (
-                <figcaption class="text-muted mt-3 text-center text-sm">{img.caption}</figcaption>
-              )}
-            </figure>
-          ))}
-        </div>
-        {d.story.note && <p class="text-muted mt-6 text-sm">{d.story.note}</p>}
-      </WidgetWrapper>
-    )
-  }
+  <ProjectLocation
+    eyebrow={data.locationSection.eyebrow}
+    title={data.locationSection.title}
+    intro={data.locationSection.intro}
+    note={data.locationSection.note}
+    groups={data.locationSection.groups}
+    directionsUrl={data.directionsUrl}
+    coordinates={data.coordinates}
+  />
 
-  {
-    d.amenities && (
-      <WidgetWrapper id="project-amenities" containerClass="max-w-6xl mx-auto">
-        <Headline
-          tagline={d.amenities.eyebrow}
-          title={d.amenities.title}
-          subtitle={d.amenities.intro}
-        />
-        <div class="grid gap-10 md:grid-cols-3">
-          {(d.amenities.groups ?? []).map((group) => (
-            <div class="not-prose">
-              <h3 class="font-heading text-heading mb-4 text-xl font-bold">{group.title}</h3>
-              <ul class="space-y-3">
-                {(group.items ?? []).map((item) => (
-                  <li class="flex items-start gap-3">
-                    <Icon
-                      class="text-primary mt-0.5 h-5 w-5 shrink-0"
-                      name={amenityIcon(item.icon)}
-                    />
-                    <span>
-                      <span class="text-heading block text-sm font-semibold">{item.name}</span>
-                      <span class="text-muted block text-sm">{item.description}</span>
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-        {d.amenities.note && <p class="text-muted mt-6 text-sm">{d.amenities.note}</p>}
-      </WidgetWrapper>
-    )
-  }
+  {data.testimonials && data.testimonials.items.length > 0 && (
+    <ProjectTestimonials
+      eyebrow={data.testimonials.eyebrow}
+      title={data.testimonials.title}
+      intro={data.testimonials.intro}
+      note={data.testimonials.note}
+      items={data.testimonials.items}
+    />
+  )}
 
-  {
-    d.locationSection && (
-      <WidgetWrapper id="project-location" isDark containerClass="max-w-6xl mx-auto">
-        <Headline
-          tagline={d.locationSection.eyebrow}
-          title={d.locationSection.title}
-          subtitle={d.locationSection.intro}
-        />
-        <div class="grid gap-10 md:grid-cols-3">
-          {(d.locationSection.groups ?? []).map((group) => (
-            <div>
-              <h3 class="font-heading text-heading mb-4 text-xl font-bold">{group.title}</h3>
-              <ul class="space-y-3">
-                {(group.landmarks ?? []).map((landmark) => (
-                  <li class="text-muted flex items-start gap-3 text-sm">
-                    <Icon class="mt-0.5 inline-block h-4 w-4 shrink-0" name="tabler:point" />
-                    {landmark}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-        {d.directionsUrl && (
-          <p class="mt-8 text-center">
-            <a
-              href={d.directionsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="btn text-primary border-primary hover:bg-primary inline-flex items-center gap-2 rounded-md border px-5 py-2 text-sm font-semibold transition hover:text-white"
-              aria-label="Open directions in Google Maps (opens in a new tab)"
-            >
-              <Icon class="h-4 w-4" name="tabler:directions" /> Get directions
-            </a>
-          </p>
-        )}
-        {d.locationSection.note && <p class="text-muted mt-6 text-sm">{d.locationSection.note}</p>}
-      </WidgetWrapper>
-    )
-  }
+  <FactsSection
+    id="project-facts"
+    eyebrow={data.facts.eyebrow}
+    title={data.facts.title}
+    intro={data.facts.intro}
+    facts={[...facts, saleableFact]}
+  />
 
-  {
-    d.facts && (d.facts.title || d.facts.intro) && (
-      <WidgetWrapper id="project-facts" containerClass="max-w-4xl mx-auto">
-        <Headline tagline={d.facts.eyebrow} title={d.facts.title} subtitle={d.facts.intro} />
-      </WidgetWrapper>
-    )
-  }
+  <FaqSection
+    id="project-faq"
+    eyebrow={data.faq.eyebrow}
+    title={data.faq.title}
+    intro={data.faq.intro}
+    items={data.faq.items}
+  />
 
-  {
-    d.faq && (
-      <FAQs
-        id="project-faq"
-        tagline={d.faq.eyebrow}
-        title={d.faq.title}
-        subtitle={d.faq.intro}
-        items={(d.faq.items ?? []).map(({ question, answer }) => ({
-          title: question,
-          description: answer,
-        }))}
-        columns={2}
-        schema
-      />
-    )
-  }
+  <ProjectEnquiry
+    eyebrow={data.enquiry.eyebrow}
+    title={data.enquiry.title}
+    intro={data.enquiry.intro}
+  />
 
-  {
-    d.testimonials && (
-      <WidgetWrapper id="project-testimonials" isDark containerClass="max-w-6xl mx-auto">
-        <Headline
-          tagline={d.testimonials.eyebrow}
-          title={d.testimonials.title}
-          subtitle={d.testimonials.intro}
-        />
-        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {(d.testimonials.items ?? []).map((t) => (
-            <figure class="overflow-hidden rounded-2xl bg-slate-900 shadow-lg">
-              <video
-                src={t.video?.src}
-                poster={toAsset(t.video?.poster)}
-                controls
-                preload="none"
-                playsinline
-                class="aspect-[9/16] w-full bg-black object-cover"
-                aria-label={t.video?.posterAlt}
-              />
-              <figcaption class="text-muted flex items-center justify-between px-4 py-3 text-xs">
-                <span class="flex items-center gap-2">
-                  <Icon class="h-4 w-4" name="tabler:video" /> Buyer video
-                </span>
-                <span>{t.video?.duration}</span>
-              </figcaption>
-            </figure>
-          ))}
-        </div>
-        {d.testimonials.note && <p class="text-muted mt-6 text-sm">{d.testimonials.note}</p>}
-      </WidgetWrapper>
-    )
-  }
-
-  {
-    d.enquiry && (
-      <CallToAction
-        id="project-enquiry"
-        tagline={d.enquiry.eyebrow}
-        title={d.enquiry.title}
-        subtitle={d.enquiry.intro}
-        callToAction={{ text: 'Book a site visit', href: '/contact-us/', variant: 'primary' }}
-      />
-    )
-  }
-</Layout>
+  <JsonLd schema={projectSchema} />
+  {videoSchemas.length > 0 && <JsonLd schema={videoSchemas} />}
+  <JsonLd schema={createFAQSchema(data.faq.items)} />
+</PageLayout>

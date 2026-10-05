@@ -34,10 +34,12 @@
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.4",
     "astro": "^7.3.2",
-    "astro-icon": "^1.1.5",
     "astro-seo": "^1.2.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "limax": "4.2.3",
     "lodash.merge": "^4.6.2",
+    "schema-dts": "^2.1.0",
     "unpic": "^4.2.2"
   },
   "devDependencies": {

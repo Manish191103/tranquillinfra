@@ -1,0 +1,88 @@
+---
+/**
+ * AboutHero
+ *
+ * The About page opener, rendered through the shared ImageHero shell: the
+ * entry's `heroTitle` is the page's single H1 and `heroIntro` its lede, both
+ * sitting over the illustrative golden-hour view of the planned Tranquill City
+ * entrance, with the premium-project note as a muted line under the copy.
+ * Breadcrumbs arrive in the `breadcrumbs` slot so the page keeps owning the
+ * trail, and the cue jumps to the approach section from the first fold.
+ *
+ * Only the heading and the lede are here. The entry's remaining paragraphs
+ * render in the page below the fold: a hero plate is a scrim-sized object, and
+ * a four-paragraph article inside it ran off the bottom of the frame — the last
+ * sentence was clipped at the fold on both desktop and mobile (measured
+ * 2026-09-30). The hero carries the promise; the body carries the argument.
+ */
+import type { ImageMetadata } from 'astro';
+import ImageHero from '~/components/layout/ImageHero.astro';
+
+interface Props {
+  /** The page's single H1, from the entry's `heroTitle`. */
+  title: string;
+  /** The one-paragraph lede, from the entry's `heroIntro`. */
+  intro: string;
+  eyebrow: string;
+  hero: { image: ImageMetadata; alt: string; caption: string };
+  note: { label: string; title: string; body: string };
+}
+
+const { title, intro, eyebrow, hero, note } = Astro.props;
+---
+
+<ImageHero
+  image={hero.image}
+  alt={hero.alt}
+  caption={hero.caption}
+  label="About Tranquill Infra"
+  cueHref="#about-story"
+  cueLabel="Skip to the detail"
+  widths={[640, 960, 1280, 1600]}
+>
+  <slot name="breadcrumbs" slot="breadcrumbs" />
+
+  <p class="eyebrow">{eyebrow}</p>
+
+  <div class="about-hero-prose">
+    <h1>{title}</h1>
+    <p>{intro}</p>
+  </div>
+
+  <p class="text-on-invert mt-6 max-w-[36rem] text-sm">
+    <span class="eyebrow">{note.label}:</span>
+    <strong class="text-on-invert font-semibold">{note.title}</strong> — {note.body}
+  </p>
+</ImageHero>
+
+<style>
+  .about-hero-prose :global(h1) {
+    max-width: 20ch;
+    margin-top: var(--space-3);
+    color: var(--on-invert);
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 3.4vw, 2.9rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  /* The lede is one paragraph, so it can run at the lede step the other
+     heroes use rather than the article step it was inheriting from a body. */
+  .about-hero-prose :global(p) {
+    max-width: 36rem;
+    margin-top: var(--space-3);
+    color: var(--on-invert-secondary);
+    font-size: clamp(1rem, 1.3vw, 1.05rem);
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+
+  /* The copy is bottom-anchored, so on phones the frame has to stay within the
+     first fold for the note to clear the fixed contact bar. */
+  @media (width < 60rem) {
+    .about-hero-prose :global(h1) {
+      font-size: 1.9rem;
+    }
+  }
+</style>
