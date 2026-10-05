@@ -1,42 +1,279 @@
 ---
-import { render } from 'astro:content';
-import { getEntry } from 'astro:content';
+/**
+ * Homepage
+ *
+ * Assembled from the ported sections: cinematic hero, the published-positions
+ * band, the proof belt and the closing CTA. All copy lives here or in
+ * `src/data/page/home.md`; the section components stay presentation-only.
+ *
+ * Imagery status (client feedback 2026-09-13): HOME-01 closed 2026-09-15 — the
+ * hero carousel runs the supplied illustrative renders from
+ * `assets/images/projects/tranquill-city/home-hero/`; 2026-09-16 reordered the
+ * set (the entrance render leads, the labelled aerial follows), added a fifth
+ * frame and re-delivered slides 3-5 (villa street, play area, walkway).
+ */
+import { getEntry, render } from 'astro:content';
+import { Icon } from 'astro-icon/components';
+import PageLayout from '~/layouts/PageLayout.astro';
+import HomeHero from '~/components/widgets/HomeHero.astro';
+import Prose from '~/components/widgets/Prose.astro';
+import ProofBelt from '~/components/widgets/ProofBelt.astro';
+import ScrollBuildStory from '~/components/widgets/ScrollBuildStory.astro';
+import ProjectSpotlight from '~/components/widgets/ProjectSpotlight.astro';
+import InvestmentBelt from '~/components/widgets/InvestmentBelt.astro';
+import NextSteps from '~/components/widgets/NextSteps.astro';
+import LibraryDirectory from '~/components/widgets/LibraryDirectory.astro';
+import HomeCta from '~/components/widgets/HomeCta.astro';
+import type { CarouselSlide } from '~/components/ui/Carousel/carousel';
+import { buildPosterPreload } from '~/components/ui/Carousel/posters';
+import { contact } from '~/contact';
 
-import Layout from '~/layouts/PageLayout.astro';
-import HeroText from '~/components/widgets/HeroText.astro';
 import type { MetaData } from '~/types';
 
-export const prerender = true;
+import heroArrival from '~/assets/images/projects/tranquill-city/home-hero/arrival.webp';
+import heroEntrance from '~/assets/images/projects/tranquill-city/home-hero/entrance.webp';
+import heroGreenSpaces from '~/assets/images/projects/tranquill-city/home-hero/green-spaces.webp';
+import heroAmenities from '~/assets/images/projects/tranquill-city/home-hero/amenities.webp';
+import heroCommunityWalk from '~/assets/images/projects/tranquill-city/home-hero/community-walk.webp';
 
-const entry = await getEntry('page', 'home');
-if (!entry) throw new Error('Missing `src/data/page/home.md` — the homepage has no content.');
-const { Content } = await render(entry);
-const { heroTitle, heroIntro } = entry.data;
+const home = await getEntry('page', 'home');
+if (!home) {
+  throw new Error('Missing required page entry "home".');
+}
+const { Content } = await render(home);
+
+// The hero heading is frontmatter: the hero panel renders the page's single H1
+// and the body section below continues from it, so there is one heading to edit
+// and exactly one H1 in the document.
+const { heroTitle, heroIntro } = home.data;
+if (!heroTitle) {
+  throw new Error('The "home" page entry needs a heroTitle for the hero.');
+}
+
+const heroClips: CarouselSlide[] = [
+  {
+    id: 'entrance',
+    title: 'The way in.',
+    caption: 'The entrance is the first signal of how the place is planned.',
+    poster: heroEntrance,
+    alt: 'Illustrative dusk view of the planned Tranquill City entrance arch, with the Tranquill City name and emblem on its stone pillar and a car arriving under the lit canopy',
+  },
+  {
+    id: 'arrival',
+    title: 'A wider view of what is taking shape.',
+    caption: 'The land, the approach, and the neighbourhood around Tranquill City.',
+    poster: heroArrival,
+    alt: 'Illustrative aerial view of the planned Tranquill City layout outlined in gold at golden hour, with the Outer Ring Road and the Miyapur, Patancheru and Sangareddy landmarks labelled',
+  },
+  {
+    id: 'green-spaces',
+    title: 'Space to pause and move.',
+    caption: 'Avenues and planted spaces shape the everyday rhythm of the layout.',
+    poster: heroGreenSpaces,
+    alt: 'Illustrative golden-hour view along a planted villa street inside the planned layout, with a tree-lined avenue, low boundary walls and a car parked under a villa carport',
+  },
+  {
+    id: 'amenities',
+    title: 'The life planned around the plots.',
+    caption:
+      "Children's play areas and planted spaces between the homes. Confirm the latest scope with the team.",
+    poster: heroAmenities,
+    alt: "Illustrative view of a planned children's play area inside the layout in daylight, with a multi-play tower and spiral slide, spring riders, a swing frame and a coloured play surface among planting and lawns",
+  },
+  {
+    id: 'community-walk',
+    title: 'An evening inside the layout.',
+    caption: 'Planted walks, seating and shade between the homes.',
+    poster: heroCommunityWalk,
+    alt: 'Illustrative view along a landscaped walkway inside the planned layout, with a timber pergola and benches where residents sit, planting beds with bollard lights, and two residents walking towards the camera',
+  },
+];
+
+// The entrance clip leads the carousel and its poster is the page's LCP
+// element; the head preload starts the fetch before the parser reaches the
+// hero markup deep in the body.
+const lcpPreload = await buildPosterPreload(heroClips[0]);
+
+// The published numbers, read from `contact.ts` so the plate beside the prose
+// cannot drift from the announcement bar, the header chrome, or the project
+// page's facts. The two approval rows link to the portals that publish them,
+// because the site's whole argument is that a buyer can check these
+// independently.
+const { details, approvals } = contact;
+const publishedDetails: { label: string; value: string; href?: string }[] = [
+  { label: 'Plot sizes', value: details.plotSizes },
+  {
+    label: 'Plots available',
+    value: `${details.totalParcels - details.mortgageHeldParcels} saleable of ${details.totalParcels}`,
+  },
+  { label: 'Entry price', value: details.priceDisplay },
+  { label: 'RERA', value: approvals.rera.number, href: details.verify.rera },
+  { label: 'HMDA', value: approvals.hmda.number, href: details.verify.hmda },
+];
+
+/**
+ * The counterweight to the plate: what this site declines to print, and why.
+ * Stating it here is the same promise the entry's second paragraph makes in
+ * prose, so the pair reads as claim and evidence rather than a repetition.
+ */
+const mortgageNote = `${details.mortgageHeldParcels} parcels are held under HMDA Mortgage conditions and are not for sale. We do not publish a possession date, per-band plot counts or drive times — the team confirms those.`;
+
+// The homepage proof belt: the four numbers a buyer checks first.
+const proofPoints = [
+  { label: 'Plot sizes', value: details.plotSizes },
+  { label: 'RERA', value: approvals.rera.number },
+  { label: 'HMDA', value: approvals.hmda.number },
+  { label: 'Project type', value: details.projectType },
+];
 
 const metadata: MetaData = {
-  title: entry.data.title,
-  description: entry.data.description,
+  title: home.data.title,
+  description: home.data.description,
   openGraph: { type: 'website' },
 };
 ---
 
-<Layout metadata={metadata}>
-  <HeroText
+<PageLayout metadata={metadata}>
+  <Fragment slot="head">
+    <link
+      rel="preload"
+      as="image"
+      href={lcpPreload.srcset.split(' ')[0]}
+      imagesrcset={lcpPreload.srcset}
+      imagesizes={lcpPreload.sizes}
+    />
+  </Fragment>
+
+  <HomeHero
+    clips={heroClips}
     title={heroTitle}
-    subtitle={heroIntro}
-    callToAction={{
-      text: 'Explore Tranquill City',
-      href: '/projects/tranquill-city/',
-      variant: 'primary',
-    }}
-    callToAction2={{ text: 'Read the insights', href: '/blog/', variant: 'secondary' }}
+    intro={heroIntro ?? home.data.description}
+    eyebrow="A considered address in Rudraram"
+    actions={[
+      {
+        label: 'Book a site visit',
+        href: '/contact-us/',
+        track: 'site_visit',
+        dialog: 'enquiry-dialog',
+      },
+      { label: 'Explore Tranquill City', href: '/projects/tranquill-city/', variant: 'link' },
+    ]}
   />
 
-  <section class="mx-auto max-w-4xl px-4 py-8 sm:px-6 md:py-12">
-    <div
-      class="prose prose-lg prose-headings:font-heading prose-a:text-primary dark:prose-headings:text-slate-300 prose-headings:leading-tighter prose-headings:tracking-tighter prose-img:rounded-md mx-auto"
-    >
-      <Content />
+  {/*
+    The rest of the entry's body, paired with the published numbers.
+
+    This used to be the entry's full article in a `max-w-3xl` measure directly
+    under the hero — four paragraphs of 0.9rem body copy as the second thing a
+    visitor saw (measured 2026-09-30: ~10 screens of text on a phone before any
+    visual, and a stray markdown link rendering as an unstyled underline at the
+    end). The facts a buyer actually scans now sit beside the prose as a plate,
+    built from `contact.ts` so the plate cannot drift from the header chrome,
+    and the prose keeps only the argument the plate cannot carry.
+  */}
+  <section
+    id="home-published"
+    class="section border-border bg-background-secondary border-y"
+    aria-labelledby="home-published-title"
+  >
+    <div class="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.92fr)] lg:gap-16">
+      <div>
+        <p class="eyebrow reveal">The published position</p>
+        <h2 id="home-published-title" class="display-md reveal-2 mt-6">
+          What we publish, and what we do not
+        </h2>
+        <div class="reveal-3 mt-8">
+          <Prose>
+            <Content />
+          </Prose>
+        </div>
+      </div>
+
+      <aside class="shell reveal-4 lg:sticky lg:top-28 lg:self-start">
+        <div class="shell-core p-6 md:p-8">
+          <h3 class="display-xs">Published details</h3>
+          <p class="text-muted mt-2 text-sm">
+            Every figure below is on the page you can check independently.
+          </p>
+
+          <dl class="mt-7 grid gap-6">
+            {publishedDetails.map((row) => (
+              <div class="border-border border-t pt-4">
+                <dt class="text-muted text-[0.7rem] font-extrabold tracking-[0.13em] uppercase">
+                  {row.label}
+                </dt>
+                <dd class="mt-1.5 [overflow-wrap:break-word]">
+                  {row.href ? (
+                    <a
+                      class="display-xs hover:text-accent-ink inline-flex items-baseline gap-2 transition-colors"
+                      href={row.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <span class="min-w-0">{row.value}</span>
+                      <Icon name="tabler:arrow-up-right" class="text-accent-ink size-4 shrink-0" />
+                    </a>
+                  ) : (
+                    <span class="display-xs">{row.value}</span>
+                  )}
+                </dd>
+              </div>
+            ))}
+          </dl>
+
+          <p class="text-muted mt-7 border-t border-border pt-5 text-sm text-pretty">
+            {mortgageNote}
+          </p>
+
+          <a
+            href="/projects/tranquill-city/"
+            class="cta cta-outline mt-7 !px-5 !py-2 text-sm"
+            data-track="project"
+          >
+            <span class="cta-label">Full project detail</span>
+            <span class="cta-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </span>
+          </a>
+        </div>
+      </aside>
     </div>
   </section>
-</Layout>
+
+  <ScrollBuildStory />
+
+  <ProofBelt points={proofPoints} label="Tranquill City project details" />
+
+  <ProjectSpotlight
+    eyebrow="Our projects"
+    title="A place shaped for what comes next."
+    body="Tranquill City is a premium villa plot development in Rudraram near Patancheru, Hyderabad, planned as a gated community with internal roads, parks, and round-the-clock security."
+    href="/projects/tranquill-city/"
+    linkLabel="See the project story"
+    alt="Illustrative golden-hour view of a landscaped walking path inside the planned layout, with glass-fronted villas, a timber seating deck, benches and planting, and two residents walking in the distance"
+  />
+
+  <InvestmentBelt />
+
+  <NextSteps />
+
+  <LibraryDirectory />
+
+  <HomeCta
+    title="See how Tranquill City could fit your plans."
+    body="Talk with our team, request the brochure, or arrange a visit to the site."
+    href="/contact-us/"
+    label="Book a site visit"
+    track="site_visit"
+    dialog="enquiry-dialog"
+  />
+</PageLayout>

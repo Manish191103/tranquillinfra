@@ -1,7 +1,7 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import { defineConfig, fontProviders } from 'astro/config';
+import { defineConfig, envField, fontProviders } from 'astro/config';
 
 import { unified } from '@astrojs/markdown-remark';
 
@@ -25,6 +25,40 @@ const whenExternalScripts = (items: (() => AstroIntegration) | (() => AstroInteg
   hasExternalScripts ? (Array.isArray(items) ? items.map((item) => item()) : [items()]) : [];
 
 export default defineConfig({
+  // Type-safe environment. Only the runtime secrets are declared here: the
+  // PUBLIC_* measurement/form values are read through `import.meta.env` (the
+  // Cloudflare adapter loads the wrangler `vars` block into the build env), and
+  // the GA4 property id lives in src/config.yaml. Optional secrets keep the
+  // graceful degradation the site is designed around — a missing Resend key
+  // makes /api/customer-mail answer an honest 502, a missing CAPI token leaves
+  // the pixel working alone — instead of blocking the deploy the way
+  // `secrets.required` would.
+  env: {
+    schema: {
+      // Customer mail delivery (Resend). RESEND_FROM_EMAIL and CONTACT_TO_EMAIL
+      // are values, not credentials, but they stay server-side so they are
+      // never inlined into a browser bundle.
+      RESEND_API_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
+      RESEND_FROM_EMAIL: envField.string({ context: 'server', access: 'secret', optional: true }),
+      CONTACT_TO_EMAIL: envField.string({ context: 'server', access: 'secret', optional: true }),
+      // Override for the Resend API endpoint (tests/staging against a mock).
+      RESEND_API_URL: envField.string({ context: 'server', access: 'secret', optional: true }),
+
+      // Meta Conversions API (runtime secrets). Missing values leave
+      // /api/meta-conversion answering 503 — the pixel keeps working alone.
+      META_CAPI_ACCESS_TOKEN: envField.string({
+        context: 'server',
+        access: 'secret',
+        optional: true,
+      }),
+      META_TEST_EVENT_CODE: envField.string({
+        context: 'server',
+        access: 'secret',
+        optional: true,
+      }),
+    },
+  },
+
   // The Cloudflare Workers adapter. Astro 5+ defaults to `output: 'static'`,
   // so every page here is prerendered and served from the asset server; the
   // adapter is what makes the on-demand routes (the lead/measurement API

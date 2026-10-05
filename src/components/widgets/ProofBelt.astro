@@ -1,0 +1,56 @@
+---
+/**
+ * ProofBelt
+ *
+ * Hairline-bounded belt of project facts that runs edge to edge under the hero.
+ * The row overflows horizontally on a narrow viewport and scrolls natively,
+ * which keeps the trust facts readable without painting a marquee over a band
+ * a visitor is reading rather than watching. The belt is pure presentation — points arrive from the page so
+ * the component carries no copy.
+ *
+ * Token remaps from the old site: `background` → `page`/`card`,
+ * `foreground-muted` → `muted`, `foreground` → `heading`.
+ */
+interface ProofPoint {
+  label: string;
+  value: string;
+}
+
+interface Props {
+  points: ProofPoint[];
+  /** Accessible name for the rail */
+  label?: string;
+}
+
+const { points, label = 'Tranquill City project details' } = Astro.props;
+---
+
+{
+  points.length > 0 && (
+    <section class="home-proof border-border border-y bg-card" aria-label={label}>
+      <div class="mx-auto max-w-6xl px-6 py-12 md:py-16">
+        <ul
+          class="flex gap-4 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {points.map((point) => (
+            /*
+             * Each fact is a shell around a core: a hairline tray with the paper
+             * plate seated inside it, so the belt reads as a row of machined
+             * objects rather than a row of bordered chips. The value is set in
+             * the display face at the `xs` step — the one place on the homepage
+             * where a number should feel engraved rather than typed.
+             */
+            <li class="border-border bg-page border-y px-6 py-4 whitespace-nowrap">
+              <span class="text-muted font-mono text-[0.7rem] font-medium tracking-[0.14em] uppercase">
+                {point.label}
+              </span>
+              <strong class="display-xs text-heading ml-4 inline-block align-middle font-medium">
+                {point.value}
+              </strong>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )
+}

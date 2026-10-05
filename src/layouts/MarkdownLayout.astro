@@ -17,12 +17,28 @@ const metadata: MetaData = {
 ---
 
 <Layout metadata={metadata}>
-  <section class="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
-    <h1 class="font-heading leading-tighter text-4xl font-bold tracking-tighter md:text-5xl">
-      {frontmatter.title}
-    </h1>
+  <section class="section mx-auto max-w-3xl px-4 sm:px-6">
+    <h1 class="display-lg">{frontmatter.title}</h1>
+    <!--
+      * Prose measure.
+      *
+      * `ch` is the advance of `0`, and in Manrope that glyph is ~35% wider than
+      * the average glyph in running text — so `65ch` is not 65 characters per
+      * line, it is close to 89. Measured 2026-09-30 on
+      * `/blog/verify-plot-hyderabad/` at 768px and above: the column rendered
+      * 650px wide against an average glyph advance of 7.323px, i.e. ~88.8
+      * characters per line, ~18% past the top of the 60–75 band that long-form
+      * reading is tuned to. The consequence is worst exactly where it hurts
+      * most: a phone, and a verification checklist where a mis-scanned line is
+      * a missed step. `33rem` lands the measure at ~72 characters per line at
+      * every width from 390px up, and the `ch` term is kept so a narrower font
+      * substitution still shortens the column rather than letting it grow.
+      *
+      * The typography plugin owns the element styles; only the container
+      * (measure), display family on headings and token links are bridged here.
+      -->
     <div
-      class="prose prose-lg dark:prose-invert dark:prose-headings:text-slate-300 prose-headings:font-heading prose-headings:leading-tighter prose-headings:tracking-tighter prose-headings:font-bold prose-a:text-primary dark:prose-a:text-blue-400 prose-img:rounded-md prose-img:shadow-lg mx-auto mt-8 max-w-4xl"
+      class="prose prose-headings:font-display prose-a:text-primary prose-img:rounded-md mx-auto mt-10 max-w-[min(65ch,33rem)]"
     >
       <slot />
     </div>

@@ -1,0 +1,82 @@
+---
+/**
+ * ProcessSection
+ *
+ * How an enquiry actually runs, on the inverted surface: the numbered steps in
+ * reading order beside a card linking to the verification guide. Copy and
+ * links arrive from the entry.
+ */
+import { Icon } from 'astro-icon/components';
+
+interface Step {
+  number: string;
+  title: string;
+  body: string;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  title: string;
+  intro: string;
+  steps: Step[];
+  guide: {
+    eyebrow: string;
+    title: string;
+    body: string;
+    href: string;
+    label: string;
+  };
+}
+
+const { id, eyebrow, title, intro, steps, guide } = Astro.props;
+---
+
+<section class="bg-surface-invert text-on-invert" aria-labelledby={`${id}-title`}>
+  <div class="section mx-auto max-w-6xl px-6">
+    <header class="max-w-[46rem]">
+      <p class="eyebrow eyebrow-on-invert reveal">{eyebrow}</p>
+      <h2 id={`${id}-title`} class="display-md reveal-2 mt-6">
+        {title}
+      </h2>
+      <p class="text-on-invert-secondary reveal-3 mt-4 text-lg text-pretty">{intro}</p>
+    </header>
+
+    <div class="stack grid gap-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)] lg:gap-14">
+      <ol class="space-y-12">
+        {steps.map((step) => (
+          <li class="border-border-invert reveal border-t pt-6">
+            <span
+              class="text-accent-ink font-mono text-[0.72rem] font-medium tracking-[0.16em] tabular-nums"
+              aria-hidden="true"
+            >
+              {step.number}
+            </span>
+            <h3 class="display-xs mt-6">{step.title}</h3>
+            <p class="text-on-invert-secondary mt-3 text-sm leading-relaxed">{step.body}</p>
+          </li>
+        ))}
+      </ol>
+
+      {/*
+        A paper plate on a forest field. Because the core is light, every
+        descendant uses the LIGHT-surface ramp — the previous
+        `on-invert` copy here put paper-coloured body text on a cream plate,
+        which measured 1.1:1 and was effectively invisible.
+      */}
+      <aside class="shell shell-invert reveal-from-right">
+        <div class="shell-core h-full p-6 md:p-8">
+          <p class="eyebrow">{guide.eyebrow}</p>
+          <h3 class="display-sm text-heading mt-6">{guide.title}</h3>
+          <p class="text-muted mt-4 text-sm leading-relaxed text-pretty">{guide.body}</p>
+          <a class="cta cta-ghost text-accent-ink hover:text-accent-ink mt-8" href={guide.href}>
+            <span class="cta-label">{guide.label}</span>
+            <span class="cta-icon" aria-hidden="true">
+              <Icon name="tabler:arrow-right" class="size-4" />
+            </span>
+          </a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

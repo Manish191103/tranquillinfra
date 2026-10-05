@@ -30,11 +30,13 @@
   // pixel working alone). Local overrides go in `.dev.vars`, which beats this
   // block.
   "vars": {
-    // Migration contract, not live config: nothing reads these yet. There is
-    // no `env.schema` in astro.config.ts, so no `astro:env` lookup can see
-    // them. They start doing something when the Google Ads and Meta Pixel tags
-    // migrate in. Google Analytics needs none of this — its id lives in
-    // src/config.yaml, alongside the rest of the site config.
+    // Live lead-pipeline config, read at build time through `import.meta.env`:
+    // the Google Ads conversion (src/lib/analytics.ts), the Meta pixel and its
+    // CAPI relay (src/lib/meta-pixel.ts, src/lib/meta-conversions.ts) and the
+    // Formspree endpoint (src/components/widgets/EnquiryDialog.astro and the
+    // other lead surfaces). Google Analytics needs none of this — its id lives
+    // in src/config.yaml, alongside the rest of the site config. Each id is
+    // optional per tag: with one absent that tag never loads.
     "PUBLIC_GOOGLE_ADS_ID": "AW-18447056516",
     "PUBLIC_GOOGLE_ADS_CONVERSION_LABEL": "as-bCLOjg4cdEIT9ntxE",
     "PUBLIC_META_PIXEL_ID": "1062180862820086",
@@ -44,7 +46,9 @@
     "PUBLIC_PRIVACY_POLICY_URL": "/privacy-policy/",
     "SITE_URL": "https://www.tranquillinfra.com",
 
-    // Customer mail (public contact details, not credentials)
+    // Customer mail (public contact details, not credentials). The Resend key
+    // and the Meta CAPI token are Worker secrets (`wrangler secret put`), read
+    // through the `astro:env` schema in astro.config.ts — never listed here.
     "CONTACT_TO_EMAIL": "info@tranquillinfra.com",
     "RESEND_FROM_EMAIL": "Tranquill Infra Website <leads@tranquillinfra.com>",
 
@@ -55,9 +59,20 @@
     // "BING_SITE_VERIFICATION": "",
   },
 
-  // Once a route sets `prerender = false` (the lead and measurement API
-  // endpoints), the build emits a Worker plus dist/server/wrangler.json with an
-  // ASSETS binding. Unmatched paths then reach the Worker's fetch handler
-  // instead of the asset server's own 404 handling — re-check the branded 404
-  // still renders once that first on-demand route lands.
+  // The lead API routes (/api/customer-mail, /api/meta-conversion) set
+  // `prerender = false`: the build emits a Worker plus dist/server/wrangler.json
+  // with an ASSETS binding, and those routes get the security headers from
+  // src/middleware.ts (Cloudflare does not apply `_headers` to Worker
+  // responses). The `ratelimits` block below is REQUIRED in every environment:
+  // wrangler does not inherit it into named environments, and `isRateLimited`
+  // throws on the missing binding rather than shipping unthrottled.
+  // Five submissions a minute is well above human use and well below anything
+  // that could exhaust the Resend send quota or Meta's relay.
+  "ratelimits": [
+    {
+      "name": "LEAD_RATE_LIMITER",
+      "namespace_id": "1001",
+      "simple": { "limit": 5, "period": 60 },
+    },
+  ],
 }

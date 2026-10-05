@@ -1,4 +1,6 @@
-import { getPermalink, getBlogPermalink, getAsset } from './utils/permalinks';
+import { getPermalink, getBlogPermalink } from './utils/permalinks';
+import { BROCHURE_DOWNLOAD_HREF } from '~/lib/enquiry-cta';
+import { contact } from '~/contact';
 
 /**
  * Header and footer menus.
@@ -39,10 +41,25 @@ export const footerData = {
       links: [
         { text: 'Insights', href: getBlogPermalink() },
         { text: 'Privacy policy', href: getPermalink('/privacy-policy') },
+        /*
+          The one link the site has that navigation does not: the footer is its
+          stable home. `track` is data, not markup — Footer.astro renders it as
+          `data-track="brochure"`. The href is imported from `enquiry-cta` so
+          no second copy of the destination drifts.
+        */
+        {
+          text: 'Download brochure',
+          href: BROCHURE_DOWNLOAD_HREF,
+          track: 'brochure',
+        },
       ],
     },
   ],
   secondaryLinks: [{ text: 'Privacy policy', href: getPermalink('/privacy-policy') }],
-  socialLinks: [{ ariaLabel: 'RSS', icon: 'tabler:rss', href: getAsset('/rss.xml') }],
+  /**
+   * Instagram is the brand's single social channel — the footer renders it in
+   * the brand column and the legal row.
+   */
+  socialLinks: [{ ariaLabel: 'Tranquill Infra on Instagram', icon: 'tabler:brand-instagram', href: contact.instagram }],
   footNote: `© ${new Date().getFullYear()} Tranquill Infra Projects. All rights reserved.`,
 };

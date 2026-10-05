@@ -1,0 +1,59 @@
+---
+/**
+ * ApproachStrip
+ *
+ * The three promises that govern how project information is shared, each under
+ * a hairline rule with its own row mark. Copy arrives from the entry.
+ */
+interface Item {
+  number: string;
+  title: string;
+  body: string;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  title: string;
+  items: Item[];
+}
+
+const { id, eyebrow, title, items } = Astro.props;
+---
+
+<section
+  id={id}
+  class="bg-background-secondary border-border border-y"
+  aria-labelledby={`${id}-title`}
+>
+  <div class="section mx-auto max-w-6xl px-6">
+    <header class="max-w-3xl">
+      <p class="eyebrow reveal">{eyebrow}</p>
+      <h2 id={`${id}-title`} class="display-md reveal-2 mt-6">
+        {title}
+      </h2>
+    </header>
+
+    {/*
+     * Three shells separated by exactly one `--shell-padding` gap, so the
+     * hairline between them is the same weight as the bezels around them and
+     * the row reads as one machined plate divided into three, not three cards.
+     */}
+    <ul class="stack grid gap-[var(--shell-padding)] sm:grid-cols-3">
+      {items.map((item, index) => (
+        <li class:list={['shell', `reveal-${Math.min(index + 1, 5)}`]}>
+          <div class="shell-core h-full p-6">
+            <span
+              class="text-accent-ink font-mono text-[0.72rem] font-medium tracking-[0.16em] tabular-nums"
+              aria-hidden="true"
+            >
+              {item.number}
+            </span>
+            <h3 class="display-xs text-heading mt-6">{item.title}</h3>
+            <p class="text-muted mt-3 text-sm leading-relaxed">{item.body}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

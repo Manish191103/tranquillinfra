@@ -1,0 +1,252 @@
+---
+/**
+ * LibraryDirectory
+ *
+ * Forest-toned reading hub: two panels pairing the latest Insights posts with
+ * the questions those posts answer. Nothing is hardcoded here beyond layout,
+ * the numeric row marks, and the default reading window derived below when the
+ * page hands over nothing.
+ */
+import { fetchPosts } from '~/utils/blog';
+import { Icon } from 'astro-icon/components';
+
+interface DirectoryCopy {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  insightsTitle: string;
+  insightsNote: string;
+  questionsTitle: string;
+  questionsNote: string;
+  viewAllLabel: string;
+  postsEmpty: string;
+  questionsEmpty: string;
+}
+
+interface DirectoryPost {
+  href: string;
+  title: string;
+  category: string;
+  date: Date;
+  description: string;
+}
+
+interface DirectoryQuestion {
+  href: string;
+  question: string;
+  postTitle: string;
+}
+
+interface Props {
+  copy?: DirectoryCopy;
+  /**
+   * The window, already chosen by the page.
+   *
+   * The homepage pins its `featured` post into the window and fills the
+   * remaining slots by category breadth and then recency, because a bare
+   * newest-first slice dropped the buyer-verification guide the page's own
+   * "Visit and verify" step links to. The count belongs to the page that has
+   * the posts; this renders whatever it is handed, so a page that passes an
+   * empty array renders the empty states rather than its own window.
+   */
+  posts?: DirectoryPost[];
+  questions?: DirectoryQuestion[];
+  viewAllHref?: string;
+}
+
+const {
+  copy = {
+    eyebrow: 'The Tranquill library',
+    title: 'Read before you decide.',
+    intro: 'Project notes and useful answers, published as the details are reviewed.',
+    insightsTitle: 'Latest from Insights',
+    insightsNote: 'Notes from the team',
+    questionsTitle: 'Relevant questions',
+    questionsNote: 'Answers linked to the source article',
+    viewAllLabel: 'View all',
+    postsEmpty: 'New articles are being prepared. Visit Insights soon.',
+    questionsEmpty: 'Questions will appear here as articles gain reviewed answers.',
+  },
+  posts,
+  questions,
+  viewAllHref = '/blog/',
+} = Astro.props;
+
+/** The homepage reading window, and the `featured` post is pinned into it. */
+const LIBRARY_WINDOW = 4;
+
+/*
+ * This was a bare `slice(0, 4)` over a newest-first list, which dropped the
+ * flagship today: four posts share 2026-09-16 and `verify-plot-hyderabad` —
+ * the `featured: true` buyer-verification guide — is 2026-09-05. The post the
+ * homepage's own "Visit and verify" step and the home entry both link to, and
+ * the one a buyer arrives for, carried zero links from the homepage, and every
+ * post published after the four same-day ones would have done the same by
+ * default. The archive already pins it; the homepage was the copy that did not.
+ *
+ * The remaining slots go to the newest post in each category not yet on show,
+ * then to whatever is left by recency. A date-ordered window is the same thing
+ * right up until a category repeats, and then it is much narrower: with four of
+ * the six published posts on a single date, recency alone spends three of four
+ * slots on one day, and the window is thinnest exactly when the archive is
+ * busiest. Four slots, not six — a wider window was rejected because it grows
+ * the section rather than the range of it.
+ */
+// `fetchPosts` already returns published posts newest-first; drafts filtered.
+const allPosts = await fetchPosts();
+const featuredPost = allPosts.find((post) => post.featured);
+const unfeaturedPosts = featuredPost ? allPosts.filter((post) => post !== featuredPost) : allPosts;
+// One pass over a date-sorted list, so the first post of each unseen category is
+// also the newest one in it.
+const seenCategories = new Set(featuredPost?.category?.slug ? [featuredPost.category.slug] : []);
+const firstOfEachCategory = unfeaturedPosts.filter((post) => {
+  if (!post.category?.slug) return false;
+  if (seenCategories.has(post.category.slug)) return false;
+  seenCategories.add(post.category.slug);
+  return true;
+});
+const latestPosts = [
+  ...(featuredPost ? [featuredPost] : []),
+  ...firstOfEachCategory,
+  ...unfeaturedPosts,
+].slice(0, LIBRARY_WINDOW);
+
+const defaultDirectoryPosts: DirectoryPost[] = latestPosts.map((post) => ({
+  href: post.permalink,
+  title: post.title,
+  category: post.category?.title ?? '',
+  date: post.publishDate,
+  description: post.excerpt ?? '',
+}));
+
+// Up to three reviewed answers per post, newest posts first, six rows total.
+const defaultDirectoryQuestions = latestPosts
+  .flatMap((post) =>
+    (post.faq ?? [])
+      .slice(0, 3)
+      .map((item) => ({
+        href: post.permalink,
+        question: item.question,
+        postTitle: post.title,
+      })),
+  )
+  .slice(0, 6);
+
+const postRows = posts ?? defaultDirectoryPosts;
+const questionRows = questions ?? defaultDirectoryQuestions;
+
+/*
+ * The whole section paints `bg-surface-invert` directly rather than going
+ * through `.invert-section`, so `--color-accent-ink` is never remapped and
+ * every one of these rows is the DARK gold — `#8f5d04`, which measured 1.72:1
+ * on the `brand-600` plate inside the panels and 2.12:1 on the `brand-700`
+ * field (2026-09-30). Both fail AA badly. `--color-accent` is the light gold,
+ * 7.7:1 on the field and 6.4:1 on the plate, which is the step the inverted
+ * sections use for exactly this reason. So: no `accent-ink` anywhere in this
+ * file. `.eyebrow-on-invert` is the same flip for the eyebrow pill.
+ */
+const panelHeadingClasses = 'text-accent text-[0.72rem] font-extrabold tracking-[0.15em] uppercase';
+const panelNoteClasses = 'text-on-invert-secondary mt-1 text-[0.78rem]';
+const rowNumberClasses =
+  'text-on-invert-secondary pt-0.5 text-[0.7rem] font-extrabold tracking-[0.08em] tabular-nums';
+const rowMetaClasses = 'text-accent text-[0.7rem] font-bold tracking-[0.04em]';
+const rowTitleClasses = 'display-xs';
+const rowBodyClasses = 'text-on-invert-secondary text-sm leading-snug';
+const rowArrowClasses = 'text-accent pt-0.5 text-base';
+const rowClasses = [
+  'group grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-4 py-5',
+  'text-on-invert transition-[color,padding-left] duration-base ease-quint',
+  'hover:text-accent hover:pl-1.5 focus-visible:text-accent focus-visible:pl-1.5',
+].join(' ');
+---
+
+<section class="home-library bg-surface-invert text-on-invert">
+  <div class="section mx-auto max-w-6xl px-6">
+    <header class="max-w-2xl">
+      <p class="eyebrow eyebrow-on-invert reveal">{copy.eyebrow}</p>
+      <h2 class="display-md text-on-invert reveal-2 mt-6">{copy.title}</h2>
+      <p class="text-on-invert-secondary reveal-3 mt-4 text-lg">{copy.intro}</p>
+    </header>
+
+    <div class="mt-10 grid gap-6 md:grid-cols-2">
+      <section class="shell shell-invert reveal-4" aria-labelledby="directory-insights-title">
+        <div class="shell-core h-full p-6 md:p-8">
+          <header class="flex items-start justify-between gap-4 border-b border-border-invert pb-5">
+            <div>
+              <h3 id="directory-insights-title" class={panelHeadingClasses}>
+                {copy.insightsTitle}
+              </h3>
+              <p class={panelNoteClasses}>{copy.insightsNote}</p>
+            </div>
+            <a
+              class="shrink-0 text-[0.78rem] font-bold text-on-invert transition-colors hover:text-accent focus-visible:text-accent"
+              href={viewAllHref}
+            >
+              {copy.viewAllLabel}
+              <Icon name="tabler:arrow-up-right" size="16" />
+            </a>
+          </header>
+
+          {postRows.length > 0 ? (
+            <ul class="list-none">
+              {postRows.map((post, index) => (
+                <li class="border-border-invert [&:not(:first-child)]:border-t">
+                  <a class={rowClasses} href={post.href}>
+                    <span class={rowNumberClasses} aria-hidden="true">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <span class="grid gap-1.5">
+                      <span class={rowMetaClasses}>
+                        {post.category} ·{' '}
+                        {post.date.toLocaleDateString('en-IN', { dateStyle: 'medium' })}
+                      </span>
+                      <strong class={rowTitleClasses}>{post.title}</strong>
+                      <span class={rowBodyClasses}>{post.description}</span>
+                    </span>
+                    <span class={rowArrowClasses} aria-hidden="true">
+                      <Icon name="tabler:arrow-up-right" size="16" />
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p class="text-on-invert-secondary mt-5 text-sm">{copy.postsEmpty}</p>
+          )}
+        </div>
+      </section>
+
+      <section class="shell shell-invert reveal-4" aria-labelledby="directory-questions-title">
+        <div class="shell-core h-full p-6 md:p-8">
+          <header class="border-b border-border-invert pb-5">
+            <h3 id="directory-questions-title" class={panelHeadingClasses}>
+              {copy.questionsTitle}
+            </h3>
+            <p class={panelNoteClasses}>{copy.questionsNote}</p>
+          </header>
+
+          {questionRows.length > 0 ? (
+            <ul class="list-none">
+              {questionRows.map((entry, index) => (
+                <li class="border-border-invert [&:not(:first-child)]:border-t">
+                  <a class={rowClasses} href={entry.href}>
+                    <span class={rowNumberClasses} aria-hidden="true">{`Q${index + 1}`}</span>
+                    <span class="grid gap-1.5">
+                      <span class={rowMetaClasses}>From {entry.postTitle}</span>
+                      <strong class={rowTitleClasses}>{entry.question}</strong>
+                    </span>
+                    <span class={rowArrowClasses} aria-hidden="true">
+                      <Icon name="tabler:arrow-up-right" size="16" />
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p class="text-on-invert-secondary mt-5 text-sm">{copy.questionsEmpty}</p>
+          )}
+        </div>
+      </section>
+    </div>
+  </div>
+</section>

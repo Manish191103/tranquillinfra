@@ -1,9 +1,38 @@
 ---
-import { SITE } from 'astrowind:config';
+import { Image } from 'astro:assets';
+
+import logoLight from '~/assets/images/brand/logo.png';
+import logoDark from '~/assets/images/brand/logo-dark.png';
+
+export interface Props {
+  /**
+   * The surface the logo sits on: `light` (sand/paper) or `dark` (forest).
+   * Chosen by the caller — the header sits on sand, the footer on the forest
+   * band — not by media query.
+   */
+  variant?: 'light' | 'dark';
+  /** Render width in px; height follows the master's aspect ratio. */
+  width?: number;
+  /** Extra classes (sizing/spacing only — never a competing colour). */
+  class?: string;
+  /** Eager loading: the header logo is on the critical path to first paint. */
+  loading?: 'eager' | 'lazy';
+}
+
+const {
+  variant = 'light',
+  width = 128,
+  class: className,
+  loading = 'eager',
+} = Astro.props;
+
+const src = variant === 'dark' ? logoDark : logoLight;
 ---
 
-<span
-  class="ml-2 self-center text-2xl font-bold whitespace-nowrap text-gray-900 md:text-xl rtl:mr-2 rtl:ml-0 dark:text-white"
->
-  🚀 {SITE?.name}
-</span>
+<Image
+  src={src}
+  alt="Tranquill Infra Projects"
+  width={width}
+  loading={loading}
+  class:list={['h-auto w-auto', className]}
+/>

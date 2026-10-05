@@ -1,4 +1,5 @@
 ---
+import { Icon } from 'astro-icon/components';
 import Layout from '~/layouts/Layout.astro';
 import { getHomePermalink } from '~/utils/permalinks';
 
@@ -6,19 +7,26 @@ const title = `Error 404`;
 ---
 
 <Layout metadata={{ title }}>
-  <section class="flex h-full items-center p-16">
-    <div class="container mx-auto my-8 flex flex-col items-center justify-center px-5">
-      <div class="max-w-md text-center">
-        <h2 class="mb-8 text-9xl font-bold">
-          <span class="sr-only">Error</span>
-          <span class="text-primary">404</span>
-        </h2>
-        <p class="text-3xl font-semibold md:text-3xl">Sorry, we couldn't find this page.</p>
-        <p class="text-muted mt-4 mb-8 text-lg dark:text-slate-400">
-          But don't worry, you can find plenty of other things on our homepage.
-        </p>
-        <a rel="noopener noreferrer" href={getHomePermalink()} class="btn ml-4">Back to homepage</a>
-      </div>
+  <section class="section flex items-center">
+    <div class="mx-auto max-w-md text-center">
+      <h1 class="display-md mb-8">
+        <span class="sr-only">Error</span>
+        <span class="text-accent-ink">404</span>
+      </h1>
+      <p class="display-sm">Sorry, we couldn't find this page.</p>
+      <p class="text-muted mt-4 mb-8 text-lg">
+        But don't worry, you can find plenty of other things on our homepage.
+      </p>
+      <a
+        rel="noopener noreferrer"
+        href={getHomePermalink()}
+        class="cta cta-primary mx-auto"
+      >
+        <span class="cta-label">Back to homepage</span>
+        <span class="cta-icon" aria-hidden="true">
+          <Icon name="tabler:arrow-right" />
+        </span>
+      </a>
     </div>
   </section>
 </Layout>

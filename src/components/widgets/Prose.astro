@@ -1,0 +1,123 @@
+---
+/**
+ * Prose
+ *
+ * Typographic wrapper for rendered Markdown (blog articles, policy pages). The
+ * house scale is applied through a scoped `:global` block so the arbitrary
+ * elements produced by Markdown pick up the design tokens.
+ */
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<div class:list={['prose', className]}>
+  <slot />
+</div>
+
+<style>
+  .prose :global(h1) {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+
+  .prose :global(h2) {
+    margin-top: 2.25em;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    line-height: 1.25;
+    text-wrap: balance;
+  }
+
+  .prose :global(h3) {
+    margin-top: 1.75em;
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+
+  .prose :global(p),
+  .prose :global(li) {
+    color: var(--color-default);
+    /*
+     * `text-wrap: pretty` is the body-copy half of the same idea the display
+     * steps get from `balance`: it spends the last line of a paragraph to even
+     * out its ragging instead of letting it end on a stub. The site already
+     * sets it in 39 places, but never on the paragraphs that actually carry the
+     * long-form reading — this is the widest measure on the site and the text
+     * Indian buyers read on a phone. It costs no reflow on browsers that ignore
+     * it and removes the orphan-line jitter on the ones that honour it.
+     */
+    text-wrap: pretty;
+  }
+
+  .prose :global(p),
+  .prose :global(ul),
+  .prose :global(ol),
+  .prose :global(blockquote),
+  .prose :global(table) {
+    margin-top: 1em;
+  }
+
+  .prose :global(ul),
+  .prose :global(ol) {
+    display: grid;
+    gap: 0.5em;
+    padding-left: 1.25rem;
+  }
+
+  .prose :global(ul) {
+    list-style: disc;
+  }
+
+  .prose :global(ol) {
+    list-style: decimal;
+  }
+
+  .prose :global(a) {
+    color: var(--color-heading);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .prose :global(a:hover) {
+    color: var(--color-accent-ink);
+  }
+
+  .prose :global(strong) {
+    color: var(--color-heading);
+  }
+
+  .prose :global(em) {
+    color: var(--color-muted);
+  }
+
+  .prose :global(hr) {
+    margin-block: 2.5em;
+    border-color: var(--color-border);
+  }
+
+  .prose :global(table) {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+
+  .prose :global(th),
+  .prose :global(td) {
+    border: 1px solid var(--color-border);
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .prose :global(th) {
+    background: var(--color-card);
+    font-weight: 700;
+  }
+</style>

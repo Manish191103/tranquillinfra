@@ -1,0 +1,509 @@
+---
+/**
+ * Carousel component.
+ * Full-bleed media carousel with dot pagination, prev/next and opt-in autoplay
+ * rotation.
+ *
+ * Usage:
+ * <Carousel slides={clips} autoplay={7000} />
+ *
+ * The first slide is the LCP element: it renders through <Picture> with avif
+ * candidates, eager loading and Astro's `priority` (which renders
+ * `fetchpriority="high"` + loading=eager), and its transform lives
+ * in ./posters.ts so the page can emit a matching `<link rel="preload">` for the
+ * head (see buildPosterPreload). Later
+ * slides carry their candidate set as data attributes and the controller mounts
+ * it when that slide is shown or up next, which keeps the other posters off the
+ * initial load. Behaviour lives in ./carousel.ts.
+ */
+import { getImage, Picture } from 'astro:assets';
+import type { CarouselSlide } from './carousel';
+import { leadingPosterPictureProps } from './posters';
+
+interface Props {
+  slides: CarouselSlide[];
+  /** Accessible name for the carousel region. Defaults to `<projectLabel> cinematic views`. */
+  label?: string;
+  projectLabel?: string;
+  locationLabel?: string;
+  /** Autoplay interval in milliseconds. Anything that is not a positive number leaves rotation off. */
+  autoplay?: number | false;
+}
+
+const {
+  slides,
+  label,
+  projectLabel = 'Tranquill City',
+  locationLabel = 'Rudraram, Hyderabad',
+  autoplay = false,
+} = Astro.props;
+
+if (slides.length === 0) {
+  throw new Error('Carousel requires at least one slide.');
+}
+
+const hasMultiple = slides.length > 1;
+const autoplayInterval = typeof autoplay === 'number' && autoplay > 0 ? autoplay : false;
+const regionLabel = label ?? `${projectLabel} cinematic views`;
+
+const posterWidths = [640, 960, 1280, 1672];
+const posterSizes = '100vw';
+const deferredPosters = await Promise.all(
+  slides.map(async (slide) => {
+    const { src, srcSet, attributes } = await getImage({
+      src: slide.poster,
+      widths: posterWidths,
+      format: 'webp',
+    });
+
+    return {
+      src,
+      srcset: srcSet.attribute,
+      width: attributes.width as number,
+      height: attributes.height as number,
+    };
+  })
+);
+---
+
+<figure
+  class="carousel"
+  data-carousel
+  data-autoplay={String(autoplayInterval)}
+  role="region"
+  aria-roledescription="carousel"
+  aria-label={regionLabel}
+>
+  <div class="carousel-media">
+    {
+      slides.map((slide, index) => (
+        <div
+          class:list={['carousel-slide', index === 0 && 'is-active']}
+          data-carousel-slide
+          data-clip-id={slide.id}
+          data-clip-title={slide.title}
+          data-clip-caption={slide.caption}
+          id={`carousel-slide-${slide.id}`}
+          role="tabpanel"
+          aria-labelledby={`carousel-tab-${slide.id}`}
+          aria-hidden={index === 0 ? undefined : 'true'}
+          inert={index === 0 ? undefined : true}
+        >
+          {index === 0 ? (
+            <Picture
+              {...leadingPosterPictureProps}
+              class="carousel-poster"
+              src={slide.poster}
+              widths={posterWidths}
+              sizes={posterSizes}
+              loading="eager"
+              fetchpriority="high"
+              alt={slide.alt}
+            />
+          ) : (
+            <img
+              class="carousel-poster"
+              data-carousel-poster={deferredPosters[index].src}
+              data-carousel-poster-srcset={deferredPosters[index].srcset}
+              data-carousel-poster-sizes={posterSizes}
+              alt={slide.alt}
+              width={deferredPosters[index].width}
+              height={deferredPosters[index].height}
+              loading="lazy"
+              decoding="async"
+              draggable={false}
+            />
+          )}
+          <div class="carousel-slide-shade" aria-hidden="true" />
+        </div>
+      ))
+    }
+
+    <div class="carousel-media-topline" aria-hidden="true">
+      <span>{projectLabel}</span>
+      <span>{locationLabel}</span>
+    </div>
+
+    <div class="carousel-media-bottomline">
+      <div class="carousel-copy">
+        <span class="carousel-index" data-carousel-index>
+          01 / {String(slides.length).padStart(2, '0')}
+        </span>
+        <strong data-carousel-title>{slides[0].title}</strong>
+        <span data-carousel-caption>{slides[0].caption}</span>
+      </div>
+      <div class="carousel-media-controls">
+        {
+          hasMultiple && (
+            <>
+              <button
+                type="button"
+                class="carousel-round-button"
+                data-carousel-prev
+                aria-label="Previous view"
+              >
+                <svg
+                  aria-hidden="true"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.75"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M10 3 5 8l5 5" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="carousel-round-button"
+                data-carousel-next
+                aria-label="Next view"
+              >
+                <svg
+                  aria-hidden="true"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.75"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M6 3l5 5-5 5" />
+                </svg>
+              </button>
+            </>
+          )
+        }
+        {
+          hasMultiple && autoplayInterval !== false && (
+            <button
+              type="button"
+              class="carousel-round-button"
+              data-carousel-rotation
+              aria-label="Pause rotation"
+              aria-pressed="true"
+            >
+              <span data-rotation-icon aria-hidden="true">❚❚</span>
+            </button>
+          )
+        }
+      </div>
+    </div>
+
+    <div class="carousel-media-dots">
+      <div
+        class="carousel-dots"
+        role="tablist"
+        aria-label="Choose a cinematic view"
+        data-carousel-dots
+      >
+        {
+          slides.map((slide, index) => (
+            <button
+              type="button"
+              class:list={['carousel-dot', index === 0 && 'is-active']}
+              data-carousel-dot={index}
+              id={`carousel-tab-${slide.id}`}
+              role="tab"
+              aria-label={`Show ${slide.title}`}
+              aria-selected={index === 0 ? 'true' : 'false'}
+              aria-controls={`carousel-slide-${slide.id}`}
+              tabindex={index === 0 ? 0 : -1}
+            />
+          ))
+        }
+      </div>
+    </div>
+  </div>
+
+  <p class="sr-only" data-carousel-status aria-live="polite">
+    Showing {slides[0].title}
+  </p>
+</figure>
+
+<script>
+  import { mountCarousels } from './carousel';
+
+  // `astro:page-load` fires on first load as well as after every view
+  // transition, so this is the single hook the controller needs; the
+  // controller's element-level init guard makes re-runs idempotent.
+  function initCarousels() {
+    mountCarousels();
+  }
+
+  initCarousels();
+  document.addEventListener('astro:page-load', initCarousels);
+  document.addEventListener('astro:after-swap', initCarousels);
+</script>
+
+<style>
+  .carousel {
+    position: relative;
+    width: 100%;
+    margin: 0;
+  }
+
+  /* Height leaves room for the announcement bar, the header and the hero padding
+     (9rem) so the caption and the pagination row stay inside the fold on laptop
+     viewports instead of being clipped by the viewport edge. Below `nav:` the
+     hero stacks instead of overlaying, so the media gives the copy panel room on
+     the same screen — the 30rem floor alone pushed the hero copy and its actions
+     off the first screen on a phone (measured 2026-09). */
+  .carousel-media {
+    position: relative;
+    width: 100%;
+    height: clamp(30rem, calc(100svh - 9rem), 52rem);
+    overflow: hidden;
+    isolation: isolate;
+    border-radius: var(--site-radius-shell);
+    background: var(--color-surface-invert);
+    box-shadow: var(--site-shadow-lg);
+    /* Horizontal gestures belong to the swipe controller; vertical scrolling
+       stays native so the page never gets trapped under a finger. */
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* Slide position is DOM state: `.is-active` is the shown slide, `.is-leaving`
+     keeps the outgoing one visible until its exit animation is settled. The
+     motion itself is a Web Animations effect applied by the controller, so no
+     rule here can fight the script over `transform`. */
+  .carousel-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .carousel-slide.is-active,
+  .carousel-slide.is-leaving {
+    z-index: 1;
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .carousel-slide.is-active {
+    z-index: 2;
+    pointer-events: auto;
+  }
+
+  .carousel-poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* A native image drag must not swallow the pointer gesture that drives the
+       swipe controller. */
+    -webkit-user-drag: none;
+  }
+
+  .carousel-slide-shade {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-surface-invert) 4%, transparent) 30%,
+      color-mix(in srgb, var(--color-surface-invert) 55%, transparent) 100%
+    );
+  }
+
+  .carousel-media-topline,
+  .carousel-media-bottomline {
+    position: absolute;
+    z-index: 3;
+    display: flex;
+    gap: 1rem;
+    color: var(--color-on-invert);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    line-height: 1.4;
+    text-shadow: 0 0.15rem 0.7rem color-mix(in srgb, var(--color-surface-invert) 80%, transparent);
+    text-transform: uppercase;
+  }
+
+  .carousel-media-topline {
+    top: 1rem;
+    right: 1.25rem;
+  }
+
+  .carousel-media-bottomline {
+    right: 1.25rem;
+    bottom: 3.25rem;
+    max-width: 62%;
+    align-items: flex-end;
+  }
+
+  .carousel-copy {
+    display: grid;
+    gap: 0.22rem;
+  }
+
+  .carousel-index {
+    color: var(--color-accent);
+  }
+
+  .carousel-copy strong {
+    max-width: 18ch;
+    font-family: var(--font-display);
+    font-size: clamp(1.35rem, 2.4vw, 2.1rem);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    text-transform: none;
+  }
+
+  .carousel-copy > span:last-child {
+    max-width: 32ch;
+    color: color-mix(in srgb, var(--color-on-invert) 78%, transparent);
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    line-height: 1.45;
+    text-transform: none;
+  }
+
+  .carousel-media-dots {
+    position: absolute;
+    z-index: 4;
+    right: 0;
+    bottom: 0.95rem;
+    left: 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  .carousel-media-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  /* Ghost controls: no painted circle or border — the glyph sits directly on the
+     image with a soft shadow for legibility, and a faint scrim appears on hover
+     or focus as the only affordance. */
+  .carousel-round-button,
+  .carousel-dot {
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    border: 0;
+    transition:
+      color 180ms ease,
+      background-color 180ms ease,
+      transform var(--site-duration-fast) var(--ease-out-expo);
+  }
+
+  .carousel-round-button {
+    width: 2.35rem;
+    height: 2.35rem;
+    border-radius: var(--site-radius-full);
+    color: color-mix(in srgb, var(--color-on-invert) 75%, transparent);
+    background: transparent;
+    filter: drop-shadow(
+      0 0.1rem 0.4rem color-mix(in srgb, var(--color-surface-invert) 60%, transparent)
+    );
+  }
+
+  .carousel-round-button:hover,
+  .carousel-round-button:focus-visible {
+    color: var(--color-on-invert);
+    background: color-mix(in srgb, var(--color-surface-invert) 32%, transparent);
+  }
+
+  .carousel-round-button:focus-visible,
+  .carousel-dot:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* Bare pagination: no container chrome, just dots over the slide-shade
+     gradient. WCAG 2.2 target size — the button box stays 1.5rem while the
+     visible mark is a 0.48rem dot drawn by background-clip: content-box, so the
+     padding keeps the hit area without painting it. The active dot is the same
+     circle at full strength, scaled up visually by transform so the row never
+     shifts or widens into a pill. */
+  .carousel-dots {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .carousel-dot {
+    width: 1.5rem;
+    height: 1.5rem;
+    /* padding centres the visible mark: (1.5rem - 0.48rem) / 2 */
+    padding: 0.51rem;
+    border-radius: var(--site-radius-full);
+    background: color-mix(in srgb, var(--color-on-invert) 55%, transparent);
+    background-clip: content-box;
+  }
+
+  .carousel-dot:hover {
+    background-color: color-mix(in srgb, var(--color-on-invert) 80%, transparent);
+  }
+
+  .carousel-dot.is-active {
+    background-color: var(--color-on-invert);
+    transform: scale(1.5);
+  }
+
+  /* Below the `nav:` split the media sits above the copy panel rather than
+     behind it, so the aspect ratio is what decides how much of the screen the
+     image takes. The hero's primary action has to land inside the first screen;
+     see the fold math in the page's hero — the frame is deliberately wide and
+     short here for that exact reason. */
+  @media (max-width: 60rem) {
+    /* On a phone the hero copy panel sits right under the media and already
+       names the project and the page; every text overlay repeated it on top of
+       a busy render. The frame keeps only the picture plus navigation. */
+    .carousel-media-topline,
+    .carousel-copy {
+      display: none;
+    }
+
+    .carousel-media {
+      height: auto;
+      aspect-ratio: 1.75 / 1;
+    }
+
+    /* One navigation strip above the copy panel's overlap: dots at the left,
+       arrows at the right, both lifted clear of the panel edge. */
+    .carousel-media-bottomline {
+      right: 1rem;
+      bottom: 2.75rem;
+      max-width: none;
+    }
+
+    .carousel-media-dots {
+      right: auto;
+      left: 1rem;
+      bottom: 2.75rem;
+      justify-content: flex-start;
+    }
+  }
+
+  @media (max-width: 32rem) {
+    .carousel-media-bottomline {
+      right: 0.75rem;
+    }
+
+    .carousel-media-dots {
+      left: 0.75rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .carousel-round-button,
+    .carousel-dot {
+      transition: none;
+    }
+  }
+</style>

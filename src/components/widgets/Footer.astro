@@ -1,114 +1,242 @@
 ---
+/**
+ * Footer — site chrome: CTA band + link/NAP columns + legal row.
+ *
+ * Ported from the predecessor's SiteFooter (band) and its columns Footer
+ * (grid). The band sits on the forest surface like the columns below it, so
+ * one `<footer class="invert-section">` wraps everything: the class remaps the
+ * Tailwind color tokens (`--color-background`, `--color-border`, `--color-*`
+ * text steps) for the whole subtree, which is what lets the CTA pills, links
+ * and addresses be styled with plain token utilities instead of literal
+ * colours.
+ *
+ * The CTA targets come from `enquiryCtaTarget(Astro.url.pathname)`, shared
+ * with the header and the mobile contact bar — a visitor is always offered the
+ * same destination for the same promise: the enquiry dialog on most pages,
+ * the on-page enquiry form on project and contact pages.
+ */
 import { Icon } from 'astro-icon/components';
-import { SITE } from 'astrowind:config';
-import { getHomePermalink } from '~/utils/permalinks';
+import Logo from '~/components/Logo.astro';
+import { contact } from '~/contact';
+import {
+  enquiryCtaTarget,
+  SITE_VISIT_CTA_LABEL,
+  WHATSAPP_CTA_LABEL,
+} from '~/lib/enquiry-cta';
 
+/** A footer link. `~/types` has no shared Link shape, so one is declared here. */
 interface Link {
   text?: string;
   href?: string;
   ariaLabel?: string;
   icon?: string;
-}
-
-interface Links {
-  title?: string;
-  links: Array<Link>;
+  /* Data, not markup: Footer.astro turns `track` into `data-track`. */
+  track?: string;
 }
 
 export interface Props {
-  links: Array<Links>;
-  secondaryLinks: Array<Link>;
-  socialLinks: Array<Link>;
+  /** Link groups for the columns grid. */
+  links?: Array<{
+    title?: string;
+    links: Array<Link>;
+  }>;
+  /** Legal links (Privacy, Terms, …), rendered in the bottom row. */
+  secondaryLinks?: Array<Link>;
+  /** Social channels; `icon` is an astro-icon name (tabler:*). */
+  socialLinks?: Array<Link>;
+  /** Copyright line, rendered next to the legal links. */
   footNote?: string;
-  theme?: string;
 }
 
-const {
-  socialLinks = [],
-  secondaryLinks = [],
-  links = [],
-  footNote = '',
-  theme = 'light',
-} = Astro.props;
+const { links = [], secondaryLinks = [], socialLinks = [], footNote = '' } = Astro.props;
+
+// Same page-aware target as the header CTA and the mobile bar (see the
+// enquiry-cta module).
+const enquiryCta = enquiryCtaTarget(Astro.url.pathname);
+
+const telHref = contact.phoneE164 ? `tel:${contact.phoneE164}` : undefined;
+
+// Empty group titles are allowed — the grid section renders without its
+// caption rather than dropping the links.
+const groups = links.filter((group) => (group.links ?? []).length > 0);
+
+// Whether a link carries an analytics track is data (`navigation.ts`), not
+// markup: Footer renders `link.track` as `data-track`.
+
+const social = socialLinks[0];
 ---
 
-<footer
-  class:list={[
-    { dark: theme === 'dark' },
-    'not-prose relative border-t border-gray-200 dark:border-slate-800',
-  ]}
->
-  <div class="dark:bg-dark pointer-events-none absolute inset-0" aria-hidden="true"></div>
-  <div
-    class="intersect-once intersect-quarter intersect-no-queue motion-safe:md:intersect:animate-fade relative mx-auto max-w-7xl px-4 sm:px-6 motion-safe:md:opacity-0 dark:text-slate-300"
-  >
-    <div class="grid grid-cols-12 gap-4 gap-y-8 py-8 sm:gap-8 md:py-12">
-      <div class="col-span-12 lg:col-span-4">
-        <div class="mb-2">
-          <a class="inline-block text-xl font-bold" href={getHomePermalink()}>{SITE?.name}</a>
-        </div>
-        <div class="text-muted flex gap-1 text-sm">
-          {
-            secondaryLinks.map(({ text, href }, index) => (
-              <>
-                {index !== 0 ? ' · ' : ''}
-                <a
-                  class="text-muted transition duration-150 ease-in-out hover:text-gray-700 hover:underline dark:text-gray-400"
-                  href={href}
-                  set:html={text}
-                />
-              </>
-            ))
-          }
-        </div>
+<footer class="invert-section bg-surface-invert border-t border-border" data-footer>
+  {/* CTA band. A real `<h2>`: this is the last section on every page, so its
+      heading is the last thing in the document outline — the name visitors
+      reach for when they skip to the end of a page. */}
+  <section class="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-16 md:flex-row md:items-end md:justify-between md:py-20">
+    <div class="max-w-xl">
+      <p class="eyebrow">Visit Tranquill City</p>
+      <h2 class="display-md">See the place in person.</h2>
+      <p class="text-muted mt-6">
+        {SITE_VISIT_CTA_LABEL} in Rudraram or request the latest project brochure.
+      </p>
+    </div>
+    <div class="flex shrink-0 flex-col gap-3 sm:flex-row">
+      {/*
+        `cta` supplies the shape; the utilities that ride with it supply the
+        surface. The gold plate is the band's own inversion of the primary CTA,
+        applied through `class` so no variant overrides are needed.
+      */}
+      <a
+        href={enquiryCta.href}
+        data-track="site_visit"
+        data-dialog-trigger={enquiryCta.dialog}
+        data-dialog-request-type="site_visit"
+        class="cta bg-accent text-accent-foreground hover:bg-accent-hover"
+      >
+        <span class="cta-label">{SITE_VISIT_CTA_LABEL}</span>
+        <span class="cta-icon" aria-hidden="true">
+          <Icon name="tabler:arrow-up-right" />
+        </span>
+      </a>
+      {/*
+        The brand glyph is its own `.cta-mark` well, not part of the label:
+        inside the label it sat on a second line and pushed the copy half out
+        of the pill (measured 2026-09-30). `cta` alone — the `whatsapp`
+        utilities own the plate here, and a second surface system would only
+        invite a cascade fight.
+      */}
+      <a href={contact.whatsapp} data-track="whatsapp" class="cta bg-whatsapp text-white hover:bg-whatsapp-hover">
+        <span class="cta-mark" aria-hidden="true">
+          <Icon name="tabler:brand-whatsapp" />
+        </span>
+        <span class="cta-label">{WHATSAPP_CTA_LABEL}</span>
+        <span class="cta-icon" aria-hidden="true">
+          <Icon name="tabler:arrow-up-right" />
+        </span>
+      </a>
+    </div>
+  </section>
+
+  {/* ------------------------------------------------------------ Link columns. */}
+  <div class="mx-auto w-full max-w-6xl px-6">
+    <div class="grid grid-cols-12 gap-4 gap-y-10 py-12 sm:gap-8">
+      {/* Brand column. The `dark` variant selects the forest-surface logo
+          asset; the choice is made here, not by media query. */}
+      <div class="col-span-12 md:col-span-4">
+        <a href="/" class="flex items-center gap-2">
+          <Logo variant="dark" />
+        </a>
+        <p class="text-muted mt-3 max-w-xs text-sm">Places shaped for what comes next.</p>
+        {
+          social && (
+            <div class="mt-2 flex items-center gap-4">
+              <a
+                href={social.href}
+                class="text-muted inline-flex p-2.5 transition-colors"
+                aria-label={social.ariaLabel ?? 'Follow us on social media'}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Icon name={social.icon ?? 'tabler:brand-instagram'} class="h-5 w-5" />
+              </a>
+            </div>
+          )
+        }
       </div>
+
       {
-        links.map(({ title, links }) => (
-          <div class="col-span-6 md:col-span-3 lg:col-span-2">
-            <div class="mb-2 font-medium dark:text-gray-300">{title}</div>
-            {links && Array.isArray(links) && links.length > 0 && (
-              <ul class="text-sm">
-                {links.map(({ text, href, ariaLabel }) => (
+        groups.map((group) => (
+          <div class="col-span-6 md:col-span-2 lg:col-span-2">
+            {group.title && <p class="mb-2 font-medium">{group.title}</p>}
+            <ul class:list={['text-sm', !group.title && 'mt-5']}>
+              {group.links.map(({ text, href, track }) => {
+                return (
                   <li class="mb-2">
                     <a
-                      class="text-muted transition duration-150 ease-in-out hover:text-gray-700 hover:underline dark:text-gray-400"
+                      class="text-muted hover:text-default transition-colors"
                       href={href}
-                      aria-label={ariaLabel}
+                      data-track={track}
                     >
-                      <Fragment set:html={text} />
+                      {text}
                     </a>
                   </li>
-                ))}
-              </ul>
-            )}
+                );
+              })}
+            </ul>
           </div>
         ))
       }
-    </div>
-    <div class="py-6 md:flex md:items-center md:justify-between md:py-8">
-      {
-        socialLinks?.length ? (
-          <ul class="mb-4 -ml-2 flex md:order-1 md:mb-0 md:ml-4 rtl:-mr-2 rtl:ml-0 rtl:md:mr-4 rtl:md:ml-0">
-            {socialLinks.map(({ ariaLabel, href, text, icon }) => (
-              <li>
-                <a
-                  class="text-muted inline-flex items-center rounded-lg p-2.5 text-sm hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 focus:outline-none dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-700"
-                  aria-label={ariaLabel}
-                  href={href}
-                >
-                  {icon && <Icon name={icon} class="h-5 w-5" />}
-                  <Fragment set:html={text} />
-                </a>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          ''
-        )
-      }
 
-      <div class="dark:text-muted mr-4 text-sm">
-        <Fragment set:html={footNote} />
+      {/* NAP column. `address` carries the postal semantics; the phone and
+          WhatsApp rows are the same channels the CTA band offers. */}
+      <div class="col-span-12 md:col-span-2">
+        <p class="mb-2 font-medium">Contact</p>
+        <div class="text-muted space-y-3 text-sm">
+          <div>
+            <p class="text-xs font-semibold tracking-wide uppercase">Office</p>
+            <address class="not-italic">
+              {contact.office.lines.map((line, index) => (
+                <>
+                  {line}
+                  {index < contact.office.lines.length - 1 && <br />}
+                </>
+              ))}
+            </address>
+          </div>
+          <div>
+            <p class="text-xs font-semibold tracking-wide uppercase">Project</p>
+            <address class="not-italic">
+              {contact.project.lines.map((line, index) => (
+                <>
+                  {line}
+                  {index < contact.project.lines.length - 1 && <br />}
+                </>
+              ))}
+            </address>
+          </div>
+          {telHref && (
+            <p class="pt-1">
+              <a href={telHref} data-track="phone" class="text-default hover:text-accent-ink inline-flex items-center gap-2 transition-colors">
+                <Icon name="tabler:phone" class="h-4 w-4" />
+                {contact.phone}
+              </a>
+            </p>
+          )}
+          <p>
+            <a href={contact.whatsapp} data-track="whatsapp" class="text-default hover:text-accent-ink inline-flex items-center gap-2 transition-colors">
+              <Icon name="tabler:brand-whatsapp" class="h-4 w-4" />
+              {WHATSAPP_CTA_LABEL}
+            </a>
+          </p>
+          <div class="pt-1 text-xs leading-relaxed">
+            {contact.hours.map((line) => (
+              <p>{line}</p>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Legal row. */}
+    <div class="flex flex-col items-center justify-between gap-4 border-t border-border py-8 md:flex-row">
+      <Fragment set:html={footNote} />
+      <div class="flex items-center gap-6">
+        {secondaryLinks.map(({ text, href, ariaLabel }) => (
+          <a class="text-muted hover:text-default text-sm transition-colors" href={href} aria-label={ariaLabel}>
+            {text}
+          </a>
+        ))}
+        {
+          social && (
+            <a
+              href={social.href}
+              class="text-muted hover:text-default text-sm transition-colors"
+              aria-label={social.ariaLabel ?? 'Follow us on social media'}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Instagram
+            </a>
+          )
+        }
       </div>
     </div>
   </div>

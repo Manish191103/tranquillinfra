@@ -3,3 +3,8 @@
 /// <reference types="astro/client" />
 /// <reference types="vite/client" />
 /// <reference types="../vendor/integration/types.d.ts" />
+
+declare module 'cloudflare:workers' {
+  /** Worker bindings from `wrangler.jsonc` plus values set with `wrangler secret put`. */
+  export const env: Record<string, unknown>;
+}

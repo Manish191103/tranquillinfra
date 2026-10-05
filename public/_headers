@@ -9,7 +9,14 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), browsing-topics=(), interest-cohort=(), usb=(), serial=(), hid=(), accelerometer=(), gyroscope=(), magnetometer=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains
-  Content-Security-Policy: base-uri 'self'; object-src 'none'; form-action 'self' https://formspree.io; frame-ancestors 'none'
+  # `connect-src` names every host the browser pipeline talks to: the Formspree
+  # AJAX POST, the GA4/gtag collection endpoints (GA4 beacons can land on
+  # regional `region1.google-analytics.com`, hence the wildcards), and Meta's
+  # pixel relay target. There is deliberately no `script-src`/`style-src`: the
+  # inline GA bootstrap and the view-transition runtime are inline, and a
+  # hash-pinned policy would break on every rebuild until ClientRouter is
+  # dropped. Mirrored by hand in src/middleware.ts.
+  Content-Security-Policy: base-uri 'self'; connect-src 'self' https://formspree.io https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://www.facebook.com; object-src 'none'; form-action 'self' https://formspree.io; frame-ancestors 'none'
 
 # Caching baseline comes from the Workers asset server itself: every unhashed
 # response is served `Cache-Control: public, max-age=0, must-revalidate` with an

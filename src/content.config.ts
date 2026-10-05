@@ -76,6 +76,15 @@ const postCollection = defineCollection({
   }),
 });
 
+/**
+ * About-page section blocks. The About entry carries the copy for its ported
+ * section widgets in frontmatter; the page composes the widgets and the
+ * presentation stays in them. Every field is optional, so a plain prose page
+ * (`privacy-policy`) stays valid without them.
+ */
+const aboutNumberedItem = z.object({ number: z.string(), title: z.string(), body: z.string() });
+const aboutIconItem = z.object({ icon: z.string(), title: z.string(), body: z.string() });
+
 const pageCollection = defineCollection({
   loader: glob({ pattern: ['*.md', '*.mdx'], base: 'src/data/page' }),
   schema: z.object({
@@ -87,6 +96,66 @@ const pageCollection = defineCollection({
     updatedAt: z.date().optional(),
     draft: z.boolean().optional(),
     metadata: metadataDefinition(),
+
+    /** Three governing promises, each numbered. */
+    approach: z
+      .object({
+        eyebrow: z.string(),
+        title: z.string(),
+        items: z.array(aboutNumberedItem),
+      })
+      .optional(),
+
+    /** Mission and vision statements; `featured` marks the primary statement. */
+    missionVision: z
+      .object({
+        eyebrow: z.string(),
+        title: z.string(),
+        intro: z.string(),
+        cards: z.array(
+          z.object({
+            label: z.string(),
+            title: z.string(),
+            body: z.string(),
+            featured: z.boolean().optional(),
+          })
+        ),
+      })
+      .optional(),
+
+    /** The enquiry path, plus the verification-guide card beside it. */
+    process: z
+      .object({
+        eyebrow: z.string(),
+        title: z.string(),
+        intro: z.string(),
+        steps: z.array(aboutNumberedItem),
+        guide: z.object({
+          eyebrow: z.string(),
+          title: z.string(),
+          body: z.string(),
+          href: z.string(),
+          label: z.string(),
+        }),
+      })
+      .optional(),
+
+    /** The standards behind the work, with the infrastructure render feature. */
+    values: z
+      .object({
+        eyebrow: z.string(),
+        title: z.string(),
+        intro: z.string(),
+        imageAlt: z.string(),
+        feature: z.object({ eyebrow: z.string(), title: z.string(), body: z.string() }),
+        items: z.array(aboutIconItem),
+      })
+      .optional(),
+
+    /** Four expectations set on the inverted surface. */
+    difference: z
+      .object({ eyebrow: z.string(), title: z.string(), items: z.array(aboutIconItem) })
+      .optional(),
   }),
 });
 
