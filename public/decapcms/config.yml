@@ -68,7 +68,9 @@ collections:
   - name: page
     label: Pages
     folder: 'src/data/page'
-    create: true
+    # Editing only: new pages are added at the codebase level, so a CMS entry
+    # can't create a route-less data file.
+    create: false
     extension: md
     slug: '{{slug}}'
     fields:
@@ -85,7 +87,8 @@ collections:
   - name: project
     label: Projects
     folder: 'src/data/project'
-    create: true
+    # Editing only: new project pages are added at the codebase level.
+    create: false
     extension: md
     slug: '{{slug}}'
     fields:

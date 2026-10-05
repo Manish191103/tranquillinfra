@@ -21,10 +21,13 @@ GitHub backend with PKCE, so no OAuth proxy server is needed on Cloudflare.
 `src/content.config.ts`:
 
 - **post** — `src/data/post`, create enabled, `/blog/<slug>/`.
-- **page** — `src/data/page`, create enabled, rendered at `/<slug>/` by
-  `src/pages/[...slug].astro`.
-- **project** — `src/data/project`, rendered at `/projects/<slug>/` by
-  `src/pages/projects/[...slug].astro`.
+- **page** — `src/data/page`, editing existing entries only (no create),
+  rendered at `/<slug>/` by `src/pages/[...slug].astro`.
+- **project** — `src/data/project`, editing existing entries only (no create),
+  rendered at `/projects/<slug>/` by `src/pages/projects/[...slug].astro`.
+
+Only blog posts can be created in the CMS; pages and projects are added at the
+codebase level, where a new entry also gets its route and navigation.
 
 Add a field to both `config.yml` and the schema when extending content.
 
