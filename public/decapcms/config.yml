@@ -6,16 +6,33 @@
 # publishes the change.
 #
 # The admin itself is served from /decapcms/ (self-hosted bundle, no CDN
-# dependency). Authentication uses the GitHub backend with PKCE, so no
-# OAuth proxy server is needed on Cloudflare; the `app_id` is the client ID
-# of the GitHub OAuth App whose callback URL points at /decapcms/.
+# dependency). Authentication goes through this site's own OAuth broker:
+#   - src/pages/api/cms/auth.ts opens the GitHub authorize page,
+#   - src/pages/api/cms/done.ts exchanges the code server-side and hands the
+#     token to the CMS popup over Decap's Netlify-style window handshake.
+# The popup is same-origin, so the CSP needs no auth host; the browser only
+# ever needs `api.github.com` in `connect-src` for the CMS's own REST calls.
+#
+# One-time GitHub-side setup:
+#   1. The OAuth App's callback URL must be
+#      `https://www.tranquillinfra.com/api/cms/done`.
+#   2. For a GitHub App (client id `Ov23li…`), grant repository "Contents"
+#      read+write — the scope parameter is ignored for GitHub Apps. A classic
+#      OAuth App gets `repo` from the authorize URL.
+#   3. `wrangler secret put GITHUB_OAUTH_CLIENT_SECRET` (the client id lives
+#      in wrangler.jsonc [vars]). Without both, /api/cms/auth answers 503.
+# Alternative with zero self-hosted code: Decap Bridge
+# (https://www.decapbridge.com) — register the repo, then set
+# `base_url: https://auth.decapbridge.com`, `auth_type: implicit` and the
+# bridge's app id here instead. Not chosen: one more third party in the
+# editorial path.
 
 backend:
   name: github
   repo: Manish191103/tranquillinfra
   branch: main
-  auth_type: pkce
-  app_id: Ov23liu4AlIzPvGH69cq
+  base_url: 'https://www.tranquillinfra.com'
+  auth_endpoint: 'api/cms/auth'
 
 site_url: 'https://www.tranquillinfra.com'
 

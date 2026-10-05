@@ -19,14 +19,16 @@ const SECURITY_HEADERS = {
   'Permissions-Policy':
     'camera=(), microphone=(), geolocation=(), payment=(), browsing-topics=(), interest-cohort=(), usb=(), serial=(), hid=(), accelerometer=(), gyroscope=(), magnetometer=()',
   // Same policy as `public/_headers`, `connect-src` included: the Formspree
-  // AJAX POST, the GA4/gtag collection endpoints and Meta's pixel relay.
+  // AJAX POST, the GA4/gtag collection endpoints, Meta's pixel relay and the
+  // GitHub REST API the Decap CMS admin (/decapcms/) talks to from the
+  // browser.
   // `form-action` names formspree.io because the lead forms post there when
   // JavaScript is off; the AJAX path is a fetch, which `form-action` does not
   // govern. The strict hash-based policy needs the inline GA bootstrap script
   // pinned and ClientRouter dropped — that is why there is no
   // `script-src`/`style-src` yet.
   'Content-Security-Policy':
-    "base-uri 'self'; connect-src 'self' https://formspree.io https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://www.facebook.com; object-src 'none'; form-action 'self' https://formspree.io; frame-ancestors 'none'",
+    "base-uri 'self'; connect-src 'self' https://formspree.io https://api.github.com https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://www.facebook.com; object-src 'none'; form-action 'self' https://formspree.io; frame-ancestors 'none'",
 } as const;
 
 const SAFE_METHODS: Record<string, true> = { GET: true, HEAD: true, OPTIONS: true };
@@ -38,6 +40,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // every unsafe method — the protection then cannot silently regress when a
   // route changes what it accepts.
   const { request, url } = context;
+
   if (!SAFE_METHODS[request.method] && request.headers.get('origin') !== url.origin) {
     return new Response(`Cross-site ${request.method} submissions are forbidden`, {
       status: 403,
