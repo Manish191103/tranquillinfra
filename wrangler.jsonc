@@ -6,6 +6,19 @@
   "compatibility_date": "2026-10-05",
   "compatibility_flags": ["nodejs_als"],
 
+  // Custom domains, enforced by every deploy (config-as-code): the zone has no
+  // Workers routes, so a domain must be attached on the Worker itself.
+  // Currently only the staging hostname — www.tranquillinfra.com and the apex
+  // are still attached to the sibling `tranquillinfra-com` Worker (see
+  // Production cutover decision, 2026-10-06). Add / swap patterns here to
+  // move traffic.
+  "routes": [
+    {
+      "pattern": "new.tranquillinfra.com",
+      "custom_domain": true,
+    },
+  ],
+
   // Single-environment production Worker: nothing here consumes preview URLs
   // (`wrangler versions upload` smoke checks go through `wrangler dev` locally
   // instead), so leave them off rather than exposing reachable draft bundles.
