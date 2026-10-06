@@ -6,10 +6,8 @@
  * the vitest runs share the same module without Astro's virtual stubs.
  *
  * Every value is public and optional: with none set the site ships no
- * measurement. Import this module from Astro components and client scripts
- * alike; Astro inlines the values wherever they are bundled. The Google tag
- * bootstrap lives in `src/components/common/Analytics.astro` (GA4 id from
- * `src/config.yaml`);Ads conversions are addressed here.
+ * measurement. The Google tag bootstrap lives in
+ * `src/components/common/Analytics.astro`; Ads conversions are addressed here.
  */
 
 /**
@@ -24,8 +22,8 @@
 export type MetaEventName = 'Lead' | 'NewsletterSignup';
 
 export const analyticsConfig = {
-  /** GA4 measurement id (`G-…`), read from `src/config.yaml` by Analytics.astro — kept here for callers that want it; null until the config carries one. */
-  gaId: null as string | null,
+  /** GA4 measurement id (`G-…`), `null` removes the tag entirely. */
+  gaId: import.meta.env.PUBLIC_GA_MEASUREMENT_ID || null,
   /**
    * Google Ads tag / conversion id (`AW-…`), `null` disables the Ads tag and
    * the conversion event it routes.
@@ -38,14 +36,4 @@ export const analyticsConfig = {
   adsConversionLabel: import.meta.env.PUBLIC_GOOGLE_ADS_CONVERSION_LABEL || null,
   /** Meta pixel id, `null` when not configured. */
   pixelId: import.meta.env.PUBLIC_META_PIXEL_ID || null,
-  /** Google tag ids the page configures: GA4 first, then Ads. */
-  gtagIds: (import.meta.env.PUBLIC_GOOGLE_ADS_ID ? [import.meta.env.PUBLIC_GOOGLE_ADS_ID] : []) as string[],
-  /** Google Ads destination for `send_to`, `null` when the pair is incomplete. */
-  adsDestination: analyticsDestination(),
 };
-
-function analyticsDestination(): string | null {
-  const id = import.meta.env.PUBLIC_GOOGLE_ADS_ID;
-  const label = import.meta.env.PUBLIC_GOOGLE_ADS_CONVERSION_LABEL;
-  return id && label ? `${id}/${label}` : null;
-}

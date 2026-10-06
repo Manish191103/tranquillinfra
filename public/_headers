@@ -29,5 +29,46 @@
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable
 
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
 /media/*
   Cache-Control: public, max-age=31536000, immutable
+
+# The brochure PDF (~13 MB, linked from the footer, the announcement bar and the
+# enquiry form). A day of caching keeps repeat clicks off the edge without
+# pinning a file the team may replace.
+/brochure/*
+  Cache-Control: public, max-age=86400
+
+# Prerendered pages are rebuilt in place at every deploy, which is why the
+# baseline keeps them at max-age=0 — that also forces a revalidation round trip
+# on every navigation (field TTFB p75 was 1.3 s, mobile, 2026-09). A one-minute
+# TTL lets browsers and the edge reuse a fresh copy inside the accepted staleness
+# window, and stale-while-revalidate hides the revalidation afterwards; past the
+# minute the ETag revalidation brings a deploy's edits live. Route patterns only
+# — every asset class has its own rule above, and the feeds/manifest/OG images
+# stay on the baseline because they are rebuilt at every deploy.
+/
+  Cache-Control: public, max-age=60, s-maxage=60, stale-while-revalidate=86400
+/about-us/
+  Cache-Control: public, max-age=60, s-maxage=60, stale-while-revalidate=86400
+/contact-us/
+  Cache-Control: public, max-age=60, s-maxage=60, stale-while-revalidate=86400
+/privacy-policy/
+  Cache-Control: public, max-age=60, s-maxage=60, stale-while-revalidate=86400
+/blog/*
+  Cache-Control: public, max-age=60, s-maxage=60, stale-while-revalidate=86400
+/projects/*
+  Cache-Control: public, max-age=60, s-maxage=60, stale-while-revalidate=86400
+
+# The workers.dev hostname and version previews serve the same pages as the
+# custom domain. Keep them out of search results so the legacy WordPress site
+# and the new one never compete as duplicates.
+https://tranquillinfra.tranquillinfradigital.workers.dev/*
+  X-Robots-Tag: noindex
+
+# Version and alias previews are '<prefix>-tranquillinfra.<sub>.workers.dev';
+# a host placeholder cannot cross the dot, so ':prefix' covers that whole label.
+https://:prefix.tranquillinfradigital.workers.dev/*
+  X-Robots-Tag: noindex

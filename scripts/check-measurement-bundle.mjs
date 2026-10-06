@@ -10,11 +10,12 @@
  * build env — this check is the second layer: it asserts the ids the build
  * saw actually landed in the artifacts.
  *
- * Id sources (the site has two homes, both checked against the artifacts):
- * - GA4, `src/config.yaml` `analytics.vendors.googleAnalytics.id` — surfaced
- *   in the prerendered HTML as `<script id="ga-init" data-id="…">` (the GA4
+ * Id source: public build env, falling back to wrangler.jsonc:
+ * - GA4, `wrangler.jsonc` `PUBLIC_GA_MEASUREMENT_ID` — surfaced in the
+ *   prerendered HTML as `<script id="ga-init" data-id="…">` (the GA4
  *   tag renders through `Analytics.astro`, not through a client bundle).
- * - Google Ads id + label and Meta pixel id — inlined into the client bundle
+ * - Google Ads id — checked in the bootstrap’s data-ads-id attribute.
+ * - Google Ads label and Meta pixel id — inlined into the client bundle
  *   (`src/lib/analytics.ts`, `src/lib/meta-pixel.ts`), read from the build
  *   env that `astro.config.ts` fills from `wrangler.jsonc`/process env.
  *
@@ -56,19 +57,6 @@ function* walk(dir) {
   }
 }
 
-// GA4: the id lives in src/config.yaml; its build-inlined artifact home is
-// the ga-init bootstrap's data-id on any prerendered page (the 404 ships on
-// every deploy). A null id renders `data-id=""`.
-const gaInitScript = /id="ga-init" data-id="([^"]*)"/;
-const ga4Id = (() => {
-  for (const path of walk(DIST)) {
-    if (!path.endsWith('.html')) continue;
-    const match = gaInitScript.exec(readFileSync(path, 'latin1'));
-    if (match) return match[1];
-  }
-  return null;
-})();
-
 /** `NAME → value` pairs the artifacts must carry. Env wins; wrangler.jsonc fallback. */
 function envOrWrangler(envName) {
   if (process.env[envName]) return process.env[envName];
@@ -80,6 +68,7 @@ function envOrWrangler(envName) {
   }
 }
 
+const ga4Id = envOrWrangler('PUBLIC_GA_MEASUREMENT_ID');
 const adsId = envOrWrangler('PUBLIC_GOOGLE_ADS_ID');
 const adsLabel = envOrWrangler('PUBLIC_GOOGLE_ADS_CONVERSION_LABEL');
 const pixelId = envOrWrangler('PUBLIC_META_PIXEL_ID');
@@ -107,11 +96,22 @@ if (configured.length === 0) {
 }
 
 if (corpus.length === 0) {
-  console.error(`[measurement-check] FAILED — no .js/.html assets under ${DIST}. Was astro build run?`);
+  console.error(
+    `[measurement-check] FAILED — no .js/.html assets under ${DIST}. Was astro build run?`
+  );
   process.exit(1);
 }
 
-const missing = configured.filter(([, id]) => !corpus.some((text) => text.includes(id)));
+const bootstrapHas = (attribute, id) =>
+  corpus.some((text) => {
+    const bootstrap = /<script\b[^>]*\bid=["']ga-init["'][^>]*>/.exec(text)?.[0];
+    return bootstrap?.includes(`${attribute}="${id}"`);
+  });
+const missing = configured.filter(([name, id]) => {
+  if (name === 'GA4 tag') return !bootstrapHas('data-id', id);
+  if (name === 'Google Ads id') return !bootstrapHas('data-ads-id', id);
+  return !corpus.some((text) => text.includes(id));
+});
 
 if (missing.length > 0) {
   console.error(
@@ -123,4 +123,6 @@ if (missing.length > 0) {
 }
 
 const live = configured.filter(([, id]) => corpus.some((text) => text.includes(id)));
-console.log(`[measurement-check] ok — ${corpus.length} assets, live ids: ${live.map(([name]) => name).join(', ')}`);
+console.log(
+  `[measurement-check] ok — ${corpus.length} assets, live ids: ${live.map(([name]) => name).join(', ')}`
+);

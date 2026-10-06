@@ -99,7 +99,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     const body = await readFormBody(request);
     if ('rejection' in body) {
       return jsonResponse(
-        { sent: false, reason: 'rejected_body', error: body.rejection.message },
+        { accepted: false, sent: false, reason: 'rejected_body', error: body.rejection.message },
         body.rejection.status
       );
     }
@@ -122,6 +122,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     if (!parsed.success) {
       return jsonResponse(
         {
+          accepted: false,
           sent: false,
           reason: 'invalid',
           error: parsed.error.issues[0]?.message ?? 'Please check the request.',
@@ -132,7 +133,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 
     // Honeypot: a bot gets the success shape and no mail.
     if (parsed.data.gotcha) {
-      return jsonResponse({ sent: true }, 200);
+      return jsonResponse({ accepted: false, sent: true }, 200);
     }
 
     // Last, so only the mail itself consumes quota: a rejected or honeypotted
@@ -145,6 +146,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
       // rather than for a lost enquiry.
       return jsonResponse(
         {
+          accepted: false,
           sent: false,
           reason: 'rate_limited',
           error: 'Too many requests. Please try again in a minute.',
@@ -183,6 +185,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     if (!outcome.sales) {
       return jsonResponse(
         {
+          accepted: false,
           sent: false,
           reason: 'sales_mail_failed',
           confirmation: outcome.confirmation,
@@ -195,6 +198,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 
     return jsonResponse(
       {
+        accepted: true,
         sent: true,
         confirmation: outcome.confirmation,
         lead_id: leadId,
@@ -217,6 +221,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 
     return jsonResponse(
       {
+        accepted: false,
         sent: false,
         reason: 'request_failed',
         error: 'The email could not be sent. Please try again.',

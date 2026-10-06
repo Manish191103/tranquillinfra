@@ -22,7 +22,9 @@ import {
 } from '~/lib/opening-hours';
 import siteConfig from '~/config/site.config';
 import {
+  PHONE_CTA_LABEL,
   REQUEST_TYPE_SUBJECT_LABELS,
+  SITE_VISIT_CTA_LABEL,
   type EnquiryRequestType,
 } from '~/lib/enquiry-cta';
 
@@ -151,6 +153,169 @@ const BROCHURE_PATH = '/brochure/tranquill-city-final.pdf';
  * suffix is noise.
  */
 const BROCHURE_FILENAME = 'Tranquill-City-Brochure.pdf';
+
+/* -------------------------------------------------------------------------
+   Visitor-mail design system
+
+   One shell renders both visitor mails — the brochure and the confirmation —
+   so the header, the CTAs and the footer NAP cannot drift apart between the
+   two sends. The palette is lifted from the site tokens (`src/styles/tokens/`:
+   the sand page, the forest ink, the gold accent, the darkened WhatsApp green
+   the site buttons also use); hex is inlined because email clients strip
+   `<style>` and CSS variables.
+   ------------------------------------------------------------------------- */
+
+const EMAIL = {
+  page: '#f7f4ec',
+  card: '#ffffff',
+  ink: '#103e33',
+  text: '#24443b',
+  muted: '#3f6459',
+  faint: '#6d8a80',
+  hairline: '#e3ddd0',
+  gold: '#f2cb67',
+  whatsapp: '#0d7a41',
+  white: '#ffffff',
+  face: "Manrope,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif",
+} as const;
+
+/** Absolute URL for a site path — the only form that works from an inbox. */
+function emailUrl(path: string): string {
+  return new URL(path, siteConfig.url).toString();
+}
+
+/**
+ * The "Book a site visit" destination for a reader of the mail: the contact
+ * page's enquiry form, the inline form that carries all three request types.
+ * `enquiryCtaTarget` is not reused here because it keys off the visitor's
+ * own pathname, which an email does not have.
+ */
+const BOOK_VISIT_PATH = '/contact-us/#contact-enquiry';
+
+interface EmailButton {
+  href: string;
+  label: string;
+  kind: 'gold' | 'green' | 'ghost';
+}
+
+/**
+ * A bulletproof button: the fill lives on a `bgcolor` attribute (which Outlook
+ * Desktop renders — CSS colors on the anchor alone are dropped), the rounded
+ * look on inline style (which it ignores, degrading to a square), and the
+ * padding on the anchor itself (which Outlook collapses to nothing, so the
+ * `bgcolor` cell keeps the label readable regardless).
+ */
+function emailButton({ href, label, kind }: EmailButton): string {
+  const fill =
+    kind === 'gold'
+      ? { bg: EMAIL.gold, text: EMAIL.ink, weight: 700 }
+      : kind === 'green'
+        ? { bg: EMAIL.whatsapp, text: EMAIL.white, weight: 700 }
+        : { bg: EMAIL.card, text: EMAIL.text, weight: 600 };
+  const border = kind === 'ghost' ? `border:1px solid ${EMAIL.hairline};` : '';
+  return `<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td align="center" bgcolor="${fill.bg}" style="${border}background-color:${fill.bg};border-radius:8px;"><a href="${escapeHtml(
+    href
+  )}" target="_blank" style="display:block;font-family:${EMAIL.face};font-size:14px;line-height:1.3;font-weight:${
+    fill.weight
+  };color:${fill.text};text-decoration:none;padding:13px 10px;">${escapeHtml(label)}</a></td></tr></table>`;
+}
+
+/** Buttons arranged in one row, each cell sized equally. */
+function emailActionRow(buttons: EmailButton[]): string {
+  const cells = buttons
+    .map(
+      (button) =>
+        `<td width="${Math.floor(100 / buttons.length)}%" align="center" valign="top" style="padding:0 3px;">${emailButton(
+          button
+        )}</td>`
+    )
+    .join('');
+  return `<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:26px 0 0;"><tr>${cells}</tr></table>`;
+}
+
+/** The one hero action of a mail: full-width, gold, centered label. */
+function emailHeroButton({ href, label }: { href: string; label: string }): string {
+  return `<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:26px 0 0;"><tr><td align="center"><table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td align="center" bgcolor="${EMAIL.gold}" style="background-color:${EMAIL.gold};border-radius:8px;"><a href="${escapeHtml(
+    href
+  )}" target="_blank" style="display:block;font-family:${EMAIL.face};font-size:15px;line-height:1.3;font-weight:700;color:${EMAIL.ink};text-decoration:none;padding:16px 24px;">${escapeHtml(
+    label
+  )}</a></td></tr></table></td></tr></table>`;
+}
+
+/** Project facts a reader would otherwise have to find on the website. */
+function emailFacts(facts: { term: string; value: string }[]): string {
+  const rows = facts
+    .map(
+      ({ term, value }) =>
+        `<tr><td valign="top" style="padding:7px 0;color:${EMAIL.muted};font-size:14px;width:1%;white-space:nowrap;">${escapeHtml(
+          term
+        )}</td><td valign="top" style="padding:7px 0 7px 16px;color:${EMAIL.text};font-size:14px;font-weight:600;">${escapeHtml(
+          value
+        )}</td></tr>`
+    )
+    .join('');
+  return `<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:26px 0 0;background-color:${EMAIL.page};border-radius:10px;"><tr><td style="padding:16px 20px;"><table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">${rows}</table></td></tr></table>`;
+}
+
+/**
+ * The shared card: gold brand bar, logo header, the mail's body, and a footer
+ * carrying the NAP lines the site publishes. Both visitor templates render
+ * through it, so a palette or a NAP change lands in both mails at once.
+ */
+function emailShell({
+  preheader,
+  body,
+  footnote,
+}: {
+  preheader: string;
+  body: string;
+  footnote: string;
+}): string {
+  const logoUrl = emailUrl(siteConfig.schemaLogo);
+  const approvalLine = [
+    `${contact.approvals.rera.label} ${contact.approvals.rera.number}`,
+    `${contact.approvals.hmda.label} ${contact.approvals.hmda.number}`,
+  ].join(' · ');
+  return `<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Tranquill Infra Projects</title>
+</head>
+<body style="margin:0;padding:24px 12px;background-color:${EMAIL.page};">
+<div style="display:none;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;">${escapeHtml(
+    preheader
+  )}</div>
+<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td align="center">
+<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:560px;background-color:${EMAIL.card};border-radius:14px;">
+  <tr><td height="4" bgcolor="${EMAIL.gold}" style="height:4px;line-height:4px;font-size:0;">&#8203;</td></tr>
+  <tr><td style="padding:24px 40px 0;"><img src="${escapeHtml(logoUrl)}" width="176" height="36" alt="${escapeHtml(
+    siteConfig.branding.logo.alt
+  )}" style="display:block;width:176px;height:36px;border:0;outline:none;"></td></tr>
+  <tr><td style="padding:14px 40px 34px;font-family:${EMAIL.face};font-size:16px;line-height:1.65;color:${EMAIL.text};">
+    ${body}
+  </td></tr>
+  <tr><td style="padding:18px 40px;font-family:${EMAIL.face};font-size:12.5px;line-height:2;color:${EMAIL.faint};border-top:1px solid ${EMAIL.hairline};border-top-color:${EMAIL.hairline};">
+    <p style="margin:0;">${escapeHtml(contact.project?.lines.join(' · ') ?? '')}</p>
+    <p style="margin:0;">${escapeHtml(siteConfig.hours?.join(' · ') ?? '')}</p>
+    <p style="margin:0;">${escapeHtml(approvalLine)}</p>
+  </td></tr>
+  <tr><td style="padding:0 40px 28px;font-family:${EMAIL.face};font-size:11.5px;line-height:1.8;color:${EMAIL.faint};">
+    ${footnote}
+  </td></tr>
+</table>
+</td></tr></table>
+</body>
+</html>`;
+}
+
+/** The sign-off block both visitor mails end on: team name with mail and tap-to-call. */
+function emailSignature(): string {
+  return `<p style="margin:30px 0 0;padding-top:22px;border-top:1px solid ${EMAIL.hairline};font-size:14px;color:${EMAIL.muted};">Reply to this email and it goes straight to our team inbox.</p>
+<p style="margin:14px 0 0;font-size:14px;color:${EMAIL.text};font-weight:600;">${escapeHtml(contact.name)}</p>
+<p style="margin:2px 0 0;font-size:14px;"><a href="mailto:${escapeHtml(contact.email)}" style="color:${EMAIL.ink};">${escapeHtml(contact.email)}</a>${contact.phone ? ` &middot; <a href="tel:${escapeHtml(contact.phoneE164)}" style="color:${EMAIL.ink};">${escapeHtml(contact.phone)}</a>` : ''}</p>`;
+}
 
 /* -------------------------------------------------------------------------
    Call-back promise
@@ -300,11 +465,11 @@ function clean(value: string | undefined, max: number): string | undefined {
  * deferral in the team's inbox costs them the asset with the lead.
  */
 async function sendBrochureEmail({ to, name }: { to: string; name?: string }): Promise<void> {
-  const brochureUrl = new URL(BROCHURE_PATH, siteConfig.url).toString();
-  const projectUrl = new URL('/projects/tranquill-city/', siteConfig.url).toString();
+  const brochureUrl = emailUrl(BROCHURE_PATH);
+  const projectUrl = emailUrl('/projects/tranquill-city/');
+  const visitUrl = emailUrl(BOOK_VISIT_PATH);
   const firstName = clean(name, 80)?.split(' ')[0];
   const greeting = firstName ? `Hi ${firstName},` : 'Hello,';
-  const phone = contact.phone;
   const promise = callbackPromise(new Date());
 
   const text = [
@@ -312,13 +477,15 @@ async function sendBrochureEmail({ to, name }: { to: string; name?: string }): P
     '',
     'Thank you for your interest in Tranquill City, Rudraram. The latest project brochure is ready:',
     '',
-    brochureUrl,
+    `Download the brochure: ${brochureUrl}`,
     '',
-    `Plot sizes, pricing, availability and the approval documents: ${projectUrl}`,
+    `Plots and pricing: ${projectUrl}`,
     '',
     promise,
     '',
-    `Questions or a site visit? Reply to this email${phone ? ` or call ${phone}` : ''}.`,
+    `Book a site visit: ${visitUrl}`,
+    `Call sales: ${contact.phone}`,
+    `WhatsApp: ${contact.whatsapp}`,
     '',
     contact.name,
     contact.email,
@@ -326,51 +493,40 @@ async function sendBrochureEmail({ to, name }: { to: string; name?: string }): P
     'You received this email because the brochure was requested on tranquillinfra.com.',
   ].join('\n');
 
-  const html = `<!doctype html>
-<html lang="en">
-  <body style="margin:0;padding:24px;background:#f7f4ec;font-family:Manrope,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#24443b">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-      <tr>
-        <td align="center">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border-radius:12px">
-            <tr>
-              <td style="padding:32px;font-size:16px;line-height:1.6">
-                <p style="margin:0 0 16px">${escapeHtml(greeting)}</p>
-                <p style="margin:0 0 24px">
-                  Thank you for your interest in Tranquill City, Rudraram. The latest project brochure
-                  is ready.
-                </p>
-                <p style="margin:0 0 28px">
-                  <a href="${brochureUrl}" style="display:inline-block;background:#f2cb67;color:#103e33;font-weight:700;text-decoration:none;padding:14px 24px;border-radius:8px">Download the brochure</a>
-                </p>
-                <p style="margin:0 0 12px;font-size:14px;color:#3f6459">
-                  ${escapeHtml(promise)}
-                </p>
-                <p style="margin:0 0 12px;font-size:14px;color:#3f6459">
-                  Prefer to see the project in person? Reply to this email${
-                    phone
-                      ? ` or call <a href="tel:${escapeHtml(contact.phoneE164)}" style="color:#1b5b4b">${escapeHtml(phone)}</a>`
-                      : ''
-                  }.
-                </p>
-                <p style="margin:0 0 28px;font-size:14px">
-                  <a href="${projectUrl}" style="color:#1b5b4b">Plot sizes, pricing and the approval documents</a>
-                </p>
-                <p style="margin:0;font-size:14px;color:#3f6459">
-                  ${escapeHtml(contact.name)}<br />
-                  <a href="mailto:${escapeHtml(contact.email)}" style="color:#1b5b4b">${escapeHtml(contact.email)}</a>
-                </p>
-              </td>
-            </tr>
-          </table>
-          <p style="margin:16px 0 0;max-width:520px;font-size:12px;line-height:1.5;color:#6d8a80">
-            You received this email because the brochure was requested on tranquillinfra.com.
-          </p>
-        </td>
-      </tr>
-    </table>
-  </body>
-</html>`;
+  const body = `
+<p style="margin:0 0 16px;">${escapeHtml(greeting)}</p>
+<p style="margin:0 0 8px;">
+  Thank you for your interest in <b>Tranquill City, Rudraram</b>. The latest project
+  brochure is ready — every plot, price and approval document inside.
+</p>
+${emailHeroButton({ href: brochureUrl, label: 'Download the brochure' })}
+${emailFacts([
+  { term: 'Plots', value: contact.plotSizes },
+  { term: 'Entry price', value: contact.details.priceDisplay },
+  {
+    term: 'Approvals',
+    value: `${contact.approvals.rera.label} ${contact.approvals.rera.number} · ${contact.approvals.hmda.label} ${contact.approvals.hmda.number}`,
+  },
+])}
+<p style="margin:22px 0 0;font-size:14px;color:${EMAIL.muted};">${escapeHtml(promise)}</p>
+${emailActionRow([
+  { href: visitUrl, label: SITE_VISIT_CTA_LABEL, kind: 'ghost' },
+  { href: `tel:${escapeHtml(contact.phoneE164)}`, label: PHONE_CTA_LABEL, kind: 'ghost' },
+  { href: contact.whatsapp, label: 'WhatsApp us', kind: 'green' },
+])}
+<p style="margin:24px 0 0;font-size:14px;">
+  Plot sizes, pricing and all the documents, browsable any time:
+  <a href="${escapeHtml(projectUrl)}" style="color:${EMAIL.ink};">Tranquill City on tranquillinfra.com</a>.
+</p>
+${emailSignature()}`;
+
+  const html = emailShell({
+    preheader: `Your brochure is ready — plots from ₹50 lakh, with the approval documents inside.`,
+    body,
+    footnote: `You received this email because a brochure was requested on <a href="${escapeHtml(
+      emailUrl('/')
+    )}" style="color:${EMAIL.faint};">tranquillinfra.com</a>.`,
+  });
 
   await sendEmail({
     to,
@@ -394,11 +550,11 @@ async function sendConfirmationEmail({
   name?: string;
   requestType: 'enquiry' | 'site_visit';
 }): Promise<void> {
-  const projectUrl = new URL('/projects/tranquill-city/', siteConfig.url).toString();
+  const projectUrl = emailUrl('/projects/tranquill-city/');
+  const visitUrl = emailUrl(BOOK_VISIT_PATH);
   const firstName = clean(name, 80)?.split(' ')[0];
   const greeting = firstName ? `Hi ${firstName},` : 'Hello,';
   const phone = contact.phone;
-  const hours = siteConfig.hours?.join(' · ');
   const siteVisit = requestType === 'site_visit';
 
   // The site-visit branch promises only that a team member will confirm the
@@ -415,11 +571,15 @@ async function sendConfirmationEmail({
     '',
     opening,
     '',
-    `Prefer to talk now? Reply to this email${phone ? ` or call ${phone}` : ''}.`,
-    ...(contact.whatsapp ? ['', `WhatsApp: ${contact.whatsapp}`] : []),
+    // The three channels, in the order the mail's button row reads.
+    ...(siteVisit
+      ? [`Change or add a visit: ${visitUrl}`]
+      : [`Book a site visit: ${visitUrl}`]),
+    `Call sales: ${phone}`,
+    `WhatsApp: ${contact.whatsapp}`,
     '',
     `Plot sizes, pricing and the approval documents: ${projectUrl}`,
-    ...(hours ? ['', `Business hours: ${hours}`] : []),
+    ...(siteConfig.hours ? ['', `Business hours: ${siteConfig.hours.join(' · ')}`] : []),
     '',
     contact.name,
     contact.email,
@@ -427,54 +587,53 @@ async function sendConfirmationEmail({
     'You received this email because you submitted an enquiry on tranquillinfra.com.',
   ].join('\n');
 
-  const html = `<!doctype html>
-<html lang="en">
-  <body style="margin:0;padding:24px;background:#f7f4ec;font-family:Manrope,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#24443b">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-      <tr>
-        <td align="center">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border-radius:12px">
-            <tr>
-              <td style="padding:32px;font-size:16px;line-height:1.6">
-                <p style="margin:0 0 16px">${escapeHtml(greeting)}</p>
-                <p style="margin:0 0 24px">${escapeHtml(opening)}</p>
-                ${
-                  phone
-                    ? `<p style="margin:0 0 28px">
-                  <a href="tel:${escapeHtml(contact.phoneE164)}" style="display:inline-block;background:#f2cb67;color:#103e33;font-weight:700;text-decoration:none;padding:14px 24px;border-radius:8px">Call ${escapeHtml(phone)}</a>
-                </p>`
-                    : ''
-                }
-                <p style="margin:0 0 12px;font-size:14px;color:#3f6459">
-                  Prefer to write? Reply to this email${
-                    contact.whatsapp
-                      ? ` or <a href="${escapeHtml(contact.whatsapp)}" style="color:#1b5b4b">message us on WhatsApp</a>`
-                      : ''
-                  }.
-                </p>
-                <p style="margin:0 0 12px;font-size:14px">
-                  <a href="${projectUrl}" style="color:#1b5b4b">Plot sizes, pricing and the approval documents</a>
-                </p>
-                ${
-                  hours
-                    ? `<p style="margin:0 0 28px;font-size:14px;color:#3f6459">Business hours: ${escapeHtml(hours)}</p>`
-                    : ''
-                }
-                <p style="margin:0;font-size:14px;color:#3f6459">
-                  ${escapeHtml(contact.name)}<br />
-                  <a href="mailto:${escapeHtml(contact.email)}" style="color:#1b5b4b">${escapeHtml(contact.email)}</a>
-                </p>
-              </td>
-            </tr>
-          </table>
-          <p style="margin:16px 0 0;max-width:520px;font-size:12px;line-height:1.5;color:#6d8a80">
-            You received this email because you submitted an enquiry on tranquillinfra.com.
-          </p>
-        </td>
-      </tr>
-    </table>
-  </body>
-</html>`;
+  // One hero action per mail; the row underneath carries the two channels the
+  // hero did not use, so no mail repeats a CTA.
+  const hero = siteVisit
+    ? {
+        href: `tel:${escapeHtml(contact.phoneE164)}`,
+        label: `Call ${escapeHtml(phone)}`,
+      }
+    : { href: visitUrl, label: SITE_VISIT_CTA_LABEL };
+  const rowButtons: EmailButton[] = siteVisit
+    ? [
+        { href: visitUrl, label: SITE_VISIT_CTA_LABEL, kind: 'ghost' },
+        { href: contact.whatsapp, label: 'WhatsApp us', kind: 'green' },
+      ]
+    : [
+        {
+          href: `tel:${escapeHtml(contact.phoneE164)}`,
+          label: PHONE_CTA_LABEL,
+          kind: 'ghost',
+        },
+        { href: contact.whatsapp, label: 'WhatsApp us', kind: 'green' },
+      ];
+
+  const body = `
+<p style="margin:0 0 16px;">${escapeHtml(greeting)}</p>
+<p style="margin:0 0 4px;">${escapeHtml(opening)}</p>
+${emailHeroButton(hero)}
+<p style="margin:22px 0 0;font-size:14px;color:${EMAIL.muted};">${
+    siteVisit
+      ? 'Need a different day or a second visit? The row below gets you there or to our desk in one tap.'
+      : 'Prefer to talk or write first? The row below taps straight to our desk.'
+  }</p>
+${emailActionRow(rowButtons)}
+<p style="margin:24px 0 0;font-size:14px;">
+  Plot sizes, pricing and the approval documents:
+  <a href="${escapeHtml(projectUrl)}" style="color:${EMAIL.ink};">Tranquill City on tranquillinfra.com</a>.
+</p>
+${emailSignature()}`;
+
+  const html = emailShell({
+    preheader: siteVisit
+      ? 'We have your site-visit request — a team member will call you to confirm.'
+      : 'We have your enquiry — call, WhatsApp or book a site visit in one tap.',
+    body,
+    footnote: `You received this email because you submitted an enquiry on <a href="${escapeHtml(
+      emailUrl('/')
+    )}" style="color:${EMAIL.faint};">tranquillinfra.com</a>.`,
+  });
 
   await sendEmail({
     to,

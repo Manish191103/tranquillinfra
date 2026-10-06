@@ -6,6 +6,11 @@
   "compatibility_date": "2026-10-05",
   "compatibility_flags": ["nodejs_als"],
 
+  // Single-environment production Worker: nothing here consumes preview URLs
+  // (`wrangler versions upload` smoke checks go through `wrangler dev` locally
+  // instead), so leave them off rather than exposing reachable draft bundles.
+  "preview_urls": false,
+
   // Workers Logs: the console.error/warn calls in the API routes and the
   // measurement guards are the site's only production telemetry, so the log
   // push has to be on for them to be visible outside a live tail.
@@ -34,9 +39,9 @@
     // the Google Ads conversion (src/lib/analytics.ts), the Meta pixel and its
     // CAPI relay (src/lib/meta-pixel.ts, src/lib/meta-conversions.ts) and the
     // Formspree endpoint (src/components/widgets/EnquiryDialog.astro and the
-    // other lead surfaces). Google Analytics needs none of this — its id lives
-    // in src/config.yaml, alongside the rest of the site config. Each id is
-    // optional per tag: with one absent that tag never loads.
+    // other lead surfaces). Each id is optional per tag: with one absent that
+    // tag never loads.
+    "PUBLIC_GA_MEASUREMENT_ID": "G-SK7K0WHJPK",
     "PUBLIC_GOOGLE_ADS_ID": "AW-18447056516",
     "PUBLIC_GOOGLE_ADS_CONVERSION_LABEL": "as-bCLOjg4cdEIT9ntxE",
     "PUBLIC_META_PIXEL_ID": "1062180862820086",
@@ -49,8 +54,8 @@
     // Customer mail (public contact details, not credentials). The Resend key
     // and the Meta CAPI token are Worker secrets (`wrangler secret put`), read
     // through the `astro:env` schema in astro.config.ts — never listed here.
-    "CONTACT_TO_EMAIL": "info@tranquillinfra.com",
-    "RESEND_FROM_EMAIL": "Tranquill Infra Website <leads@tranquillinfra.com>",
+    "CONTACT_TO_EMAIL": "tranquillinfradigital@gmail.com",
+    "RESEND_FROM_EMAIL": "Tranquill Infra Projects <hello@tranquillinfra.com>",
 
     // Optional: browser-exposed Maps key (restrict it by HTTP referrer in the
     // Google Cloud console) and search-console verification codes.

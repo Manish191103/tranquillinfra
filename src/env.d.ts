@@ -2,7 +2,6 @@
 /// <reference path="../.astro/types.d.ts" />
 /// <reference types="astro/client" />
 /// <reference types="vite/client" />
-/// <reference types="../vendor/integration/types.d.ts" />
 
 declare module 'cloudflare:workers' {
   /** Worker bindings from `wrangler.jsonc` plus values set with `wrangler secret put`. */

@@ -1,32 +1,32 @@
 ---
-import { ANALYTICS } from 'astrowind:config';
+import { analyticsConfig } from '~/config/analytics.config';
 
-const id = ANALYTICS?.vendors?.googleAnalytics?.id
-  ? String(ANALYTICS.vendors.googleAnalytics.id)
-  : '';
-const partytown = !!ANALYTICS?.vendors?.googleAnalytics?.partytown;
-const scriptType = partytown ? 'text/partytown' : undefined;
+const id = analyticsConfig.gaId || analyticsConfig.adsId || '';
+const gaId = analyticsConfig.gaId || '';
+const adsId = analyticsConfig.adsId || '';
 ---
 
-{
-  id && (
-    <script
-      is:inline
-      async
-      src={`https://www.googletagmanager.com/gtag/js?id=${id}`}
-      type={scriptType}
-    />
-  )
-}
+{id && <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${id}`} />}
 
-<script is:inline id="ga-init" data-id={id} type={id ? scriptType : undefined}>
-  if (document.getElementById('ga-init').dataset.id) {
-    var d = document.getElementById('ga-init').dataset.id;
+<script is:inline id="ga-init" data-id={gaId} data-ads-id={adsId}>
+  var bootstrap = document.getElementById('ga-init');
+  var destinations = [bootstrap.dataset.id, bootstrap.dataset.adsId].filter(Boolean);
+  if (destinations.length) {
     window.dataLayer = window.dataLayer || [];
-    window.gtag = function () {
-      dataLayer.push(arguments);
-    };
-    window.gtag('js', new Date());
-    window.gtag('config', d);
+    window.gtag =
+      window.gtag ||
+      function () {
+        window.dataLayer.push(arguments);
+      };
+    if (!window.__googleTagDestinations) {
+      window.__googleTagDestinations = [];
+      window.gtag('js', new Date());
+    }
+    destinations.forEach(function (destination) {
+      if (window.__googleTagDestinations.indexOf(destination) === -1) {
+        window.gtag('config', destination);
+        window.__googleTagDestinations.push(destination);
+      }
+    });
   }
 </script>

@@ -15,7 +15,7 @@ describe('enquiryCtaTarget', () => {
   });
 
   it('scrolls to the inline form on the contact page', () => {
-    expect(enquiryCtaTarget('/contact-us/')).toEqual({ href: '/contact-us/#contact-form' });
+    expect(enquiryCtaTarget('/contact-us/')).toEqual({ href: '/contact-us/#contact-enquiry' });
   });
 
   it('opens the enquiry dialog everywhere else, including the redirecting /projects/ root', () => {

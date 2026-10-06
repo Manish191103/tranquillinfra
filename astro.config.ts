@@ -1,22 +1,18 @@
 import path from 'path';
-import { readFileSync } from 'fs';
+import { readFileSync, readdirSync } from 'fs';
+import { appendFile, readFile } from 'node:fs/promises';
+import { join } from 'path';
 import { fileURLToPath } from 'url';
 
 import { defineConfig, envField, fontProviders } from 'astro/config';
 
-import { unified } from '@astrojs/markdown-remark';
-
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
-import mdx from '@astrojs/mdx';
-import partytown from '@astrojs/partytown';
 import cloudflare from '@astrojs/cloudflare';
 import compress from 'astro-compress';
 import type { AstroIntegration } from 'astro';
 
-import astrowind from './vendor/integration';
-
-import { readingTimeRemarkPlugin, responsiveTablesRehypePlugin } from './src/utils/frontmatter';
+import { responsiveTablesRehypePlugin } from './src/utils/frontmatter';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -45,20 +41,144 @@ function injectWranglerVars(): void {
 
 injectWranglerVars();
 
-const hasExternalScripts = false;
-const whenExternalScripts = (items: (() => AstroIntegration) | (() => AstroIntegration)[] = []) =>
-  hasExternalScripts ? (Array.isArray(items) ? items.map((item) => item()) : [items()]) : [];
+/**
+ * lastmod per pathname, filled by the sitemap serialiser: `astro:content`
+ * cannot load in the config context, so frontmatter dates are read off disk —
+ * the same dates the content layer serves to the pages.
+ */
+const sitemapLastmod: Record<string, string> = {};
+
+/**
+ * A date exported from a TS config module (`contact.config.ts` `reviewedAt`),
+ * scraped off disk: the config cannot be imported here because it reaches
+ * `astro:env/server`, a build-time-only virtual module. Unreadable or
+ * malformed values drop the `lastmod` for that one path.
+ */
+function configDate(file: string, name: string): string | undefined {
+  const source = readFileSync(file, 'utf8');
+  const literal = source
+    .match(new RegExp(`^export const ${name}\\s*(?::[^=]+)?=\\s*['"]([^'"]+)['"]`, 'm'))?.[1];
+  if (!literal) return undefined;
+  const date = new Date(literal);
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString().slice(0, 10);
+}
+
+function frontmatterDates(file: string): string[] {
+  const source = readFileSync(file, 'utf8');
+  const frontmatter = source.match(/^---\n([\s\S]*?)\n---/)?.[1] ?? '';
+  const dates: string[] = [];
+  for (const field of ['publishedAt', 'updatedAt']) {
+    const value = frontmatter.match(new RegExp(`^${field}:\\s*([^#\\n]+)`, 'm'))?.[1]?.trim();
+    if (!value) continue;
+    const date = new Date(value.replace(/^['"]|['"]$/g, ''));
+    if (!Number.isNaN(date.getTime())) dates.push(date.toISOString().slice(0, 10));
+  }
+  return dates;
+}
+
+function fillSitemapLastmod(): void {
+  const add = (path: string, file: string): void => {
+    const lastmod = frontmatterDates(file).sort().at(-1);
+    if (lastmod) sitemapLastmod[path] = lastmod;
+  };
+
+  const contentDir = join(process.cwd(), 'src', 'content');
+  for (const file of readdirSync(join(contentDir, 'pages'))) {
+    const id = file.replace(/\.md$/, '');
+    add(id === 'home' ? '/' : `/${id}/`, join(contentDir, 'pages', file));
+  }
+  const posts = readdirSync(join(contentDir, 'blog'));
+  for (const file of posts) {
+    add(`/blog/${file.replace(/\.md$/, '')}/`, join(contentDir, 'blog', file));
+  }
+  // The archive's lastmod is the newest post; `/contact-us/` keeps its date in
+  // `contact.config.ts` (`reviewedAt`) — frontmatter wins over the config
+  // fallback when the page ever gains a content entry.
+  const newestPost = posts
+    .flatMap((file) => frontmatterDates(join(contentDir, 'blog', file)))
+    .sort()
+    .at(-1);
+  if (newestPost) sitemapLastmod['/blog/'] = newestPost;
+  const contactReviewedAt = configDate(
+    join(process.cwd(), 'src', 'config', 'contact.config.ts'),
+    'reviewedAt'
+  );
+  if (contactReviewedAt && !sitemapLastmod['/contact-us/']) {
+    sitemapLastmod['/contact-us/'] = contactReviewedAt;
+  }
+  for (const file of readdirSync(join(contentDir, 'projects'))) {
+    add(`/projects/${file.replace(/\.md$/, '')}/`, join(contentDir, 'projects', file));
+  }
+}
+
+let sitemapLastmodFilled = false;
+
+/**
+ * No-slash variants of every redirect source, appended to the adapter's
+ * `dist/client/_redirects`. The site builds with `trailingSlash: 'always'`,
+ * which makes Astro emit only the slash form of each source; directory URLs
+ * self-normalize, but FILE URLs (`/sitemap.xml`, the brochure PDFs) would 404
+ * with only the inert slash rule. Idempotent: a row is skipped when a line
+ * already starts with the source + four-space separator.
+ */
+const LEGACY_REDIRECTS: Array<[source: string, target: string]> = [
+  ['/projects', '/projects/tranquill-city/'],
+  ['/careers', '/about-us/'],
+  ['/application-form', '/contact-us/'],
+  ['/campaigns', '/projects/tranquill-city/'],
+  ['/campaigns/tranquill-city-premium-villa-plots', '/projects/tranquill-city/'],
+  ['/campaigns/tranquill-city-plots-near-hyderabad', '/projects/tranquill-city/'],
+  ['/brochure', '/brochure/tranquill-city-final.pdf'],
+  ['/brochure/tranquill-city.pdf', '/brochure/tranquill-city-final.pdf'],
+  ['/sitemap.xml', '/sitemap-index.xml'],
+  ['/wp-content/uploads/2025/12/Tranquill-City-Broucher.pdf', '/brochure/tranquill-city-final.pdf'],
+];
+
+const redirectVariants: AstroIntegration = {
+  name: 'tranquillinfra:redirect-variants',
+  hooks: {
+    'astro:build:done': async ({ dir, logger }) => {
+      const redirectsFile = new URL('_redirects', dir);
+      let existing: string;
+      try {
+        existing = await readFile(redirectsFile, 'utf8');
+      } catch {
+        logger.warn('`_redirects` not found in the build output — nothing to extend');
+        return;
+      }
+      const lines = existing.split('\n');
+      const missing = LEGACY_REDIRECTS.filter(
+        ([source]) => !lines.some((line) => line.startsWith(`${source}    `))
+      );
+      if (missing.length === 0) return;
+      // The adapter's file can end without a newline; joining onto it would
+      // glue the first appended row into the last adapter row and corrupt both.
+      const prefix = existing.endsWith('\n') ? '' : '\n';
+      const rows = prefix + missing.map(([source, target]) => `${source}    ${target}    301\n`).join('');
+      await appendFile(redirectsFile, rows);
+      logger.info(`appended ${missing.length} no-slash redirect variant(s) to \`_redirects\``);
+    },
+  },
+};
 
 export default defineConfig({
+  // Published URLs carry the trailing slash (canonicals, sitemap and RSS all
+  // emit it); the setting only shapes dev/on-demand routing — static pages are
+  // served as directories by the asset server regardless.
+  trailingSlash: 'always',
+
+  // The deployment origin. Wrangler vars reach this module as process.env
+  // (see injectWranglerVars above), so CI builds resolve it from wrangler.jsonc.
+  site: process.env.SITE_URL || 'https://www.tranquillinfra.com',
+
   // Type-safe environment. Runtime secrets are declared with access 'secret';
-  // build-time public values (measurement ids, Formspree form id, consent
-  // flag) are declared as 'client' and inlined by the compiler — the
-  // Cloudflare build loads the wrangler `vars` block into the build env, and
-  // the GA4 property id additionally lives in src/config.yaml. Optional
-  // secrets keep the graceful degradation the site is designed around — a
-  // missing Resend key makes /api/customer-mail answer an honest 502, a
-  // missing CAPI token leaves the pixel working alone — instead of blocking
-  // the deploy the way `secrets.required` would.
+  // build-time public values (measurement ids, Formspree form id) are declared
+  // as 'client' and inlined by the compiler — the Cloudflare build loads the
+  // wrangler `vars` block into the build env. Optional secrets keep the
+  // graceful degradation the site is designed around — a missing Resend key
+  // makes /api/customer-mail answer an honest 502, a missing CAPI token leaves
+  // the pixel working alone — instead of blocking the deploy the way
+  // `secrets.required` would.
   env: {
     schema: {
       // Site identity / verification, read by src/config/site.config.ts.
@@ -151,8 +271,27 @@ export default defineConfig({
   // `/projects/` has no listing page — it points straight at the flagship
   // project (see the comment in src/navigation.ts). Static output emits this
   // as a meta-refresh HTML file served by the asset server.
+  //
+  // The remaining entries are the legacy surface inherited from the previous
+  // site (WordPress paths, the printed brochure link and the campaign
+  // landing pages). They are 301s at the asset server; every target keeps
+  // the site's trailing-slash form so no extra hop is added.
   redirects: {
-    '/projects': '/projects/tranquill-city',
+    '/projects': '/projects/tranquill-city/',
+    // The project page lives at its slugged URL. Keep this permanently: the
+    // printed brochure and the published articles link here, and fragments
+    // like #project-brochure survive the hop.
+    '/careers': '/about-us/',
+    '/application-form': '/contact-us/',
+    '/campaigns/tranquill-city-premium-villa-plots': '/projects/tranquill-city/',
+    '/campaigns/tranquill-city-plots-near-hyderabad': '/projects/tranquill-city/',
+    // Legacy tree roots — the leaf URLs above redirected, these kept 404ing.
+    // One entry each; Astro emits the slash and no-slash variants.
+    '/campaigns': '/projects/tranquill-city/',
+    '/brochure': '/brochure/tranquill-city-final.pdf',
+    '/sitemap.xml': '/sitemap-index.xml',
+    '/brochure/tranquill-city.pdf': '/brochure/tranquill-city-final.pdf',
+    '/wp-content/uploads/2025/12/Tranquill-City-Broucher.pdf': '/brochure/tranquill-city-final.pdf',
   },
 
   output: 'static',
@@ -207,14 +346,17 @@ export default defineConfig({
   ],
 
   integrations: [
-    sitemap(),
-    mdx(),
-
-    ...whenExternalScripts(() =>
-      partytown({
-        config: { forward: ['dataLayer.push'] },
-      })
-    ),
+    sitemap({
+      // Content freshness is a ranking input; the collections carry the dates.
+      serialize(item) {
+        if (!sitemapLastmodFilled) {
+          fillSitemapLastmod();
+          sitemapLastmodFilled = true;
+        }
+        const lastmod = sitemapLastmod[new URL(item.url).pathname];
+        return lastmod ? { ...item, lastmod } : item;
+      },
+    }),
 
     compress({
       // csso off on purpose: its parser doesn't understand the media range
@@ -230,12 +372,10 @@ export default defineConfig({
       Image: false,
       JavaScript: true,
       SVG: false,
-      Logger: 1,
+      Logger: 0,
     }),
 
-    astrowind({
-      config: './src/config.yaml',
-    }),
+    redirectVariants,
   ],
 
   image: {
@@ -247,10 +387,7 @@ export default defineConfig({
   },
 
   markdown: {
-    processor: unified({
-      remarkPlugins: [readingTimeRemarkPlugin],
-      rehypePlugins: [responsiveTablesRehypePlugin],
-    }),
+    rehypePlugins: [responsiveTablesRehypePlugin],
     shikiConfig: {
       // Code blocks follow the site theme; see the `.astro-code` rules in
       // src/styles/global.css.

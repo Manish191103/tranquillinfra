@@ -157,7 +157,7 @@ const telHref = siteConfig.phoneE164 ? `tel:${siteConfig.phoneE164}` : undefined
       hidden
       class="border-destructive/40 bg-destructive/5 space-y-2 rounded-md border p-3 text-sm"
     >
-      <p class="font-semibold">That did not reach us. Reach the sales desk directly:</p>
+      <p class="font-semibold">Need help with your request? Reach the sales desk directly:</p>
       <ul class="space-y-1">
         {telHref && siteConfig.phone && (
           <li>
@@ -207,6 +207,7 @@ const telHref = siteConfig.phoneE164 ? `tel:${siteConfig.phoneE164}` : undefined
     shouldAutoOpen,
   } from '~/lib/enquiry-popup';
   import { bindLeadForm, enquirySubject } from '~/lib/leads';
+  import { BROCHURE_DOWNLOAD_HREF } from '~/lib/enquiry-cta';
 
   /** Today's date in the visitor's own zone, as the `min` of the date input. */
   function todayIso(): string {
@@ -266,6 +267,7 @@ const telHref = siteConfig.phoneE164 ? `tel:${siteConfig.phoneE164}` : undefined
         button,
         message,
         kind: 'contact',
+        brochureFallback: { href: BROCHURE_DOWNLOAD_HREF, label: 'Download the brochure' },
         submitLabel: button.textContent?.trim() || 'Send request',
         composeSubject: ({ name, requestType, visitDate: date }) =>
           enquirySubject({ name, requestType, visitDate: date }),

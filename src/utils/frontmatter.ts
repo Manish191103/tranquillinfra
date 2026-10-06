@@ -1,18 +1,7 @@
-import getReadingTime from 'reading-time';
-import { toString } from 'mdast-util-to-string';
-import type { RehypePlugin, RemarkPlugin } from '@astrojs/markdown-remark';
+import type { RehypePlugin } from '@astrojs/markdown-remark';
 
-export const readingTimeRemarkPlugin: RemarkPlugin = () => {
-  return function (tree, file) {
-    const textOnPage = toString(tree);
-    const readingTime = Math.ceil(getReadingTime(textOnPage).minutes);
-
-    if (typeof file?.data?.astro?.frontmatter !== 'undefined') {
-      file.data.astro.frontmatter.readingTime = readingTime;
-    }
-  };
-};
-
+/** Wraps markdown `<table>`s in an `overflow:auto` div so wide tables scroll
+ * instead of blowing out the prose column on mobile. */
 export const responsiveTablesRehypePlugin: RehypePlugin = () => {
   return function (tree) {
     if (!tree.children) return;

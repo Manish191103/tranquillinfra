@@ -12,12 +12,6 @@ removed.
 **Stack:** Astro v7 | Tailwind CSS v4 | TypeScript | cva-style component
 variants | Cloudflare Workers
 
-## Skills
-
-Before implementing a project-specific task (adding a page, adding a blog post,
-changing the header, deployment…), check `.agents/skills/` for an existing
-skill and follow it.
-
 ## Quick Reference
 
 | Command         | Purpose                                         |
@@ -64,11 +58,13 @@ src/
   lib/              # analytics, leads, mail, meta-pixel, meta-conversions, enquiry-cta,
                     # http, rate-limit, schema, canonical, consent, enquiry-popup, cn…
   contact.ts        # NAP facts (phone, WhatsApp, address, approval numbers)
-  config.yaml       # Read by the vendored integration; drives Analytics.astro + mail.ts
   middleware.ts     # Security headers for the on-demand API routes
-  types.d.ts        # MetaData types (vendored config builder validates config.yaml)
-vendor/integration/ # Vendored AstroWind config loader (astrowind:config virtual module)
+  utils/frontmatter.ts # markdown rehype plugin (responsive tables)
 ```
+
+Wrangler config (`wrangler.jsonc`) carries the public measurement ids and
+Worker settings; build-time values are injected into the Astro build from it
+by `astro.config.ts` (`injectWranglerVars`).
 
 ### Path Aliases
 
@@ -79,18 +75,12 @@ import Button from '~/components/ui/form/Button/Button.astro';
 import siteConfig from '~/config/site.config';
 ```
 
-### Two configuration homes (deliberate, transitional)
+### Single configuration home
 
-- `src/config/*.config.ts` — the typed modules every component reads (site
-  identity, NAP, project statics, nav, analytics ids, consent). This is the
-  layer copied from .com.
-- `src/config.yaml` — still read by the vendored integration; it drives the
-  sitemap/robots behaviour and the GA4 property id that
-  `components/common/Analytics.astro` renders. `mail.ts` reads `SITE` from it.
-
-Consolidating these is a named follow-up, not silent drift: when touching
-config, prefer the TS modules, and never copy a value from one home into the
-other without checking both.
+`src/config/*.config.ts` — the typed modules every component reads (site
+identity, NAP, project statics, nav, analytics ids). The old double home
+(`src/config.yaml` + vendored loader) is gone; measurement ids live in
+`wrangler.jsonc` and reach the build through the env schema.
 
 ## Tailwind CSS v4
 
@@ -140,23 +130,18 @@ Post frontmatter: `title` (required, ≤100), `description` (required, ≤200),
 ## Measurement
 
 `components/common/Analytics.astro` renders the Google Analytics 4 tag from
-`analytics.vendors.googleAnalytics.id` in `src/config.yaml` — the only place
-the property id lives. Null removes the tag; any value loads it on every page,
-with no consent gate. That is deliberate: the site's audience is India-only,
-where analytics cookies are not gated on prior consent. Add a gate here before
-changing that, not in the config.
+`PUBLIC_GA_MEASUREMENT_ID` in `wrangler.jsonc` (surfed through
+`src/config/analytics.config.ts`) — the only place the property id lives. Null
+removes the tag; any value loads it on every page, with no consent gate. That
+is deliberate: the site's audience is India-only, where analytics cookies are
+not gated on prior consent. Add a gate here before changing that, not in the
+config.
 
 `~/lib/analytics.ts` pushes GA4/Ads events into that tag (it deliberately does
 not load a second one), `~/lib/meta-pixel.ts` is the client leg of the Meta
 pixel and `~/lib/meta-conversions.ts` its server leg (`/api/meta-conversion`).
-The consent library (`~/lib/consent.ts`) is ported and its env flag
-(`PUBLIC_CONSENT_ENABLED`) defaults to **false** so nothing gates on it; if a
-consent banner is ever added, flip that flag — do not gate silently in the
-components.
-
-The tag runs on the main thread. `@astrojs/partytown` is the opt-in to move it
-into a worker: set `const hasExternalScripts = true` in `astro.config.ts`, which
-also switches the tag's `type` to `text/partytown`.
+There is no consent gate anywhere; if a consent banner is ever added, gate at
+`PUBLIC_CONSENT_ENABLED` — do not gate silently in the components.
 
 ## Content Security Policy
 
@@ -176,5 +161,5 @@ After changes, always verify:
 2. Visual check in a browser, at a mobile width: homepage, blog list, blog post
 3. Structured data describes the site it is on — anything added to a
    `WebSite` / `RealEstateAgent` block must be true for this site
-4. If config changed: check BOTH config homes (`src/config/*.config.ts` and
-   `src/config.yaml`) for a stale copy of the same value
+4. If config changed: check `wrangler.jsonc` and `src/config/*.config.ts` for
+   a stale copy of the same value

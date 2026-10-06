@@ -1,2 +1,16 @@
 User-agent: *
-Disallow:
+Allow: /
+
+# Block API routes
+Disallow: /api/
+
+# No per-crawler blocks on purpose: the wildcard above permits GPTBot,
+# PerplexityBot, ClaudeBot etc. — AI citation is wanted, and /api/ is already
+# covered by the Disallow above.
+
+Sitemap: https://www.tranquillinfra.com/sitemap-index.xml
+
+# Discovery proper is the <link rel="alternate" type="text/plain" href="...llms.txt">
+# in the document head. This commented line is a breadcrumb only — uncommenting
+# it would make the whole record group invalid to robots parsers.
+# LLM-Reference: https://www.tranquillinfra.com/llms.txt

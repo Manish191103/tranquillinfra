@@ -5,7 +5,7 @@
  *
  * This module deliberately does NOT load a second GA tag. The GA4 loader and
  * the `dataLayer`/`gtag` bootstrap live in `src/components/common/Analytics.astro`,
- * configured from `src/config.yaml`; everything here pushes into that existing
+ * configured via `PUBLIC_GA_MEASUREMENT_ID` in `wrangler.jsonc`; everything here pushes into that existing
  * setup. There is no consent gate anywhere: the site is India-only, where
  * analytics cookies are not gated on prior consent (see AGENTS.md, "Measurement").
  * Guards exist for missing ids only.
@@ -128,8 +128,8 @@ const startedForms = new WeakSet<HTMLFormElement>();
 function pushEvent(name: string, params: Record<string, unknown>): void {
   if (typeof window === 'undefined') return;
   window.dataLayer = window.dataLayer || [];
-  if (typeof window.gtag !== 'function') return;
-  window.gtag('event', name, params);
+  if (!analyticsConfig.gaId || typeof window.gtag !== 'function') return;
+  window.gtag('event', name, { ...params, send_to: analyticsConfig.gaId });
 }
 
 /**

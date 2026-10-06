@@ -124,10 +124,11 @@ export function trackPixelPageView(): void {
 /**
  * Relay the lead to Meta's Conversions API — the server leg of the pixel.
  * Gated on the pixel id only; failures stay invisible because the lead was
- * already accepted by Formspree.
+ * already accepted by the submission pipeline.
  */
 export function relayLeadConversion(input: {
   eventId: string;
+  eventSourceUrl?: string;
   eventName: MetaEventName;
   leadType: string;
   email?: string;
@@ -143,7 +144,7 @@ export function relayLeadConversion(input: {
   payload.set('event_id', input.eventId);
   payload.set('event_name', input.eventName);
   payload.set('lead_type', input.leadType);
-  payload.set('event_source_url', window.location.href);
+  payload.set('event_source_url', input.eventSourceUrl ?? window.location.href);
   for (const [key, value] of Object.entries({
     email: input.email,
     phone: input.phone,
@@ -155,7 +156,9 @@ export function relayLeadConversion(input: {
   }
 
   // keepalive: a navigation straight after submit must not cancel the relay.
-  void fetch('/api/meta-conversion', { method: 'POST', body: payload, keepalive: true }).catch(
+  // The path carries the site's trailing slash (trailingSlash: 'always'): an
+  // unslashed POST would take a 308 redirect hop that local workerd drops.
+  void fetch('/api/meta-conversion/', { method: 'POST', body: payload, keepalive: true }).catch(
     () => undefined
   );
 }

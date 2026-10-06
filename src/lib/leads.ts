@@ -2,10 +2,8 @@
  * The lead submission pipeline every lead surface shares — the inline contact
  * form, the enquiry dialog, the newsletter. Formspree is the browser-side
  * endpoint; the Worker's own mail is the independent backup; the browser
- * conversion events fire the moment the lead is accepted.
+ * conversion events fire only after sales-mail acceptance (Formspree for newsletters).
  *
- * The pure payload builders (`enquirySubject`, `composeEnquiryFields`) are
- * covered by unit tests; the DOM wiring is not.
  */
 import {
   collectLeadContext,
@@ -190,6 +188,8 @@ async function submitLead(
 
 /** What the Worker managed to deliver for one accepted lead. */
 interface CustomerMailResult {
+  /** Genuine enquiry accepted by the sales email provider. */
+  accepted: boolean;
   /** The sales inbox received the enquiry — the lead the team works from. */
   sent: boolean;
   /** The visitor's own mail went out: the confirmation, or the brochure. */
@@ -217,9 +217,8 @@ function leadReference(leadId: string | undefined): string {
  * dead sales copy is a lead the team never saw, while a dead confirmation is
  * only a missing extra once the team has it.
  *
- * Resolves with the reported outcome on every failure, never throws: the lead
- * has already been accepted by the time this runs, so the form reports a
- * delivery problem, never a failed submission.
+ * Resolves with the reported outcome on every failure. Only explicit sales
+ * acceptance permits enquiry measurement and the real success callback.
  */
 async function requestCustomerMail(fields: {
   email: string;
@@ -244,21 +243,23 @@ async function requestCustomerMail(fields: {
   payload.set('_gotcha', fields.gotcha);
 
   try {
-    const response = await fetch('/api/customer-mail', { method: 'POST', body: payload });
+    const response = await fetch('/api/customer-mail/', { method: 'POST', body: payload });
     const data = (await response.json().catch(() => null)) as {
+      accepted?: boolean;
       sent?: boolean;
       confirmation?: boolean;
       reason?: string;
       lead_id?: string;
     } | null;
     return {
-      sent: Boolean(data?.sent),
+      accepted: response.ok && data?.accepted === true && data?.sent === true,
+      sent: data?.sent === true,
       confirmation: Boolean(data?.confirmation),
       ...(data?.reason ? { reason: data.reason } : {}),
       ...(data?.lead_id ? { leadId: data.lead_id } : {}),
     };
   } catch {
-    return { sent: false, confirmation: false, reason: 'request_failed' };
+    return { accepted: false, sent: false, confirmation: false, reason: 'request_failed' };
   }
 }
 
@@ -347,130 +348,88 @@ export function bindLeadForm({
   form.addEventListener('input', markStarted, { once: true });
   form.addEventListener('focusin', markStarted, { once: true });
 
+  let submitting = false;
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
+    if (submitting) return;
+    submitting = true;
+    try {
+      button.disabled = true;
+      button.textContent = submittingLabel;
+      message.textContent = '';
 
-    button.disabled = true;
-    button.textContent = submittingLabel;
-    message.textContent = '';
+      // The event id ties the browser conversion events to the lead we submit.
+      const eventId = generateEventId();
+      const formData = new FormData(form);
 
-    // The event id ties the browser conversion events to the lead we submit.
-    const eventId = generateEventId();
-    const formData = new FormData(form);
+      const name = String(formData.get('name') ?? '').trim();
+      const email = String(formData.get('email') ?? '').trim();
+      const phone = String(formData.get('phone') ?? '').trim();
+      const gotcha = String(formData.get('_gotcha') ?? '').trim();
+      const visitDate = String(formData.get('visit_date') ?? '').trim();
+      // The textarea is the enquiry itself; the status line owns `message`.
+      const leadMessage = String(formData.get('message') ?? '').trim();
+      const enquirySubjectInput = String(formData.get('enquiry_subject') ?? '').trim();
+      const page = window.location.pathname;
+      const pageLocation = window.location.href;
+      const pageTitle = document.title;
 
-    const name = String(formData.get('name') ?? '').trim();
-    const email = String(formData.get('email') ?? '').trim();
-    const phone = String(formData.get('phone') ?? '').trim();
-    const gotcha = String(formData.get('_gotcha') ?? '').trim();
-    const visitDate = String(formData.get('visit_date') ?? '').trim();
-    // The textarea is the enquiry itself; the status line owns `message`.
-    const leadMessage = String(formData.get('message') ?? '').trim();
-    const enquirySubjectInput = String(formData.get('enquiry_subject') ?? '').trim();
-    const page = window.location.pathname;
+      const selectedRequestType = String(formData.get('request_type') ?? '').trim();
+      // A date in the form IS a site-visit request, whatever the control or the
+      // trigger's default said: the visitor asked to be there on a day, and the
+      // team triages the inbox by this value.
+      const requestType =
+        visitDate || selectedRequestType === 'site_visit' ? 'site_visit' : selectedRequestType;
+      if (visitDate) formData.set('visit_date', visitDate);
+      formData.set('request_type', requestType);
 
-    const selectedRequestType = String(formData.get('request_type') ?? '').trim();
-    // A date in the form IS a site-visit request, whatever the control or the
-    // trigger's default said: the visitor asked to be there on a day, and the
-    // team triages the inbox by this value.
-    const requestType =
-      visitDate || selectedRequestType === 'site_visit' ? 'site_visit' : selectedRequestType;
-    if (visitDate) formData.set('visit_date', visitDate);
-    formData.set('request_type', requestType);
+      // Collected once: the payload and the CAPI relay share the same context.
+      const context = collectLeadContext();
 
-    // Collected once: the payload and the CAPI relay share the same context.
-    const context = collectLeadContext();
-
-    composeEnquiryFields(formData, {
-      eventId,
-      page,
-      subject: composeSubject({
-        name,
-        email,
-        requestType,
-        visitDate,
-        enquirySubject: enquirySubjectInput,
-      }),
-      context,
-    });
-
-    const lead = await submitLead(form, formData, offlineMessage);
-
-    // The lead exists the moment Formspree accepts it, so the conversion is
-    // reported there and not one line further down. It used to wait behind the
-    // Worker's mail round-trip, which left a real, sales-desk-confirmed enquiry
-    // unreported whenever the visitor closed the tab, hit back, followed a nav
-    // link or triggered a client-side navigation inside that window — the
-    // likeliest mechanical cause of "the campaign records no leads" against a
-    // steady stream of enquiries. `trackLead` only queues into `dataLayer`, so
-    // firing it before the UI is settled is free.
-    if (lead.ok) trackLead(kind, eventId, { page }, { email, phone, name });
-
-    // The Worker's copy is asked for whenever the form itself is sound, and not
-    // only when Formspree accepted. Formspree is a third party on every layer —
-    // it can be down, its free plan is 50 submissions a month, and formspree.io
-    // is on common ad-blocker lists — so a browser POST that failed to travel is
-    // precisely the case the backup exists for. Gating it on `lead.ok` would
-    // leave the lead lost in exactly the outage it was built to survive. A
-    // rejected field is the one case we skip: the visitor's own input is wrong,
-    // so there is no lead to deliver.
-    const mailable = kind === 'contact' && (lead.ok || lead.retryable);
-    const mail = mailable
-      ? await requestCustomerMail({
-          email,
+      composeEnquiryFields(formData, {
+        eventId,
+        page,
+        subject: composeSubject({
           name,
-          phone,
-          message: leadMessage,
+          email,
           requestType,
           visitDate,
-          page,
-          eventId,
-          gotcha,
-        })
-      : null;
+          enquirySubject: enquirySubjectInput,
+        }),
+        context,
+      });
 
-    // Set when the lead may not have reached the team. Fired after `onSuccess`
-    // so a surface cannot hide the fallback the moment it reveals it.
-    let undelivered = false;
+      const lead = await submitLead(form, formData, offlineMessage);
 
-    if (lead.ok) {
-      if (mail) {
-        const brochure = requestType === 'brochure';
+      const mailable = kind === 'contact' && (lead.ok || lead.retryable);
+      const mail = mailable
+        ? await requestCustomerMail({
+            email,
+            name,
+            phone,
+            message: leadMessage,
+            requestType,
+            visitDate,
+            page,
+            eventId,
+            gotcha,
+          })
+        : null;
 
-        if (!mail.sent) {
-          // The browser POST is only half the delivery: the sales desk works
-          // from the Worker's copy of the enquiry, so a failed copy is a lead
-          // the team may never see. A throttled request lost nothing and is
-          // worth a retry; anything else is reported as what it is, with the
-          // phone and WhatsApp revealed.
-          const throttled = mail.reason === 'rate_limited';
-          undelivered = !throttled;
-          message.textContent = throttled
-            ? `${successMessage} Your confirmation could not be sent just now — please try again in a minute.${leadReference(mail.leadId)}`
-            : `We could not reach the sales desk with that. Please call or WhatsApp us and we will pick it up straight away.${leadReference(mail.leadId)}`;
-          message.className = throttled ? successClass : errorClass;
-        } else if (!mail.confirmation) {
-          message.textContent = `${successMessage}${
-            brochure
-              ? ' The brochure email did not go through.'
-              : ' Your confirmation email did not go through, but your enquiry has reached us.'
-          }`;
-          message.className = successClass;
-          // The one failure the visitor can still act on: the PDF is right here.
-          if (brochure && brochureFallback) appendStatusLink(message, brochureFallback);
-        } else {
-          message.textContent = `${successMessage}${
-            brochure
-              ? ` The brochure is on its way to ${email}.`
-              : ` A confirmation is on its way to ${email}.`
-          }`;
-          message.className = successClass;
-        }
-      } else {
+      const accepted = !gotcha && (kind === 'newsletter' ? lead.ok : mail?.accepted === true);
+      if (gotcha) {
         message.textContent = successMessage;
         message.className = successClass;
-      }
-      form.reset();
-      if (!gotcha) {
+        form.reset();
+      } else if (accepted) {
+        const params = {
+          page,
+          page_location: pageLocation,
+          page_title: pageTitle,
+          request_type: requestType,
+          form: form.id || 'form',
+        };
+        trackLead(kind, eventId, params, { email, phone, name });
         relayLeadConversion({
           eventId,
           eventName: LEAD_EVENTS[kind].meta,
@@ -480,40 +439,48 @@ export function bindLeadForm({
           name,
           fbclid: context.fbclid,
           fbclidAtMs: firstTouchTimestampMs() ?? undefined,
+          eventSourceUrl: pageLocation,
         });
+        message.className = successClass;
+        if (kind === 'newsletter') {
+          message.textContent = successMessage;
+        } else if (!mail?.confirmation) {
+          message.textContent = `${successMessage} ${
+            requestType === 'brochure'
+              ? 'The brochure email did not go through.'
+              : 'Your confirmation email did not go through, but your enquiry has reached us.'
+          }`;
+          if (requestType === 'brochure' && brochureFallback)
+            appendStatusLink(message, brochureFallback);
+        } else {
+          message.textContent = `${successMessage} ${
+            requestType === 'brochure'
+              ? `The brochure is on its way to ${email}.`
+              : 'A confirmation is on its way to your email.'
+          }`;
+        }
+        if (!lead.ok)
+          message.append(
+            ` Our form provider is having trouble, but your enquiry has reached the sales desk directly.${leadReference(mail?.leadId)}`
+          );
+        form.reset();
+        onSuccess?.();
+      } else {
+        message.className = errorClass;
+        message.textContent =
+          lead.ok && kind === 'contact'
+            ? `Your enquiry was captured, but we could not notify the sales desk. Please try again or call or WhatsApp us.${leadReference(mail?.leadId)}`
+            : mail?.reason === 'rate_limited'
+              ? 'Too many requests. Please try again in a minute, or call or WhatsApp us.'
+              : kind === 'newsletter' && !lead.ok
+                ? lead.message
+                : `${lead.ok ? '' : lead.message} Your enquiry did not reach the sales desk — please call or WhatsApp us and we will pick it up straight away.`;
+        onFailure?.();
       }
-      onSuccess?.();
-      if (undelivered) onFailure?.();
-    } else if (mail?.sent) {
-      // Formspree did not take the POST, but the Worker's own copy reached the
-      // sales desk. Reporting the browser failure here would be a lie: the team
-      // has the enquiry. The conversion event still fires, because a lead really
-      // was delivered.
-      message.textContent = `${successMessage} Our form provider is having trouble, but your enquiry has reached the sales desk directly.${leadReference(mail.leadId)}`;
-      message.className = successClass;
-      trackLead(kind, eventId, { page }, { email, phone, name });
-      if (!gotcha) {
-        relayLeadConversion({
-          eventId,
-          eventName: LEAD_EVENTS[kind].meta,
-          leadType: kind,
-          email,
-          phone,
-          name,
-          fbclid: context.fbclid,
-          fbclidAtMs: firstTouchTimestampMs() ?? undefined,
-        });
-      }
-      onSuccess?.();
-    } else {
-      message.textContent = mail
-        ? `${lead.message} Your enquiry did not reach the sales desk — please call or WhatsApp us and we will pick it up straight away.`
-        : lead.message;
-      message.className = errorClass;
-      onFailure?.();
+    } finally {
+      submitting = false;
+      button.disabled = false;
+      button.textContent = submitLabel;
     }
-
-    button.disabled = false;
-    button.textContent = submitLabel;
   });
 }

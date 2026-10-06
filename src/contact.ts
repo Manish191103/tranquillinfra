@@ -13,7 +13,7 @@
  */
 
 export const contact = {
-  /** Trading name (config.yaml `site.name` carries the same value). */
+  /** Trading name (`siteConfig.name` carries the same value). */
   name: 'Tranquill Infra Projects',
   email: 'info@tranquillinfra.com',
   /** Display form, for a human reading it in a contact block. */
