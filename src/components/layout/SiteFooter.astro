@@ -13,7 +13,6 @@ import Logo from '~/components/ui/marketing/Logo/Logo.astro';
 import siteConfig from '~/config/site.config';
 import projectConfig from '~/config/project.config';
 import { navItems } from '~/config/nav.config';
-import { analyticsConfig } from '~/config/analytics.config';
 import {
   BROCHURE_DOWNLOAD_HREF,
   enquiryCtaTarget,
@@ -21,8 +20,6 @@ import {
   SITE_VISIT_CTA_LABEL,
   WHATSAPP_CTA_LABEL,
 } from '~/lib/enquiry-cta';
-
-const consentEnabled = analyticsConfig.consentEnabled;
 
 // Same page-aware target as the header CTA (see `~/lib/enquiry-cta`).
 const enquiryCta = enquiryCtaTarget(Astro.url.pathname);
@@ -172,17 +169,6 @@ const hours = siteConfig.hours ?? [];
   <span slot="logo" class="inline-block">
     <Logo size="lg" variant="dark" />
   </span>
-
-  {consentEnabled && (
-    <button
-      slot="legal-actions"
-      type="button"
-      data-consent-open
-      class="text-foreground-muted hover:text-foreground cursor-pointer text-sm transition-colors"
-    >
-      Cookie settings
-    </button>
-  )}
 
   <div slot="extra-columns" class="space-y-[var(--space-stack-md)]">
     <p class="text-foreground text-sm font-semibold">Contact</p>

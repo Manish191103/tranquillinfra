@@ -1,6 +1,6 @@
 ---
 /**
- * GoogleMap — consent-aware Google Maps embed
+ * GoogleMap — lazy Google Maps embed
  *
  * Modes (Maps Embed API): `place` and `search` pin/search a location, `view`
  * centres a map on coordinates without a marker. Each mode takes different
@@ -10,15 +10,13 @@
  * 3 states:
  * 1. No API key → in dev a setup prompt, in production the address and an
  *    "Open in Google Maps" link (visitors never see build instructions)
- * 2. API key + consent required but not granted → placeholder with "Load Map"
- * 3. API key + consent granted (or consent disabled) → iframe loads
+ * 2. API key → iframe embed, src swapped in once the client script runs
+ *    (the placeholder markup it replaces is the no-key fallback)
  */
 import type { HTMLAttributes } from 'astro/types';
 import { PUBLIC_GOOGLE_MAPS_API_KEY } from 'astro:env/client';
-import { analyticsConfig } from '~/config/analytics.config';
 import siteConfig from '~/config/site.config';
 import { cn } from '~/lib/cn';
-import { jsonForScript } from '~/lib/inline-json';
 import { googleMapVariants } from './googleMap.variants';
 
 interface Props extends HTMLAttributes<'div'> {
@@ -32,11 +30,9 @@ interface Props extends HTMLAttributes<'div'> {
   /** Restrict the map to a language and a region bias (e.g. 'en', 'IN') */
   language?: string;
   region?: string;
-  consentCategory?: string;
   /** Accessible name for the map; also used as the iframe `title` */
   ariaLabel?: string;
   placeholderTitle?: string;
-  placeholderDescription?: string;
   externalLinkText?: string;
 }
 
@@ -50,10 +46,8 @@ const {
   mapType = 'roadmap',
   language,
   region,
-  consentCategory = 'map',
   ariaLabel = 'Google Maps',
   placeholderTitle = 'Map',
-  placeholderDescription = 'Accept cookies to load the interactive map.',
   externalLinkText = 'View on Google Maps',
   class: className,
   ...rest
@@ -101,14 +95,6 @@ if (hasApiKey) {
 const externalUrl = query
   ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
   : 'https://maps.google.com';
-
-const consentEnabled = analyticsConfig.consentEnabled;
-
-// Config for client script
-const mapConfig = jsonForScript({
-  consentCategory,
-  consentEnabled,
-});
 
 const id = `google-map-${Math.random().toString(36).slice(2, 9)}`;
 ---
@@ -181,111 +167,37 @@ const id = `google-map-${Math.random().toString(36).slice(2, 9)}`;
       </div>
     )
   ) : (
-    <>
-      {/* Consent placeholder — shown when consent is required but not granted */}
-      <div class="google-map-placeholder" data-map-placeholder={id}>
-        <div class="google-map-placeholder__icon">
-          {/* Lucide map-pin */}
-          <svg
-            width="32"
-            height="32"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
-            <circle cx="12" cy="10" r="3" />
-          </svg>
-        </div>
-
-        {query && <p class="google-map-placeholder__address">{query}</p>}
-
-        <p class="google-map-placeholder__title">{placeholderTitle}</p>
-        <p class="google-map-placeholder__desc">{placeholderDescription}</p>
-
-        <button class="google-map-placeholder__btn" data-map-load={id} type="button">
-          Load Map
-        </button>
-
-        <a
-          href={externalUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="google-map-placeholder__link"
-        >
-          {/* Lucide external-link */}
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M15 3h6v6" />
-            <path d="M10 14 21 3" />
-            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-          </svg>
-          {externalLinkText}
-        </a>
-      </div>
-
-      {/* Iframe — hidden until consent granted */}
-      <iframe
-        data-map-iframe={id}
-        data-src={iframeSrc}
-        hidden
-        width="100%"
-        height="100%"
-        style="border:0;"
-        loading="lazy"
-        referrerpolicy="strict-origin-when-cross-origin"
-        allow="fullscreen"
-        title={ariaLabel}
-        aria-label={ariaLabel}
-      ></iframe>
-
-      <script
-        is:inline
-        type="application/json"
-        data-google-map-config={id}
-        set:html={mapConfig}
-      ></script>
-    </>
+    /* Iframe — src swapped in by the client script, so the embed never loads
+       before the page has painted (same lazy behaviour, no consent shell). */
+    <iframe
+      data-map-iframe={id}
+      data-src={iframeSrc}
+      hidden
+      width="100%"
+      height="100%"
+      style="border:0;"
+      loading="lazy"
+      referrerpolicy="strict-origin-when-cross-origin"
+      allow="fullscreen"
+      title={ariaLabel}
+      aria-label={ariaLabel}
+    ></iframe>
   )}
 </div>
 
 <script>
-  import { grantConsentCategory, hasGrantedCategory } from '~/lib/consent';
-
   function initGoogleMaps() {
     const maps = document.querySelectorAll<HTMLElement>('[data-google-map]');
 
     maps.forEach((container) => {
       // Bound once per element: the script runs at module evaluation and again
-      // on `astro:page-load`, so without this guard every listener (Load Map,
-      // consent-updated) would be registered twice.
+      // on `astro:page-load`, so without this guard every listener would be
+      // registered twice.
       if (container.dataset.mapInit === 'true') return;
       container.dataset.mapInit = 'true';
 
       const id = container.dataset.googleMap!;
-      const configEl = container.querySelector<HTMLScriptElement>(
-        `[data-google-map-config="${id}"]`
-      );
-      if (!configEl) return;
-
-      const config = JSON.parse(configEl.textContent!);
       const iframe = container.querySelector<HTMLIFrameElement>(`[data-map-iframe="${id}"]`);
-      const placeholder = container.querySelector<HTMLElement>(`[data-map-placeholder="${id}"]`);
-      const loadBtn = container.querySelector<HTMLButtonElement>(`[data-map-load="${id}"]`);
-
       if (!iframe) return;
 
       function loadMap() {
@@ -293,50 +205,9 @@ const id = `google-map-${Math.random().toString(36).slice(2, 9)}`;
         if (!src || (iframe!.src && iframe!.src !== 'about:blank')) return;
         iframe!.src = src;
         iframe!.removeAttribute('hidden');
-        if (placeholder) placeholder.hidden = true;
       }
 
-      function hasConsent(): boolean {
-        if (!config.consentEnabled) return true;
-        return hasGrantedCategory(config.consentCategory);
-      }
-
-      // Check if consent is already granted
-      if (hasConsent()) {
-        loadMap();
-        return;
-      }
-
-      // Consent required — show placeholder
-      if (config.consentEnabled) {
-        if (placeholder) placeholder.hidden = false;
-
-        // "Load Map" records consent for this category in the consent record,
-        // so the decision is remembered and Consent Mode stays in step; the
-        // map loads either way.
-        if (loadBtn) {
-          loadBtn.addEventListener(
-            'click',
-            () => {
-              grantConsentCategory(config.consentCategory);
-              loadMap();
-            },
-            { once: true }
-          );
-        }
-
-        // Listen for consent-updated event
-        window.addEventListener('consent-updated', function onConsent(e: Event) {
-          const detail = (e as CustomEvent).detail;
-          if (detail?.categories?.[config.consentCategory]) {
-            loadMap();
-            window.removeEventListener('consent-updated', onConsent);
-          }
-        });
-      } else {
-        // No consent system — load immediately
-        loadMap();
-      }
+      loadMap();
     });
   }
 
@@ -404,7 +275,7 @@ const id = `google-map-${Math.random().toString(36).slice(2, 9)}`;
     white-space: nowrap;
   }
 
-  /* ── Consent placeholder ── */
+  /* ── No-API-key placeholder (production fallback) ── */
   .google-map-placeholder {
     position: absolute;
     inset: 0;
@@ -440,23 +311,6 @@ const id = `google-map-${Math.random().toString(36).slice(2, 9)}`;
     font-size: 0.875rem;
     color: var(--foreground-muted);
     max-width: 20rem;
-  }
-
-  .google-map-placeholder__btn {
-    margin-top: 0.5rem;
-    padding: 0.5rem 1.25rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: white;
-    background-color: var(--brand-500);
-    border: none;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    transition: opacity var(--site-transition);
-  }
-
-  .google-map-placeholder__btn:hover {
-    opacity: 0.9;
   }
 
   .google-map-placeholder__link {

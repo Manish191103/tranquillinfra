@@ -108,7 +108,6 @@ const hasColumnsSlot = Astro.slots.has('columns');
 const hasExtraColumnsSlot = Astro.slots.has('extra-columns');
 const hasSocialSlot = Astro.slots.has('social');
 const hasBottomSlot = Astro.slots.has('bottom');
-const hasLegalActionsSlot = Astro.slots.has('legal-actions');
 
 // Compute footer classes
 const footerClasses = cn(footerVariants({ background }), className);
@@ -264,14 +263,14 @@ function getSocialIcon(platform: string): string {
         </div>
 
         {/* Bottom section */}
-        {(showCopyright || legalLinks.length > 0 || hasLegalActionsSlot) && (
+        {(showCopyright || legalLinks.length > 0) && (
           <div class="border-border mt-[var(--space-section-header)] flex flex-col items-center justify-between gap-[var(--space-stack-md)] border-t pt-[var(--space-stack-lg)] md:flex-row">
             {hasBottomSlot ? (
               <slot name="bottom" />
             ) : (
               <>
                 {showCopyright && <p class="text-foreground-muted text-sm">{processedCopyright}</p>}
-                {(legalLinks.length > 0 || hasLegalActionsSlot) && (
+                {legalLinks.length > 0 && (
                   <div class="flex items-center gap-[var(--space-inline-lg)]">
                     {legalLinks.map((link) => (
                       <a
@@ -281,7 +280,6 @@ function getSocialIcon(platform: string): string {
                         {link.label}
                       </a>
                     ))}
-                    {hasLegalActionsSlot && <slot name="legal-actions" />}
                   </div>
                 )}
               </>

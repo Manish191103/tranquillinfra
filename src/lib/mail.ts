@@ -14,9 +14,13 @@ import {
   RESEND_API_URL,
 } from 'astro:env/server';
 
-import { SITE } from 'astrowind:config';
-
 import { contact } from '~/contact';
+import {
+  dayName,
+  openingWindowDays,
+  parseOpeningHours,
+} from '~/lib/opening-hours';
+import siteConfig from '~/config/site.config';
 import {
   REQUEST_TYPE_SUBJECT_LABELS,
   type EnquiryRequestType,
@@ -167,60 +171,33 @@ interface OfficeWindow {
   close: number;
 }
 
-/** Day names to their `Date#getDay()` indexes, for parsing `contact.hours`. */
-const DAY_INDEX: Record<string, number> = {
-  Sunday: 0,
-  Monday: 1,
-  Tuesday: 2,
-  Wednesday: 3,
-  Thursday: 4,
-  Friday: 5,
-  Saturday: 6,
+/** `09:00` to minutes since midnight; NaN for anything unreadable. */
+const toMinutes = (time: string): number => {
+  const match = /^(\d{1,2}):(\d{2})$/.exec(time.trim());
+  return match ? Number(match[1]) * 60 + Number(match[2]) : Number.NaN;
 };
 
-/** `9:00 AM` to minutes since midnight, on a 12-hour clock. */
-function toMinutes12(hour: string, minute: string, ampm: string): number {
-  const hour12 = (Number(hour) % 12) + (ampm.toUpperCase() === 'PM' ? 12 : 0);
-  return hour12 * 60 + Number(minute);
-}
-
 /**
- * The office's weekly windows, read from the same `contact.hours` lines the
- * site publishes — a second copy of the hours here would be free to drift
- * from the ones the visitor was shown. The lines are prose
- * ("Monday: 9:00 AM to 6:00 PM"), so each is parsed back into a window;
- * malformed entries yield no window for that day, and the promise then makes
- * no timing claim at all rather than one the business may be unable to keep.
+ * The office's weekly windows, read from the same `openingHours` array the site
+ * publishes and Google reads — a second copy of the hours here would be free
+ * to drift from the ones the visitor was shown (and from a second prose parser,
+ * already the case in this file's predecessor). Malformed or absent config
+ * yields no windows, and the promise then makes no timing claim at all rather
+ * than one the business may be unable to keep.
  */
 function officeWindows(): OfficeWindow[] {
-  const windows: OfficeWindow[] = [];
+  if (!siteConfig.openingHours?.length) return [];
 
-  for (const line of contact.hours) {
-    const match = /^([A-Za-z]+)(?:\s+to\s+([A-Za-z]+))?:\s*(.+)$/.exec(line.trim());
-    if (!match) continue;
-
-    const from = DAY_INDEX[match[1]];
-    const to = match[2] ? DAY_INDEX[match[2]] : from;
-    if (from === undefined || to === undefined) continue;
-
-    // "Wednesday to Sunday: 9:00 AM to 6:00 PM" — one range covers the days,
-    // so parse the time range once, not per day.
-    const times = /^(\d{1,2}):(\d{2})\s*(AM|PM)\s+to\s+(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(
-      match[3].trim()
-    );
-    if (!times) continue;
-
-    const open = toMinutes12(times[1], times[2], times[3]);
-    const close = toMinutes12(times[4], times[5], times[6]);
-    if (Number.isNaN(open) || Number.isNaN(close)) continue;
-
-    for (let day = from; ; day = (day + 1) % 7) {
-      windows.push({ day, open, close });
-      if (day === to) break;
-    }
+  try {
+    return parseOpeningHours(siteConfig.openingHours).flatMap(({ days, opens, closes }) => {
+      const open = toMinutes(opens);
+      const close = toMinutes(closes);
+      if (Number.isNaN(open) || Number.isNaN(close)) return [];
+      return openingWindowDays({ days, opens, closes }).map((day) => ({ day, open, close }));
+    });
+  } catch {
+    return [];
   }
-
-  return windows;
 }
 
 /** The office clock right now: day of week and minutes since midnight, in IST. */
@@ -260,8 +237,6 @@ function formatClock(minutes: number): string {
   return `${hours12}:${String(minutes % 60).padStart(2, '0')} ${suffix}`;
 }
 
-const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
 /**
  * What the visitor is told about the call-back, decided at send time against
  * the published office hours.
@@ -269,7 +244,7 @@ const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frid
  * The forms used to promise ten minutes "during business hours" while the
  * office is closed on Tuesdays: an enquiry sent on a Tuesday was promised a
  * call-back that could not happen. The promise is now derived from
- * `contact.hours` — a same-day call-back while the office is open, and a named
+ * `openingHours` — a same-day call-back while the office is open, and a named
  * next working day when it is not. With no readable hours there is no timing
  * claim at all, which is the only thing that cannot go stale.
  */
@@ -292,7 +267,7 @@ function callbackPromise(now: Date): string {
     return 'We answer every enquiry, normally on the next working day.';
   }
 
-  return `Our office is closed right now. ${team} on ${DAY_NAMES[next.day]}, from ${formatClock(
+  return `Our office is closed right now. ${team} on ${dayName(next.day)}, from ${formatClock(
     next.open
   )} to ${formatClock(next.close)}.`;
 }
@@ -325,8 +300,8 @@ function clean(value: string | undefined, max: number): string | undefined {
  * deferral in the team's inbox costs them the asset with the lead.
  */
 async function sendBrochureEmail({ to, name }: { to: string; name?: string }): Promise<void> {
-  const brochureUrl = new URL(BROCHURE_PATH, SITE.site ?? 'https://www.tranquillinfra.com').toString();
-  const projectUrl = new URL('/projects/tranquill-city/', SITE.site ?? 'https://www.tranquillinfra.com').toString();
+  const brochureUrl = new URL(BROCHURE_PATH, siteConfig.url).toString();
+  const projectUrl = new URL('/projects/tranquill-city/', siteConfig.url).toString();
   const firstName = clean(name, 80)?.split(' ')[0];
   const greeting = firstName ? `Hi ${firstName},` : 'Hello,';
   const phone = contact.phone;
@@ -419,11 +394,11 @@ async function sendConfirmationEmail({
   name?: string;
   requestType: 'enquiry' | 'site_visit';
 }): Promise<void> {
-  const projectUrl = new URL('/projects/tranquill-city/', SITE.site ?? 'https://www.tranquillinfra.com').toString();
+  const projectUrl = new URL('/projects/tranquill-city/', siteConfig.url).toString();
   const firstName = clean(name, 80)?.split(' ')[0];
   const greeting = firstName ? `Hi ${firstName},` : 'Hello,';
   const phone = contact.phone;
-  const hours = contact.hours.join(' · ');
+  const hours = siteConfig.hours?.join(' · ');
   const siteVisit = requestType === 'site_visit';
 
   // The site-visit branch promises only that a team member will confirm the
@@ -553,7 +528,7 @@ async function sendSalesNotification(lead: LeadMail): Promise<void> {
   const visitDate = clean(lead.visitDate, 40);
   const page = clean(lead.page, 200);
   const eventId = clean(lead.eventId, 64);
-  const brochureUrl = new URL(BROCHURE_PATH, SITE.site ?? 'https://www.tranquillinfra.com').toString();
+  const brochureUrl = new URL(BROCHURE_PATH, siteConfig.url).toString();
   const attached = lead.requestType === 'brochure';
 
   // One row list feeds both bodies, so the plain-text mail the team reads on a
