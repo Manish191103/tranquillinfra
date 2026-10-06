@@ -8,12 +8,11 @@
 import {
   collectLeadContext,
   firstTouchTimestampMs,
-  LEAD_EVENTS,
   trackFormStart,
   trackLead,
   type LeadKind,
 } from './analytics';
-import { relayLeadConversion } from './meta-pixel';
+import { LEAD_CONTEXT_FIELDS } from './lead-context';
 import { ENQUIRY_SUCCESS_MESSAGE, REQUEST_TYPE_SUBJECT_LABELS } from './enquiry-cta';
 
 /** Stable per-submission id shared by the browser events and the lead payload. */
@@ -128,6 +127,38 @@ export function composeEnquiryFields(formData: FormData, input: EnquiryPayloadCo
    Submission
    ------------------------------------------------------------------------- */
 
+/** Bounds both receiving headers and reading the provider response. */
+async function postJson(
+  url: string,
+  body: FormData,
+  timeoutMs: number
+): Promise<{ response: Response; data: unknown }> {
+  const controller = new AbortController();
+  let timer: ReturnType<typeof setTimeout>;
+  const expired = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      controller.abort();
+      reject(new Error('Submission timed out'));
+    }, timeoutMs);
+  });
+  try {
+    return await Promise.race([
+      (async () => {
+        const response = await fetch(url, {
+          method: 'POST',
+          body,
+          headers: { Accept: 'application/json' },
+          signal: controller.signal,
+        });
+        return { response, data: await response.json().catch(() => null) };
+      })(),
+      expired,
+    ]);
+  } finally {
+    clearTimeout(timer!);
+  }
+}
+
 type LeadResult = { ok: true } | { ok: false; message: string; retryable: boolean };
 
 /**
@@ -145,16 +176,12 @@ async function submitLead(
   offlineMessage: string
 ): Promise<LeadResult> {
   try {
-    const response = await fetch(form.action, {
-      method: 'POST',
-      body: formData,
-      // Without this header Formspree answers with a page, not JSON.
-      headers: { Accept: 'application/json' },
-    });
-    const data = (await response.json().catch(() => null)) as {
+    const result = await postJson(form.action, formData, 8_000);
+    const response = result.response;
+    const data = result.data as {
       ok?: boolean;
       error?: string;
-      errors?: { message?: string }[];
+      errors?: { field?: string; message?: string }[];
     } | null;
 
     if (response.ok && data?.ok) return { ok: true };
@@ -171,7 +198,10 @@ async function submitLead(
       // retry. Everything else — a 429, a 5xx, an HTML error page from a proxy —
       // is our copy of the lead failing to travel, and the Worker's own mail is
       // exactly the independent path that gets it there anyway.
-      retryable: !(response.status >= 400 && response.status < 500 && Boolean(detail)),
+      retryable: !(
+        [400, 422].includes(response.status) &&
+        data?.errors?.some((error) => Boolean(error.field && error.message))
+      ),
       message:
         detail ||
         data?.error ||
@@ -196,7 +226,7 @@ interface CustomerMailResult {
   confirmation: boolean;
   /** Machine-readable failure (`reason` on the endpoint); for the log line. */
   reason?: string;
-  /** Server uuid for this submission; the sales mail and the log line share it. */
+  /** Server-derived reference shared by sales mail, retries and delivery logs. */
   leadId?: string;
 }
 
@@ -230,6 +260,13 @@ async function requestCustomerMail(fields: {
   page: string;
   eventId: string;
   gotcha: string;
+  pageLocation: string;
+  fbclidAtMs?: number;
+  subject: string;
+  enquirySubject: string;
+  formType: string;
+  submittedAt: string;
+  context: Record<string, string>;
 }): Promise<CustomerMailResult> {
   const payload = new FormData();
   payload.set('email', fields.email);
@@ -241,10 +278,20 @@ async function requestCustomerMail(fields: {
   payload.set('page', fields.page);
   payload.set('event_id', fields.eventId);
   payload.set('_gotcha', fields.gotcha);
+  payload.set('subject', fields.subject);
+  payload.set('enquiry_subject', fields.enquirySubject);
+  payload.set('form_type', fields.formType);
+  payload.set('submitted_at', fields.submittedAt);
+  payload.set('event_source_url', fields.pageLocation);
+  if (fields.fbclidAtMs) payload.set('fbclid_at_ms', String(fields.fbclidAtMs));
+  for (const key of LEAD_CONTEXT_FIELDS) {
+    if (fields.context[key]) payload.set(key, fields.context[key]);
+  }
 
   try {
-    const response = await fetch('/api/customer-mail/', { method: 'POST', body: payload });
-    const data = (await response.json().catch(() => null)) as {
+    const result = await postJson('/api/customer-mail/', payload, 25_000);
+    const response = result.response;
+    const data = result.data as {
       accepted?: boolean;
       sent?: boolean;
       confirmation?: boolean;
@@ -349,6 +396,17 @@ export function bindLeadForm({
   form.addEventListener('focusin', markStarted, { once: true });
 
   let submitting = false;
+  let pending: {
+    fingerprint: string;
+    eventId: string;
+    submittedAt: string;
+    context: Record<string, string>;
+    page: string;
+    pageLocation: string;
+    pageTitle: string;
+    fbclidAtMs?: number;
+    lead?: LeadResult;
+  } | null = null;
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (submitting) return;
@@ -359,7 +417,6 @@ export function bindLeadForm({
       message.textContent = '';
 
       // The event id ties the browser conversion events to the lead we submit.
-      const eventId = generateEventId();
       const formData = new FormData(form);
 
       const name = String(formData.get('name') ?? '').trim();
@@ -383,12 +440,31 @@ export function bindLeadForm({
       if (visitDate) formData.set('visit_date', visitDate);
       formData.set('request_type', requestType);
 
-      // Collected once: the payload and the CAPI relay share the same context.
-      const context = collectLeadContext();
+      // Freeze the submission context so retries preserve mail and event identity.
+      const fingerprint = JSON.stringify(
+        Array.from(formData.entries()).map(([key, value]) => [key, String(value)])
+      );
+      if (
+        !pending ||
+        pending.fingerprint !== fingerprint ||
+        Date.now() - Date.parse(pending.submittedAt) >= 23 * 60 * 60 * 1000
+      ) {
+        pending = {
+          fingerprint,
+          eventId: generateEventId(),
+          submittedAt: new Date().toISOString(),
+          context: collectLeadContext(),
+          page,
+          pageLocation,
+          pageTitle,
+          fbclidAtMs: firstTouchTimestampMs() ?? undefined,
+        };
+      }
+      const { eventId, context, submittedAt } = pending;
 
       composeEnquiryFields(formData, {
         eventId,
-        page,
+        page: pending.page,
         subject: composeSubject({
           name,
           email,
@@ -399,7 +475,10 @@ export function bindLeadForm({
         context,
       });
 
-      const lead = await submitLead(form, formData, offlineMessage);
+      const lead = pending.lead?.ok
+        ? pending.lead
+        : await submitLead(form, formData, offlineMessage);
+      pending.lead = lead;
 
       const mailable = kind === 'contact' && (lead.ok || lead.retryable);
       const mail = mailable
@@ -410,9 +489,16 @@ export function bindLeadForm({
             message: leadMessage,
             requestType,
             visitDate,
-            page,
+            page: pending.page,
+            pageLocation: pending.pageLocation,
+            fbclidAtMs: pending.fbclidAtMs,
             eventId,
             gotcha,
+            submittedAt,
+            context,
+            subject: String(formData.get('subject') ?? ''),
+            enquirySubject: enquirySubjectInput,
+            formType: String(formData.get('form_type') ?? ''),
           })
         : null;
 
@@ -421,26 +507,16 @@ export function bindLeadForm({
         message.textContent = successMessage;
         message.className = successClass;
         form.reset();
+        pending = null;
       } else if (accepted) {
         const params = {
-          page,
-          page_location: pageLocation,
-          page_title: pageTitle,
+          page: pending.page,
+          page_location: pending.pageLocation,
+          page_title: pending.pageTitle,
           request_type: requestType,
           form: form.id || 'form',
         };
-        trackLead(kind, eventId, params, { email, phone, name });
-        relayLeadConversion({
-          eventId,
-          eventName: LEAD_EVENTS[kind].meta,
-          leadType: kind,
-          email,
-          phone,
-          name,
-          fbclid: context.fbclid,
-          fbclidAtMs: firstTouchTimestampMs() ?? undefined,
-          eventSourceUrl: pageLocation,
-        });
+        trackLead(kind, eventId, params, { email, phone });
         message.className = successClass;
         if (kind === 'newsletter') {
           message.textContent = successMessage;
@@ -464,6 +540,7 @@ export function bindLeadForm({
             ` Our form provider is having trouble, but your enquiry has reached the sales desk directly.${leadReference(mail?.leadId)}`
           );
         form.reset();
+        pending = null;
         onSuccess?.();
       } else {
         message.className = errorClass;

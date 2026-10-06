@@ -148,7 +148,9 @@ config.
 
 `~/lib/analytics.ts` pushes GA4/Ads events into that tag (it deliberately does
 not load a second one), `~/lib/meta-pixel.ts` is the client leg of the Meta
-pixel and `~/lib/meta-conversions.ts` its server leg (`/api/meta-conversion`).
+pixel and `~/lib/meta-conversions.ts` its server leg, dispatched from
+`/api/customer-mail` after sales acceptance. Newsletter events stay browser-only;
+there is no public conversion relay endpoint.
 There is no consent gate anywhere; if a consent banner is ever added, gate at
 `PUBLIC_CONSENT_ENABLED` — do not gate silently in the components.
 

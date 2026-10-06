@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { bindLeadForm } from './leads';
 import { trackLead } from './analytics';
-import { relayLeadConversion } from './meta-pixel';
 
 vi.mock('./analytics', () => ({
   collectLeadContext: () => ({ utm_source: 'google', fbclid: 'click' }),
@@ -10,7 +9,6 @@ vi.mock('./analytics', () => ({
   trackFormStart: vi.fn(),
   trackLead: vi.fn(),
 }));
-vi.mock('./meta-pixel', () => ({ relayLeadConversion: vi.fn() }));
 
 const NativeFormData = globalThis.FormData;
 const response = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
@@ -22,6 +20,8 @@ function surface(kind: 'contact' | 'newsletter' = 'contact', gotcha = '') {
     email: 'asha@example.test',
     phone: '9876543210',
     request_type: 'brochure',
+    enquiry_subject: '200 sq yd plot',
+    form_type: 'Contact enquiry',
     _gotcha: gotcha,
   };
   const form = {
@@ -48,6 +48,7 @@ function surface(kind: 'contact' | 'newsletter' = 'contact', gotcha = '') {
     onFailure,
   });
   return {
+    fields,
     form,
     button,
     message,
@@ -73,7 +74,10 @@ beforeEach(() => {
     }
   );
 });
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.useRealTimers();
+  vi.unstubAllGlobals();
+});
 
 describe('submission acceptance', () => {
   it.each([true, false])(
@@ -87,11 +91,7 @@ describe('submission acceptance', () => {
       const ui = surface();
       await ui.submit();
       expect(trackLead).toHaveBeenCalledTimes(1);
-      expect(relayLeadConversion).toHaveBeenCalledTimes(1);
       const eventId = vi.mocked(trackLead).mock.calls[0][1];
-      expect(relayLeadConversion).toHaveBeenCalledWith(
-        expect.objectContaining({ eventId, eventSourceUrl: 'https://example.test/contact-us/' })
-      );
       expect((fetcher.mock.calls[1][1].body as FormData).get('event_id')).toBe(eventId);
       expect(ui.onSuccess).toHaveBeenCalledOnce();
       expect(ui.form.reset).toHaveBeenCalledOnce();
@@ -116,7 +116,6 @@ describe('submission acceptance', () => {
     const ui = surface();
     await ui.submit();
     expect(trackLead).not.toHaveBeenCalled();
-    expect(relayLeadConversion).not.toHaveBeenCalled();
     expect(ui.form.reset).not.toHaveBeenCalled();
     expect(ui.onSuccess).not.toHaveBeenCalled();
     expect(ui.onFailure).toHaveBeenCalledOnce();
@@ -150,7 +149,7 @@ describe('submission acceptance', () => {
   it('does not bypass a Formspree validation rejection', async () => {
     const fetcher = vi
       .fn()
-      .mockResolvedValue(response({ errors: [{ message: 'Invalid email' }] }, 400));
+      .mockResolvedValue(response({ errors: [{ field: 'email', message: 'Invalid email' }] }, 400));
     vi.stubGlobal('fetch', fetcher);
     const ui = surface();
     await ui.submit();
@@ -169,7 +168,6 @@ describe('submission acceptance', () => {
     const ui = surface('contact', 'bot');
     await ui.submit();
     expect(trackLead).not.toHaveBeenCalled();
-    expect(relayLeadConversion).not.toHaveBeenCalled();
     expect(ui.onSuccess).not.toHaveBeenCalled();
     expect(ui.onFailure).not.toHaveBeenCalled();
   });
@@ -218,6 +216,92 @@ describe('submission acceptance', () => {
       expect.any(String),
       expect.any(Object),
       expect.any(Object)
+    );
+  });
+  it.each([408, 429, 401, 403, 404, 500])(
+    'uses Worker backup for provider failure %s with structured errors',
+    async (status) => {
+      const fetcher = vi
+        .fn()
+        .mockResolvedValueOnce(response({ errors: [{ message: 'Provider unavailable' }] }, status))
+        .mockResolvedValueOnce(response({ accepted: true, sent: true, confirmation: true }));
+      vi.stubGlobal('fetch', fetcher);
+      await surface().submit();
+      expect(fetcher).toHaveBeenCalledTimes(2);
+      expect(trackLead).toHaveBeenCalledOnce();
+    }
+  );
+
+  it('times out a stalled Formspree request and reaches the backup', async () => {
+    vi.useFakeTimers();
+    const fetcher = vi
+      .fn()
+      .mockImplementationOnce(() => new Promise(() => {}))
+      .mockResolvedValueOnce(response({ accepted: true, sent: true, confirmation: true }));
+    vi.stubGlobal('fetch', fetcher);
+    const ui = surface();
+    const pending = ui.submit();
+    await vi.advanceTimersByTimeAsync(8000);
+    await pending;
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(ui.button.disabled).toBe(false);
+    expect(trackLead).toHaveBeenCalledOnce();
+  });
+
+  it('times out Worker mail and preserves fields', async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(response({ ok: true }))
+        .mockImplementationOnce(() => new Promise(() => {}))
+    );
+    const ui = surface();
+    const pending = ui.submit();
+    await vi.advanceTimersByTimeAsync(25000);
+    await pending;
+    expect(ui.button.disabled).toBe(false);
+    expect(ui.form.reset).not.toHaveBeenCalled();
+    expect(trackLead).not.toHaveBeenCalled();
+  });
+
+  it('retries unchanged Worker requests with the same payload and skips known Formspree success', async () => {
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(response({ ok: true }))
+      .mockRejectedValueOnce(new Error('Response lost'))
+      .mockResolvedValueOnce(response({ accepted: true, sent: true, confirmation: true }));
+    vi.stubGlobal('fetch', fetcher);
+    const ui = surface();
+    await ui.submit();
+    await ui.submit();
+    expect(fetcher).toHaveBeenCalledTimes(3);
+    const first = Array.from((fetcher.mock.calls[1][1].body as FormData).entries());
+    expect(Array.from((fetcher.mock.calls[2][1].body as FormData).entries())).toEqual(first);
+    expect(Object.fromEntries(first)).toMatchObject({
+      enquiry_subject: '200 sq yd plot',
+      form_type: 'Contact enquiry',
+      utm_source: 'google',
+      fbclid: 'click',
+    });
+    expect(trackLead).toHaveBeenCalledOnce();
+  });
+
+  it('starts a new identity when failed submission fields are edited', async () => {
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(response({ ok: true }))
+      .mockRejectedValueOnce(new Error('Response lost'))
+      .mockResolvedValueOnce(response({ ok: true }))
+      .mockResolvedValueOnce(response({ accepted: true, sent: true, confirmation: true }));
+    vi.stubGlobal('fetch', fetcher);
+    const ui = surface();
+    await ui.submit();
+    ui.fields.enquiry_subject = '300 sq yd plot';
+    await ui.submit();
+    expect((fetcher.mock.calls[3][1].body as FormData).get('event_id')).not.toBe(
+      (fetcher.mock.calls[1][1].body as FormData).get('event_id')
     );
   });
 });

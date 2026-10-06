@@ -16,7 +16,7 @@
   # inline GA bootstrap and the view-transition runtime are inline, and a
   # hash-pinned policy would break on every rebuild until ClientRouter is
   # dropped. Mirrored by hand in src/middleware.ts.
-  Content-Security-Policy: base-uri 'self'; connect-src 'self' https://formspree.io https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://www.facebook.com; object-src 'none'; form-action 'self' https://formspree.io; frame-ancestors 'none'
+  Content-Security-Policy: base-uri 'self'; connect-src 'self' https://formspree.io https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://www.facebook.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://www.google.com https://www.google.co.in https://ad.doubleclick.net; object-src 'none'; form-action 'self' https://formspree.io; frame-ancestors 'none'
 
 # Caching baseline comes from the Workers asset server itself: every unhashed
 # response is served `Cache-Control: public, max-age=0, must-revalidate` with an

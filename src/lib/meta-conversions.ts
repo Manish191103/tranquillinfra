@@ -2,7 +2,7 @@
  * Meta Conversions API — the server leg of the pixel: identifier
  * normalization, hashing and the Graph API sender.
  *
- * One event per relayed lead: the identifiers Meta requires hashed are
+ * One event per sales-accepted lead: the identifiers Meta requires hashed are
  * SHA-256'd, `fbp`/`fbc` and the visitor's IP/user agent ride along as-is, and
  * `event_id` matches the browser `eventID`, so Meta deduplicates the pair
  * (48 h window). Inert without the pixel id or `META_CAPI_ACCESS_TOKEN`.
@@ -19,6 +19,8 @@ const REQUEST_TIMEOUT_MS = 10_000;
 export interface LeadConversion {
   eventName: MetaEventName;
   eventId: string;
+  /** Original submission time, retained when an accepted lead is retried. */
+  eventTimeSeconds?: number;
   eventSourceUrl: string;
   leadType: string;
   email?: string;
@@ -60,7 +62,10 @@ export function normalizeIdentifiers(input: { email?: string; phone?: string; na
   ln: string | null;
 } {
   const em = input.email?.trim().toLowerCase() || null;
-  const digits = (input.phone ?? '').replace(/\D+/g, '').replace(/^0+/, '');
+  const phone = (input.phone ?? '').trim();
+  const digits = phone.replace(/\D+/g, '').replace(/^0+/, '');
+  const normalizedPhone =
+    !phone.startsWith('+') && /^\d{10}$/.test(digits) ? `91${digits}` : digits;
   const parts = (input.name ?? '')
     .trim()
     .split(/\s+/)
@@ -69,7 +74,7 @@ export function normalizeIdentifiers(input: { email?: string; phone?: string; na
 
   return {
     em,
-    ph: digits.length >= 7 ? digits : null,
+    ph: normalizedPhone.length >= 8 && normalizedPhone.length <= 15 ? normalizedPhone : null,
     fn: parts.at(0) ?? null,
     ln: parts.length > 1 ? (parts.at(-1) ?? null) : null,
   };
@@ -78,6 +83,39 @@ export function normalizeIdentifiers(input: { email?: string; phone?: string; na
 /** Meta's documented `fbc` format: `fb.1.<click time in ms>.<fbclid>`. */
 export function buildFbc(fbclid: string, clickedAtMs: number): string {
   return `fb.1.${clickedAtMs}.${fbclid}`;
+}
+
+/** First-party pixel cookies captured from the accepted lead's request. */
+export function metaCookieValue(header: string | null, name: '_fbp' | '_fbc'): string | undefined {
+  for (const part of header?.split(';') ?? []) {
+    const [key, ...rest] = part.trim().split('=');
+    if (key === name) return rest.join('=') || undefined;
+  }
+  return undefined;
+}
+
+/** Continue measurement after responding to the visitor; no durable retry queue. */
+export function scheduleLeadConversion(
+  waitUntil: (promise: Promise<unknown>) => void,
+  input: LeadConversion
+): void {
+  try {
+    waitUntil(
+      sendMetaConversion(input)
+        .catch((): MetaConversionResult => ({ accepted: false, reason: 'request-failed' }))
+        .then((result) => {
+          const line = `meta_conversion event_id=${JSON.stringify(input.eventId)} accepted=${result.accepted}${
+            result.accepted ? '' : ` reason=${JSON.stringify(result.reason)}`
+          }`;
+          if (result.accepted) console.info(line);
+          else console.warn(line);
+        })
+    );
+  } catch {
+    console.warn(
+      `meta_conversion event_id=${JSON.stringify(input.eventId)} accepted=false reason=scheduling-failed`
+    );
+  }
 }
 
 /* -------------------------------------------------------------------------
@@ -106,7 +144,7 @@ export async function sendMetaConversion(input: LeadConversion): Promise<MetaCon
     data: [
       {
         event_name: input.eventName,
-        event_time: Math.floor(Date.now() / 1000),
+        event_time: input.eventTimeSeconds ?? Math.floor(Date.now() / 1000),
         event_id: input.eventId,
         action_source: 'website',
         event_source_url: input.eventSourceUrl,
@@ -129,15 +167,18 @@ export async function sendMetaConversion(input: LeadConversion): Promise<MetaCon
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       }
     );
-    const result = (await response.json().catch(() => null)) as { fbtrace_id?: string } | null;
+    const result = (await response.json().catch(() => null)) as {
+      fbtrace_id?: string;
+      events_received?: number;
+    } | null;
 
-    if (response.ok && result) return { accepted: true };
+    if (response.ok && result?.events_received === 1) return { accepted: true };
 
     // One line, no identifiers: the trace id is what Meta's support asks for.
     console.warn('Meta CAPI rejected the event', response.status, result?.fbtrace_id ?? '');
     return { accepted: false, reason: `graph-${response.status}` };
   } catch (error) {
-    console.warn('Meta CAPI request failed', error instanceof Error ? error.message : 'unknown');
+    console.warn('Meta CAPI request failed', error instanceof Error ? error.name : 'unknown');
     return { accepted: false, reason: 'network' };
   }
 }

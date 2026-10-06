@@ -55,19 +55,17 @@ export const LEAD_EVENTS: Record<
 export interface AdsUserData {
   email?: string;
   phone?: string;
-  name?: string;
 }
 
 /**
  * Normalize identifiers the way Google's declared enhanced-conversions
  * implementation expects: the tag hashes them (SHA-256) before sending, so
- * values go out normalized but unhashed — email trimmed and lowercased, names
- * lowercased, and phone as a plausible E.164 number: the tag cannot infer a
+ * values go out normalized but unhashed — email trimmed and lowercased, and phone as a plausible E.164 number: the tag cannot infer a
  * country code, so a national number is completed to `+91` (the only market
  * the site sells in) and anything not plausibly E.164 is dropped rather than
  * sent blank. Empty fields are omitted the same way.
  */
-export function normalizeAdsUserData({ email, phone, name }: AdsUserData): Record<string, string> {
+export function normalizeAdsUserData({ email, phone }: AdsUserData): Record<string, string> {
   const data: Record<string, string> = {};
   const em = email?.trim().toLowerCase();
   if (em) data.email = em;
@@ -83,9 +81,6 @@ export function normalizeAdsUserData({ email, phone, name }: AdsUserData): Recor
       data.phone_number = `+${national}`;
   }
 
-  const parts = (name ?? '').trim().toLowerCase().split(/\s+/).filter(Boolean);
-  if (parts[0]) data.first_name = parts[0];
-  if (parts.length > 1) data.last_name = parts[parts.length - 1];
   return data;
 }
 
@@ -305,11 +300,8 @@ function initPageViews(): void {
       trackPixelPageView();
       return;
     }
-    // Hard landing in a tab where the pixel is already live (`__pixelReady`
-    // survived from the previous page's script; `initMetaPixel` runs once per
-    // tab, so nobody else reports this URL): report it here. First-session
-    // landings are covered instead by `initMetaPixel`'s `trackFirstPageView`.
-    if (window.__pixelReady) trackPixelPageView();
+    // Initialization owns the initial PageView, even when an early lead or
+    // navigation starts the pixel before the scheduled idle callback.
   });
 }
 
@@ -377,7 +369,8 @@ export function initAnalytics(): void {
  */
 function scheduleTrackingParamCleanup(): void {
   afterLoadIdle(() => {
-    if (!document.getElementById('ga-init')?.dataset.id) {
+    const bootstrap = document.getElementById('ga-init');
+    if (!bootstrap?.dataset.id && !bootstrap?.dataset.adsId) {
       cleanTrackingParamsFromAddressBar();
       return;
     }

@@ -1,12 +1,12 @@
 ---
 title: Privacy policy
 description: How Tranquill Infra Projects Pvt. Ltd. handles personal information collected through tranquillinfra.com.
-updatedAt: 2026-09-14
+updatedAt: 2026-10-06
 ---
 
 # Privacy policy
 
-_Last updated: 14 September 2026_
+_Last updated: 6 October 2026_
 
 ## Who we are
 
@@ -31,15 +31,9 @@ We do not ask for payment details, identity documents, or any special-category i
 
 When you visit the website, our hosting infrastructure records standard server logs for security and reliability, including your Internet Protocol (IP) address, browser type and version, operating system, the pages requested, and timestamps.
 
-If measurement is enabled, the tools described below record how pages are used only with the
-matching consent: analytics measurement after you grant analytics consent, advertising
-measurement after you grant marketing consent.
+When configured, analytics and advertising tools record page visits and interactions. This India-focused website loads those tools without a prior cookie-consent prompt. You can manage cookies and tracking through your browser settings or contact us about your data.
 
-### Your consent choice
-
-Where the cookie banner is enabled, your choice — analytics, marketing, maps, preference categories or decline — is stored in your browser's local storage under the key `tranquill-consent`, together with the consent version and a timestamp. That record stays in your browser: clearing your browser storage removes it, and no optional measurement runs until you grant the matching category.
-
-You can change or withdraw a choice at any time from **Cookie settings** in the footer. Withdrawing consent stops future measurement; it does not remove measurement already recorded before the withdrawal.
+We also record the session's landing page, referrer, campaign tags and advertising click identifiers in browser session storage, and attach that context to enquiries to understand where they came from.
 
 ## How we use your data
 
@@ -54,13 +48,15 @@ We use the personal information you submit to:
 
 ## Enquiry processing
 
-Enquiry and newsletter submissions are handled by **Formspree**, our form provider: it stores the submission and emails it to our team's inbox, where the enquiry and any follow-up are handled directly. Where you provide an email address, we also send you a confirmation of your enquiry, or the project brochure when you request it, through **Resend**, our email-delivery provider.
+Enquiry and newsletter forms send submissions to **Formspree**, which stores submissions and notifies our team. Enquiries also go through **Resend**, which sends the sales team the enquiry and sends you a confirmation or the project brochure you requested. We count an enquiry as accepted when Resend accepts the sales notification; provider acceptance does not guarantee inbox delivery.
 
 ## Analytics and advertising measurement
 
-Where the measurement configuration is present, we use **Google Analytics 4 (GA4)** to understand how the site is used. These tools run on a consent-first basis: tags load with analytics storage denied, and no analytics measurement is recorded until you grant analytics consent through the banner. If you decline, no analytics measurement is collected.
+When configured, **Google Analytics 4 (GA4)** records website visits and interactions. **Google Ads** and the **Meta pixel** measure advertising activity and accepted enquiries. These configured tools run without a prior consent prompt on this website.
 
-For advertising measurement we run the **Meta pixel** for campaigns on Facebook and Instagram: the pixel loads in a revoked state and records nothing until you grant marketing consent through the banner. A successful enquiry or newsletter signup is also reported to Meta through its server-side Conversions API: your email address, phone number and name are converted to irreversible SHA-256 hashes before they leave our server, and the report carries the same event identifier as the browser event so Meta counts it once. A successful enquiry is likewise reported to Google Ads with your email address, phone number and name for its **enhanced conversions** matching: the values are sent normalized and Google hashes them before storage, and — like every advertising measurement here — the report only runs under your marketing consent. Google Ads measurement, where it is configured (through the Google tag), follows the same marketing-consent rule. We do not build remarketing audiences from this site, and no advertising measurement runs without your marketing consent.
+After the sales notification is accepted, our server reports the enquiry to Meta's **Conversions API**. Email, phone and name are normalized and SHA-256 hashed before leaving our server; the report also includes available advertising cookies or click identifiers, the submission page, IP address and browser user agent. The server and browser events share an identifier so Meta can deduplicate them. Newsletter signups have separate browser measurement and are not sent through the server Conversions API or counted as Google Ads enquiry conversions.
+
+For **Google Ads enhanced conversions**, an accepted enquiry supplies normalized email and phone to the Google tag, which hashes identifiers for matching. The same enquiry also produces a GA4 lead event. These reports measure enquiry acceptance; they do not establish a qualified lead or a completed sale.
 
 ## Cookies and similar storage
 
@@ -69,14 +65,14 @@ We use cookies and browser storage only as described below. Lifetimes set by thi
 | Purpose                  | Technology                                                                                               | Typical lifetime                                           | Party                                                         |
 | ------------------------ | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------- |
 | Essential site operation | Hosting infrastructure; session-necessary storage                                                        | Session or as set by the hosting infrastructure            | First-party or infrastructure-controlled                      |
-| Consent preference       | This website; `tranquill-consent` in localStorage, with version/timestamp                                | Until browser storage is cleared or the record is replaced | First-party                                                   |
+| Campaign attribution     | This website; `tranquill-first-touch` in sessionStorage, with landing page, referrer, campaign tags and click IDs | Browser tab session | First-party |
 | Analytics measurement    | Google Analytics 4; for example `_ga` identifiers                                                        | Commonly up to 2 years; set by Google and may vary         | Usually first-party storage; Google processes the data        |
 | Advertising measurement  | Meta pixel (`_fbp` and Meta identifiers); Google Ads measurement where configured (`_gcl_aw`, `_gcl_au`) | Commonly up to 90 days; set by Meta or Google and may vary | Usually first-party storage; Meta and Google process the data |
-| Embedded maps            | Google Maps embed, loaded only when you choose to load it (grants the maps category)                     | Set by Google and may vary                                 | Google                                                        |
+| Embedded maps            | Google Maps embed, loaded automatically where configured                     | Set by Google and may vary                                 | Google                                                        |
 
 ## Data retention
 
-We retain enquiries for as long as needed to respond to your request, maintain records of our communications, and meet legal obligations. The `tranquill-consent` record stays in your browser until it is cleared or replaced. If you ask us to delete your data, we will do so within a reasonable period, subject to legal retention requirements.
+We retain enquiries for as long as needed to respond to your request, maintain records of our communications, and meet legal obligations. Campaign attribution in session storage remains for the browser tab session or until you clear it. If you ask us to delete your data, we will do so within a reasonable period, subject to legal retention requirements.
 
 ## Data sharing
 
@@ -93,7 +89,7 @@ Depending on your jurisdiction, you may have the right to:
 - Access the personal data we hold about you
 - Request correction of inaccurate or incomplete data
 - Request deletion of your data, subject to legal retention requirements
-- Withdraw consent at any time for optional measurement
+- Contact us to object to measurement or request that we stop processing your data, where applicable
 - Object to or restrict processing
 - Request data portability
 

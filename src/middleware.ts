@@ -26,7 +26,7 @@ const SECURITY_HEADERS = {
   // pinned and ClientRouter dropped — that is why there is no
   // `script-src`/`style-src` yet.
   'Content-Security-Policy':
-    "base-uri 'self'; connect-src 'self' https://formspree.io https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://www.facebook.com; object-src 'none'; form-action 'self' https://formspree.io; frame-ancestors 'none'",
+    "base-uri 'self'; connect-src 'self' https://formspree.io https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://www.facebook.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://www.google.com https://www.google.co.in https://ad.doubleclick.net; object-src 'none'; form-action 'self' https://formspree.io; frame-ancestors 'none'",
 } as const;
 
 const SAFE_METHODS: Record<string, true> = { GET: true, HEAD: true, OPTIONS: true };

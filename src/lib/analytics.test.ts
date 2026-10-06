@@ -5,13 +5,13 @@ import { normalizeAdsUserData } from './analytics';
 /**
  * Enhanced conversions match on normalized identifiers and degrade silently
  * when the shape is wrong — these vectors pin Google's declared expectations
- * (trimmed/lowercased email, `+`-prefixed digits phone, lowercased names).
+ * (trimmed/lowercased email and `+`-prefixed digits phone).
  */
 describe('ads user data', () => {
   it('normalizes email and keeps only matchable identifiers', () => {
-    expect(
-      normalizeAdsUserData({ email: '  John_Smith@Gmail.com ', phone: '12345', name: '123' })
-    ).toEqual({ email: 'john_smith@gmail.com', first_name: '123' });
+    expect(normalizeAdsUserData({ email: '  John_Smith@Gmail.com ', phone: '12345' })).toEqual({
+      email: 'john_smith@gmail.com',
+    });
   });
 
   it('completes national numbers to E.164 and keeps international ones', () => {
@@ -35,14 +35,6 @@ describe('ads user data', () => {
     // Not plausibly E.164: dropped rather than sent blank.
     expect(normalizeAdsUserData({ phone: '12345' })).toEqual({});
     expect(normalizeAdsUserData({ phone: '123 4567' })).toEqual({});
-  });
-
-  it('splits a full name into first and last', () => {
-    expect(normalizeAdsUserData({ name: 'Ravi Kumar Reddy' })).toEqual({
-      first_name: 'ravi',
-      last_name: 'reddy',
-    });
-    expect(normalizeAdsUserData({ name: 'Jean-Luc' })).toEqual({ first_name: 'jean-luc' });
   });
 
   it('omits every empty field rather than sending blanks', () => {

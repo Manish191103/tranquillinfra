@@ -45,4 +45,29 @@ describe('lead destinations', () => {
       'submission-1'
     );
   });
+  it('sends enhanced identifiers only on the accepted Ads conversion', () => {
+    const gtag = vi.fn();
+    vi.stubGlobal('window', { gtag, location: { href: 'https://example.test/' } });
+    vi.stubGlobal('document', { title: 'Contact' });
+    trackLead(
+      'contact',
+      'accepted-1',
+      {},
+      {
+        email: ' Buyer@Example.com ',
+        phone: '9876543210',
+      }
+    );
+    expect(gtag).toHaveBeenCalledWith('event', 'conversion', {
+      send_to: 'AW-test/label',
+      transaction_id: 'accepted-1',
+      user_data: { email: 'buyer@example.com', phone_number: '+919876543210' },
+    });
+    const gaParameters = gtag.mock.calls[0][2];
+    expect(gaParameters).not.toHaveProperty('user_data');
+    gtag.mockClear();
+    trackLead('newsletter', 'signup-1', {}, { email: 'buyer@example.com' });
+    expect(gtag).toHaveBeenCalledTimes(1);
+    expect(gtag.mock.calls[0][2]).not.toHaveProperty('user_data');
+  });
 });

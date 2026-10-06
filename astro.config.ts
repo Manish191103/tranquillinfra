@@ -30,7 +30,10 @@ function injectWranglerVars(): void {
   const text = readFileSync(`${__dirname}/wrangler.jsonc`, 'utf8');
   // Comments + wrangler's tolerated trailing commas → strict JSON.
   const json = JSON.parse(
-    text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '').replace(/,(?=\s*[\]}])/g, '')
+    text
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '')
+      .replace(/,(?=\s*[\]}])/g, '')
   );
   for (const [key, value] of Object.entries(json.vars ?? {})) {
     if (key.startsWith('PUBLIC_') && process.env[key] === undefined && typeof value === 'string') {
@@ -56,8 +59,9 @@ const sitemapLastmod: Record<string, string> = {};
  */
 function configDate(file: string, name: string): string | undefined {
   const source = readFileSync(file, 'utf8');
-  const literal = source
-    .match(new RegExp(`^export const ${name}\\s*(?::[^=]+)?=\\s*['"]([^'"]+)['"]`, 'm'))?.[1];
+  const literal = source.match(
+    new RegExp(`^export const ${name}\\s*(?::[^=]+)?=\\s*['"]([^'"]+)['"]`, 'm')
+  )?.[1];
   if (!literal) return undefined;
   const date = new Date(literal);
   return Number.isNaN(date.getTime()) ? undefined : date.toISOString().slice(0, 10);
@@ -154,7 +158,8 @@ const redirectVariants: AstroIntegration = {
       // The adapter's file can end without a newline; joining onto it would
       // glue the first appended row into the last adapter row and corrupt both.
       const prefix = existing.endsWith('\n') ? '' : '\n';
-      const rows = prefix + missing.map(([source, target]) => `${source}    ${target}    301\n`).join('');
+      const rows =
+        prefix + missing.map(([source, target]) => `${source}    ${target}    301\n`).join('');
       await appendFile(redirectsFile, rows);
       logger.info(`appended ${missing.length} no-slash redirect variant(s) to \`_redirects\``);
     },
@@ -204,8 +209,8 @@ export default defineConfig({
       // Override for the Resend API endpoint (tests/staging against a mock).
       RESEND_API_URL: envField.string({ context: 'server', access: 'secret', optional: true }),
 
-      // Meta Conversions API (runtime secrets). Missing values leave
-      // /api/meta-conversion answering 503 — the pixel keeps working alone.
+      // Meta Conversions API (runtime secrets). Missing values skip the
+      // accepted-sales server event — the pixel keeps working alone.
       META_CAPI_ACCESS_TOKEN: envField.string({
         context: 'server',
         access: 'secret',

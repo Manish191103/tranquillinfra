@@ -35,6 +35,7 @@ interface OutboundEmail {
   html: string;
   /** Team inbox the recipient can reply to. */
   replyTo?: string;
+  idempotencyKey?: string;
   /**
    * Files Resend pulls from a public URL itself (`attachments[].path`). The
    * brochure is 13 MB; uploading it would mean buffering and base64-encoding
@@ -85,6 +86,7 @@ async function sendEmail({
   html,
   replyTo,
   attachments,
+  idempotencyKey,
 }: OutboundEmail): Promise<void> {
   const missing = [
     !RESEND_API_KEY && 'RESEND_API_KEY',
@@ -102,6 +104,7 @@ async function sendEmail({
       headers: {
         Authorization: `Bearer ${RESEND_API_KEY}`,
         'Content-Type': 'application/json',
+        ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}),
       },
       body: JSON.stringify({
         from: RESEND_FROM_EMAIL,
@@ -461,13 +464,18 @@ function clean(value: string | undefined, max: number): string | undefined {
  * a 13 MB attachment; the sales notification attaches the same file, because a
  * deferral in the team's inbox costs them the asset with the lead.
  */
-async function sendBrochureEmail({ to, name }: { to: string; name?: string }): Promise<void> {
+async function sendBrochureEmail({
+  to,
+  name,
+  submittedAt,
+  leadId,
+}: Pick<LeadMail, 'to' | 'name' | 'submittedAt' | 'leadId'>): Promise<void> {
   const brochureUrl = emailUrl(BROCHURE_PATH);
   const projectUrl = emailUrl('/projects/tranquill-city/');
   const visitUrl = emailUrl(BOOK_VISIT_PATH);
   const firstName = clean(name, 80)?.split(' ')[0];
   const greeting = firstName ? `Hi ${firstName},` : 'Hello,';
-  const promise = callbackPromise(new Date());
+  const promise = callbackPromise(new Date(submittedAt ?? Date.now()));
 
   const text = [
     greeting,
@@ -531,6 +539,7 @@ ${emailSignature()}`;
     text,
     html,
     replyTo: CONTACT_TO_EMAIL || contact.email,
+    idempotencyKey: `lead-customer/${leadId}`,
   });
 }
 
@@ -542,7 +551,11 @@ async function sendConfirmationEmail({
   to,
   name,
   requestType,
+  submittedAt,
+  leadId,
 }: {
+  submittedAt?: string;
+  leadId: string;
   to: string;
   name?: string;
   requestType: 'enquiry' | 'site_visit';
@@ -560,7 +573,7 @@ async function sendConfirmationEmail({
   const opening = siteVisit
     ? 'Thank you for requesting a site visit to Tranquill City, Rudraram. We have received your request and a member of our team will call you to confirm a day and time.'
     : `Thank you for contacting ${contact.name}. We have received your enquiry. ${callbackPromise(
-        new Date()
+        new Date(submittedAt ?? Date.now())
       )}`;
 
   const text = [
@@ -638,6 +651,7 @@ ${emailSignature()}`;
     text,
     html,
     replyTo: CONTACT_TO_EMAIL || contact.email,
+    idempotencyKey: `lead-customer/${leadId}`,
   });
 }
 
@@ -657,6 +671,11 @@ export interface LeadMail {
   page?: string;
   /** The browser's conversion event id, to tie this lead to the analytics. */
   eventId?: string;
+  submittedAt?: string;
+  subject?: string;
+  enquirySubject?: string;
+  formType?: string;
+  context?: Record<string, string>;
 }
 
 /**
@@ -692,12 +711,17 @@ async function sendSalesNotification(lead: LeadMail): Promise<void> {
     ['Request type', label],
     ['Name', who],
   ];
+  if (lead.enquirySubject) rows.push(['Subject', lead.enquirySubject]);
+  if (lead.formType) rows.push(['Form', lead.formType]);
   if (phone) rows.push(['Phone', phone]);
   rows.push(['Email', lead.to]);
   if (visitDate) rows.push(['Preferred site-visit date', visitDate]);
   if (page) rows.push(['Submitted from', page]);
   rows.push(['Reference', lead.leadId]);
   if (eventId) rows.push(['Website event', eventId]);
+  for (const [field, value] of Object.entries(lead.context ?? {})) {
+    if (value) rows.push([field, value]);
+  }
 
   const text = [
     `${label}: ${who}`,
@@ -753,12 +777,13 @@ async function sendSalesNotification(lead: LeadMail): Promise<void> {
 
   await sendEmail({
     to: CONTACT_TO_EMAIL || contact.email,
-    subject: `${label}: ${who}`,
+    subject: lead.subject || `${label}: ${who}`,
     text,
     html,
     // A reply from sales must land on the visitor, not on the site's own
     // no-reply sender.
     replyTo: lead.to,
+    idempotencyKey: `lead-sales/${lead.leadId}`,
     // The team gets the asset with the lead: a brochure request is a request
     // for the brochure, and this is the copy that survives a dead Formspree.
     ...(attached ? { attachments: [{ path: brochureUrl, filename: BROCHURE_FILENAME }] } : {}),
@@ -781,14 +806,16 @@ export interface LeadMailOutcome {
  * Mails one submission twice: the sales inbox gets the enquiry, the visitor
  * gets the brochure or the confirmation.
  *
- * The two are independent sends, each attempted whatever the other did — the
- * sales copy first, because it is the one the business runs on, then the
- * visitor's courtesy copy. Neither failure is allowed to mask the other, and
+ * The sales copy is sent first; the visitor receives a receipt or brochure
+ * only once sales acceptance is confirmed. Neither failure is allowed to mask the other, and
  * neither is swallowed: both outcomes come back so the endpoint can log a
  * single line carrying the lead id and answer the client with a shape that
  * tells "your confirmation failed" apart from "your enquiry failed".
  */
-export async function deliverLeadMail(lead: LeadMail): Promise<LeadMailOutcome> {
+export async function deliverLeadMail(
+  lead: LeadMail,
+  onSalesAccepted?: () => void
+): Promise<LeadMailOutcome> {
   const outcome: LeadMailOutcome = { sales: false, confirmation: false };
 
   try {
@@ -798,11 +825,22 @@ export async function deliverLeadMail(lead: LeadMail): Promise<LeadMailOutcome> 
     outcome.salesError = error instanceof Error ? error : new Error(String(error));
   }
 
+  if (!outcome.sales) return outcome;
+
+  try {
+    onSalesAccepted?.();
+  } catch {
+    // An optional measurement callback cannot invalidate accepted sales mail.
+    console.warn(
+      `meta_conversion event_id=${JSON.stringify(lead.eventId ?? '')} accepted=false reason=callback_failed`
+    );
+  }
+
   try {
     if (lead.requestType === 'brochure') {
-      await sendBrochureEmail({ to: lead.to, name: lead.name });
+      await sendBrochureEmail(lead);
     } else {
-      await sendConfirmationEmail({ to: lead.to, name: lead.name, requestType: lead.requestType });
+      await sendConfirmationEmail({ ...lead, requestType: lead.requestType });
     }
     outcome.confirmation = true;
   } catch (error) {
