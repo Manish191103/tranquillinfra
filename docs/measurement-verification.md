@@ -33,11 +33,11 @@ There is no durable lead store or reconciliation queue.
 
 ## Google Ads read-only checklist
 
-1. Open the Website conversion action “Submit lead form” and its event snippet.
+1. Open the Website conversion action “Submit lead form V2” and its event snippet.
    Compare its ID and label against `PUBLIC_GOOGLE_ADS_ID` and
    `PUBLIC_GOOGLE_ADS_CONVERSION_LABEL` in `wrangler.jsonc` (or the deployment’s
    public build overrides). The configured pair at this change is
-   `AW-18447056516/as-bCLOjg4cdEIT9ntxE`.
+   `AW-18447056516/dJpWCPupxpMdEIT9ntxE`.
 2. Verify its diagnostics and the deployed Google tag with Tag Assistant.
    Initial page load, opening a dialog and CTA clicks must not emit the direct
    conversion. A sales-accepted enquiry emits one direct conversion with the
