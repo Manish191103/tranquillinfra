@@ -1,0 +1,47 @@
+# Auto-deploys the Worker on every push to main (merge or direct push).
+# One-time setup (repo Settings → Secrets and variables → Actions):
+#   CLOUDFLARE_API_TOKEN   — dashboard API token, Account | Workers Scripts | Edit
+#                            (plus Account Settings | Read)
+#   CLOUDFLARE_ACCOUNT_ID  — 901528a0d04485e065e33c5f89999185
+# Secrets already on the Worker (RESEND_API_KEY, META_CAPI_ACCESS_TOKEN)
+# survive every deploy; nothing here touches them.
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate, typecheck, test, build
+        run: pnpm validate
+
+      - name: Deploy
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
