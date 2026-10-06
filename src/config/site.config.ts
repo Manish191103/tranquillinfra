@@ -175,10 +175,15 @@ export interface SiteConfig {
    * Branding configuration
    * Logo: replace the masters in `src/assets/brand/` and keep `alt` accurate;
    * `public/logo.png` is a stable 512 px export for structured data only.
-   * Favicon: `public/favicon.png` (square brand mark). Its siblings
-   * `public/favicon.ico`, `public/apple-touch-icon.png` and
-   * `public/icon-512.png` are exports of the same mark — regenerate the whole
-   * set together from the mark source.
+   * Favicon: the whole set lives in `public/` — `favicon.svg` (the master:
+   * the mark on a solid `#FCFBF7` plate), plus `favicon.ico`, `favicon.png`,
+   * `apple-touch-icon.png` and the maskable `icon-512.png`. All are exports of
+   * the same plated mark — regenerate the whole set together from it (render
+   * the SVG at 1583 px native, resize with Lanczos; `icon-512.png` insets the
+   * mark to a 55% envelope for the maskable safe zone). Links are plain
+   * `/…` hrefs in `Favicons.astro`; `mask-icon` is dropped — Safari's
+   * pinned-tab mask renders the SVG silhouette monochrome, never brand
+   * colors, and modern Safari pins normal favicons.
    */
   branding: {
     /** Logo alt text for accessibility */
