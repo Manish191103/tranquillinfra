@@ -144,7 +144,13 @@ const telHref = siteConfig.phoneE164 ? `tel:${siteConfig.phoneE164}` : undefined
 
     document.querySelectorAll<HTMLElement>('[data-enquiry-intent]').forEach((button) => {
       button.addEventListener('click', () => {
-        if (requestType) requestType.value = button.dataset.enquiryType ?? 'enquiry';
+        if (requestType) {
+          requestType.value = button.dataset.enquiryType ?? 'enquiry';
+          // The inline ContactForm re-syncs the visit-date field off `change`
+          // (the dialog's triggers dispatch the same event). Without it a
+          // brochure request keeps a required date field it never asked for.
+          requestType.dispatchEvent(new Event('change'));
+        }
         if (subject) subject.value = button.dataset.enquiryIntent ?? '';
         firstRequired?.focus({ preventScroll: true });
       });
