@@ -28,6 +28,15 @@ variants | Cloudflare Workers
 
 **Node.js requirement:** >= 22.22.3 (pnpm)
 
+**Auto-deploy:** Cloudflare Workers Builds is connected to this GitHub
+repository and builds + deploys the Worker on every push to `main` (merges and
+direct pushes; other branches do nothing). It is config-as-code — `wrangler.jsonc`
+is the deploy source of truth, and the Workers Builds build runs only
+`pnpm build`, so run `pnpm validate` locally before pushing. There is no GitHub
+Actions pipeline: Actions cannot start on this account (billing lock — every
+run fails at startup, observed 2026-10-06; the sibling `.com` repo hit the same
+and uses Workers Builds instead).
+
 ## Architecture
 
 ### Directory Structure
@@ -71,8 +80,8 @@ by `astro.config.ts` (`injectWranglerVars`).
 Use `~/` to import from `src/`:
 
 ```astro
-import Button from '~/components/ui/form/Button/Button.astro';
-import siteConfig from '~/config/site.config';
+import Button from '~/components/ui/form/Button/Button.astro'; import siteConfig from
+'~/config/site.config';
 ```
 
 ### Single configuration home
@@ -117,7 +126,7 @@ Post frontmatter: `title` (required, ≤100), `description` (required, ≤200),
 ## Component Patterns
 
 - Components live under their domain folder; primitives under `ui/<category>/
-  <Name>/` with a sibling `<name>.variants.ts` (cva).
+<Name>/` with a sibling `<name>.variants.ts` (cva).
 - Props are declared per component (interface `Props`); shared page metadata
   flows through `PageLayout` props (`title`, `description`, `image`,
   `article`, `noindex`, `lcpPreload`, …), not a `~/types` widget contract.

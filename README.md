@@ -74,8 +74,17 @@ beats `wrangler.jsonc`.
 Security headers ship in `public/_headers` for prerendered responses and are
 mirrored in `src/middleware.ts` for responses the Worker renders.
 
+Deployment is automatic: **Cloudflare Workers Builds is connected to this
+repository** and builds + deploys the Worker on every push to `main`. It is
+config-as-code — `wrangler.jsonc` is the single deploy source of truth (the
+build reads its `vars` through the Astro adapter; nothing is duplicated in the
+dashboard). The build itself runs only `pnpm install && pnpm build`; it does
+not run the checks, so run `pnpm validate` locally before pushing, the way CI
+normally would. There is no GitHub Actions pipeline — Actions cannot start on
+this repository's account (billing lock; every run, including a scratch
+workflow, failed at startup, 2026-10-06), so Workers Builds deploys every push
+instead.
+
 ## Agent instructions
 
-[AGENTS.md](./AGENTS.md) documents the architecture in more depth, and
-`.agents/skills/` has task-specific guides (adding a page, adding a post,
-changing the header, deployment).
+[AGENTS.md](./AGENTS.md) documents the architecture in more depth.
