@@ -121,13 +121,52 @@ function isCanonicalHostAlias(origin: string): boolean {
  * for. A same-origin about:blank frame still carries the shipped method, so
  * the rewrite can pass by that observer.
  */
-function shippedReplaceState(url: string): void {
+let nativeReplaceState: History['replaceState'] | undefined;
+let guardedReplaceState: History['replaceState'] | undefined;
+
+function shippedReplaceState(): History['replaceState'] {
+  if (nativeReplaceState) return nativeReplaceState;
   const frame = document.createElement('iframe');
   frame.hidden = true;
   document.documentElement.append(frame);
-  const shipped = frame.contentWindow!.history.replaceState;
-  frame.remove();
-  shipped.call(window.history, window.history.state, '', url);
+  try {
+    nativeReplaceState = frame.contentWindow!.history.replaceState;
+    return nativeReplaceState;
+  } finally {
+    frame.remove();
+  }
+}
+
+/**
+ * Astro saves scroll position through state-only replaceState calls. After a
+ * silent URL cleanup, Google's observer still remembers the decorated URL and
+ * mistakes that next scroll update for navigation. Keep state-only updates
+ * native too, while real URL changes still reach the installed observer.
+ */
+function guardStateOnlyHistoryUpdates(): void {
+  const history = window.history;
+  if (history.replaceState === guardedReplaceState) return;
+
+  const native = shippedReplaceState();
+  const observed = history.replaceState;
+  const prototype = Object.getPrototypeOf(history) as History;
+  const inherited = observed === prototype.replaceState;
+  guardedReplaceState = function (this: History, ...args) {
+    const url = args[2];
+    let sameUrl = url == null;
+    if (!sameUrl) {
+      try {
+        sameUrl = new URL(String(url), window.location.href).href === window.location.href;
+      } catch {
+        // Let the existing History method reject an invalid URL as usual.
+      }
+    }
+    // Resolve inherited observers at call time: a slow Google tag may install
+    // its prototype wrapper after the bounded attribution wait has expired.
+    const delegate = inherited ? prototype.replaceState : observed;
+    return (sameUrl ? native : delegate).apply(this, args);
+  };
+  history.replaceState = guardedReplaceState;
 }
 
 /**
@@ -150,6 +189,7 @@ export function cleanTrackingParamsFromAddressBar(): void {
     return;
   }
 
+  guardStateOnlyHistoryUpdates();
   if (clean === `${pathname}${search}${hash}`) return;
-  shippedReplaceState(clean);
+  shippedReplaceState().call(window.history, window.history.state, '', clean);
 }

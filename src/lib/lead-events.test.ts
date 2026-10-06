@@ -58,16 +58,29 @@ describe('lead destinations', () => {
         phone: '9876543210',
       }
     );
-    expect(gtag).toHaveBeenCalledWith('event', 'conversion', {
-      send_to: 'AW-test/label',
-      transaction_id: 'accepted-1',
-      user_data: { email: 'buyer@example.com', phone_number: '+919876543210' },
-    });
+    expect(gtag.mock.calls.slice(1)).toEqual([
+      ['set', 'user_data', { email: 'buyer@example.com', phone_number: '+919876543210' }],
+      ['event', 'conversion', { send_to: 'AW-test/label', transaction_id: 'accepted-1' }],
+      ['set', 'user_data', null],
+    ]);
     const gaParameters = gtag.mock.calls[0][2];
     expect(gaParameters).not.toHaveProperty('user_data');
     gtag.mockClear();
     trackLead('newsletter', 'signup-1', {}, { email: 'buyer@example.com' });
     expect(gtag).toHaveBeenCalledTimes(1);
     expect(gtag.mock.calls[0][2]).not.toHaveProperty('user_data');
+  });
+
+  it('clears enhanced identifiers even if the conversion dispatcher throws', () => {
+    const gtag = vi.fn((command, name) => {
+      if (command === 'event' && name === 'conversion') throw new Error('Tag unavailable');
+    });
+    vi.stubGlobal('window', { gtag, location: { href: 'https://example.test/' } });
+    vi.stubGlobal('document', { title: 'Contact' });
+
+    expect(() => trackLead('contact', 'accepted-2', {}, { email: 'buyer@example.com' })).toThrow(
+      'Tag unavailable'
+    );
+    expect(gtag.mock.calls.at(-1)).toEqual(['set', 'user_data', null]);
   });
 });

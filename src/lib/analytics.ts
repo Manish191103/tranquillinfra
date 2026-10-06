@@ -140,18 +140,24 @@ function pushEvent(name: string, params: Record<string, unknown>): void {
  * with the same id inside the action, and a later Data Manager upload can
  * match the tag event with the same value.
  *
- * `user_data` carries first-party identifiers (enhanced conversions for web).
+ * `user_data` is set immediately before this conversion and cleared afterwards,
+ * so enhanced identifiers cannot remain attached to later GA4 or Ads events.
  * The ids ship from the Cloudflare vars — a missing id is otherwise silent:
  * warn once per load, one line per missing id, before the early return.
  */
 function trackAdsConversion(transactionId: string, userData: AdsUserData = {}): void {
   if (!ADS_ID || !ADS_CONVERSION_LABEL || typeof window.gtag !== 'function') return;
   const enhanced = normalizeAdsUserData(userData);
-  window.gtag('event', 'conversion', {
-    send_to: `${ADS_ID}/${ADS_CONVERSION_LABEL}`,
-    transaction_id: transactionId,
-    ...(Object.keys(enhanced).length ? { user_data: enhanced } : {}),
-  });
+  const hasIdentifiers = Object.keys(enhanced).length > 0;
+  if (hasIdentifiers) window.gtag('set', 'user_data', enhanced);
+  try {
+    window.gtag('event', 'conversion', {
+      send_to: `${ADS_ID}/${ADS_CONVERSION_LABEL}`,
+      transaction_id: transactionId,
+    });
+  } finally {
+    if (hasIdentifiers) window.gtag('set', 'user_data', null);
+  }
 }
 
 /** Fire the lead's browser events. `eventId` must match the submitted payload. */
