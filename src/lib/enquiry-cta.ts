@@ -99,9 +99,7 @@ export function enquiryCtaTarget(pathname: string): EnquiryCtaTarget {
     return { href: `${path}#project-brochure` };
   }
 
-  // The contact page scrolls straight to the form. The id belongs to the
-  // enquiry section on that page (`#contact-enquiry`), not `#contact-form` —
-  // a wrong anchor is a silent no-op scroll.
+  // The contact page scrolls straight to the form.
   if (path.startsWith('/contact-us/')) {
     return { href: '/contact-us/#contact-form' };
   }
