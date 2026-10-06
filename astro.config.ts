@@ -120,21 +120,6 @@ export default defineConfig({
         optional: true,
         default: '/privacy-policy/',
       }),
-
-      // GitHub OAuth broker for the self-hosted Decap CMS (/decapcms/). The
-      // client id is a wrangler [vars] value; the client secret is a runtime
-      // secret. A missing id makes /api/cms/auth answer 503 — the CMS's login
-      // is unusable, the site itself is unaffected.
-      GITHUB_OAUTH_CLIENT_ID: envField.string({
-        context: 'server',
-        access: 'secret',
-        optional: true,
-      }),
-      GITHUB_OAUTH_CLIENT_SECRET: envField.string({
-        context: 'server',
-        access: 'secret',
-        optional: true,
-      }),
     },
   },
 

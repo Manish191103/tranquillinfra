@@ -43,10 +43,6 @@
 
     // Forms and site
     "PUBLIC_FORMSPREE_FORM_ID": "mdekdyar",
-    // OAuth App client id for the /decapcms/ auth broker (public by design;
-    // the client SECRET is a runtime secret — wrangler secret put
-    // GITHUB_OAUTH_CLIENT_SECRET). See src/pages/api/cms/.
-    "GITHUB_OAUTH_CLIENT_ID": "Ov23liu4AlIzPvGH69cq",
     "PUBLIC_PRIVACY_POLICY_URL": "/privacy-policy/",
     "SITE_URL": "https://www.tranquillinfra.com",
 

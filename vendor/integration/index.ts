@@ -38,10 +38,8 @@ export default ({ config: _themeConfig = 'src/config.yaml' } = {}): AstroIntegra
           // `<img>` markup points at `/_image?…` without a slash, and under
           // 'always' that request 404s into the 404 page (withastro/astro
           // #16338 — only "file endpoints" are exempt). 'ignore' matches
-          // both spellings, which also lets the /decapcms/ admin URL hit its
-          // dev-only redirect route while /_image resolves. The production
-          // build keeps 'always' untouched; dev merely stops caring about
-          // the slash.
+          // both spellings. The production build keeps 'always' untouched;
+          // dev merely stops caring about the slash.
           trailingSlash: command === 'dev' ? 'ignore' : SITE.trailingSlash ? 'always' : 'never',
 
           vite: {
