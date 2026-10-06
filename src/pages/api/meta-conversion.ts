@@ -32,9 +32,8 @@ function cookieValue(header: string | null, name: string): string | undefined {
 /**
  * Relays a browser lead to Meta's Conversions API (the server leg of the
  * pixel). Called by `relayLeadConversion` on submission success, same-origin
- * only (middleware), rate limited like the brochure endpoint. The visitor's
- * marketing consent is what gates the client call; this route holds no consent
- * state and forwards hashed identifiers only.
+ * only (middleware), rate limited like the brochure endpoint. The route holds
+ * no consent state and forwards hashed identifiers only.
  */
 export const POST: APIRoute = async ({ request, clientAddress }) => {
   const body = await readFormBody(request);

@@ -16,14 +16,22 @@
  * `astro:*` events.
  */
 import { initMetaPixel, metaTrack, trackPixelPageView } from './meta-pixel';
+import { cleanTrackingParamsFromAddressBar } from './url-hygiene';
+import { analyticsConfig } from '~/config/analytics.config';
 
 /** The Google tag bootstrap `Analytics.astro` renders on every page. */
 declare global {
   interface Window {
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
+    /** One-time pixel init marker set by `meta-pixel.ts`. */
+    __pixelReady?: boolean;
   }
 }
+
+/** Google Ads conversion id and label — the one measurement config. */
+const ADS_ID = analyticsConfig.adsId ?? undefined;
+const ADS_CONVERSION_LABEL = analyticsConfig.adsConversionLabel ?? undefined;
 
 /** Meta event names the site reports (see `LEAD_EVENTS` and meta-pixel). */
 export type MetaEventName = 'Lead' | 'NewsletterSignup';
@@ -42,12 +50,6 @@ export const LEAD_EVENTS: Record<
   contact: { ga: 'generate_lead', meta: 'Lead', conversion: true },
   newsletter: { ga: 'newsletter_signup', meta: 'NewsletterSignup', conversion: false },
 };
-
-/** Measurement ids, inlined at build time from the Cloudflare vars. */
-const ADS_ID = import.meta.env.PUBLIC_GOOGLE_ADS_ID as string | undefined;
-const ADS_CONVERSION_LABEL = import.meta.env.PUBLIC_GOOGLE_ADS_CONVERSION_LABEL as
-  | string
-  | undefined;
 
 /** First-party identifiers for Google Ads enhanced conversions for web. */
 export interface AdsUserData {
@@ -93,12 +95,12 @@ const FIRST_TOUCH_KEY = 'tranquill-first-touch';
 const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'] as const;
 
 /**
- * The shared click-id list (paid-media attribution ids). In the predecessor
- * these also drove an address-bar cleanup pass tied to the tag it loaded
- * itself; here the GA4 tag and its configuration belong to `Analytics.astro`,
- * so only the capture side of that list is ported.
+ * The click-id list (paid-media attribution ids) lives in `~/lib/url-hygiene`:
+ * the capturer and the address-bar stripper must not drift apart, so both read
+ * the one shared list.
  */
-const CLICK_ID_KEYS = ['gclid', 'wbraid', 'gbraid', 'fbclid', 'msclkid', 'ttclid'] as const;
+export { CLICK_ID_KEYS } from './url-hygiene';
+import { CLICK_ID_KEYS } from './url-hygiene';
 
 /**
  * Every query key captured into first touch: the campaign tags plus the
@@ -298,9 +300,16 @@ function initPageViews(): void {
   });
 
   document.addEventListener('astro:page-load', () => {
-    if (!navigated) return; // initial load: the tag already sent its page view
-    navigated = false;
-    trackPixelPageView();
+    if (navigated) {
+      navigated = false;
+      trackPixelPageView();
+      return;
+    }
+    // Hard landing in a tab where the pixel is already live (`__pixelReady`
+    // survived from the previous page's script; `initMetaPixel` runs once per
+    // tab, so nobody else reports this URL): report it here. First-session
+    // landings are covered instead by `initMetaPixel`'s `trackFirstPageView`.
+    if (window.__pixelReady) trackPixelPageView();
   });
 }
 
@@ -328,14 +337,74 @@ export function initAnalytics(): void {
   }
 
   firstTouchContext();
-  initPageViews();
+  scheduleTrackingParamCleanup(); // the captured ids must not ride shared links
 
   if (initialized) return;
   initialized = true;
+
+  // One delegation per tab: the `astro:page-load` handlers bound here outlive
+  // the swaps (the module persists), so a second evaluation must not bind a
+  // second set — a doubled Meta PageView per navigation is exactly what that
+  // costs. `scheduleTrackingParamCleanup`, above the guard, may re-run: each
+  // poll ends in one idempotent strip pass.
+  initPageViews();
   initClickTracking();
   // The pixel engine fetches after load + idle so it never competes with the
   // LCP resource during startup.
   afterLoadIdle(() => initMetaPixel());
+}
+
+/**
+ * Drop the Google tracking parameters (`_gl`/`_ga*` linker state and the
+ * paid-media click ids) from the address bar once nothing reads them any more.
+ * `firstTouchContext` has recorded the click ids already; the configured tags
+ * (`#ga-init` renders whenever any Google id is set) are the remaining readers
+ * and they read the URL late and live — the tag's click-id collection writes
+ * the `gclid` linkage (`_gcl_aw`) and its hits take `dl` from `location.href`
+ * when the containers finish, not when their loader executes (stripping as
+ * soon as the loader had run cost the click id its `gclid` linkage entirely;
+ * observed in the predecessor's equivalent gate, 2026-09).
+ *
+ * The gate asks whether ANY endpoint that reads the URL is configured — GA4
+ * alone is enough — not whether the Ads conversion pair is; with GA4 only, the
+ * collect still carries the URL and the wait still applies. The tag itself is
+ * a plain script render we own no handle on: instead of a load event (which
+ * proves loader execution, not attribution readiness — a cached gtag.js can
+ * finish running before the first collect builds), poll for the GA4
+ * collection request and hold two seconds of margin while the first wave's
+ * remaining pings build their `dl`, giving up after 20 seconds of a blocked
+ * or stalled tag. No tag configured → nothing reads the URL: strip at once.
+ */
+function scheduleTrackingParamCleanup(): void {
+  afterLoadIdle(() => {
+    if (!document.getElementById('ga-init')?.dataset.id) {
+      cleanTrackingParamsFromAddressBar();
+      return;
+    }
+    stripAfterFirstCollect();
+  });
+}
+
+/** Poll until the Google tag's GA4 collection request is two seconds behind us. */
+function stripAfterFirstCollect(): void {
+  const startedAt = Date.now();
+  const poll = (): void => {
+    const collected = performance
+      .getEntriesByType('resource')
+      .some((entry) => /\/g\/collect\?/.test(entry.name));
+    if (collected) {
+      // Two seconds of margin: the first wave's remaining pings build around
+      // the same request, and each hit reads the URL as it is built.
+      window.setTimeout(cleanTrackingParamsFromAddressBar, 2000);
+      return;
+    }
+    if (Date.now() - startedAt >= 20000) {
+      cleanTrackingParamsFromAddressBar();
+      return;
+    }
+    window.setTimeout(poll, 500);
+  };
+  poll();
 }
 
 /** Run `callback` once the page has fully loaded and the browser is idle. */

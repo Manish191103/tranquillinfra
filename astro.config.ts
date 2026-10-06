@@ -1,4 +1,5 @@
 import path from 'path';
+import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 
 import { defineConfig, envField, fontProviders } from 'astro/config';
@@ -18,6 +19,31 @@ import astrowind from './vendor/integration';
 import { readingTimeRemarkPlugin, responsiveTablesRehypePlugin } from './src/utils/frontmatter';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// !! Measurement ids and other public vars inline into the client bundle at
+// !! BUILD time (`import.meta.env`), but wrangler.jsonc `vars` are only
+// !! RUNTIME worker env — the 2026-10-01 production deploy of the sibling
+// !! repo shipped a build that measured nothing for exactly this reason.
+// !! So the build reads the public values out of `wrangler.jsonc` itself and
+// !! injects them into the build env here, unless the caller already set a
+// !! var (env wins). The artifact check (`scripts/check-measurement-bundle.mjs`,
+// !! run by `pnpm build`) fails the build instead of deploying an unmeasured
+// !! bundle when a var is lost anyway.
+function injectWranglerVars(): void {
+  if (process.env.MEASUREMENT_DISABLED_BUILD === '1') return;
+  const text = readFileSync(`${__dirname}/wrangler.jsonc`, 'utf8');
+  // Comments + wrangler's tolerated trailing commas → strict JSON.
+  const json = JSON.parse(
+    text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '').replace(/,(?=\s*[\]}])/g, '')
+  );
+  for (const [key, value] of Object.entries(json.vars ?? {})) {
+    if (key.startsWith('PUBLIC_') && process.env[key] === undefined && typeof value === 'string') {
+      process.env[key] = value;
+    }
+  }
+}
+
+injectWranglerVars();
 
 const hasExternalScripts = false;
 const whenExternalScripts = (items: (() => AstroIntegration) | (() => AstroIntegration)[] = []) =>
@@ -99,15 +125,6 @@ export default defineConfig({
         access: 'public',
         optional: true,
         default: '',
-      }),
-      // Consent gating is off for this site (India-only audience; see
-      // AGENTS.md "Measurement"). The flag exists so the ported consent
-      // library degrades to always-allowed instead of gating the map/GA.
-      PUBLIC_CONSENT_ENABLED: envField.boolean({
-        context: 'client',
-        access: 'public',
-        optional: true,
-        default: false,
       }),
       // Formspree form id shared by the contact, enquiry-dialog and newsletter
       // forms. Public by design (it appears in the form markup); required so a

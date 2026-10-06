@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro build",
+    "build": "astro build && node scripts/check-measurement-bundle.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "check": "pnpm check:astro && pnpm check:eslint && pnpm check:prettier",
@@ -23,8 +23,8 @@
     "lint": "eslint .",
     "validate": "pnpm check:eslint && pnpm check:astro && pnpm test --run && pnpm build",
     "test": "vitest --passWithNoTests",
-    "deploy": "astro build && wrangler deploy",
-    "deploy:dry": "astro build && wrangler deploy --dry-run"
+    "deploy": "pnpm validate && wrangler deploy",
+    "deploy:dry": "pnpm validate && wrangler deploy --dry-run"
   },
   "dependencies": {
     "@astro-community/astro-embed-twitter": "^0.5.11",

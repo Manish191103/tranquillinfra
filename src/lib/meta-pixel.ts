@@ -11,7 +11,10 @@
  */
 import type { MetaEventName } from './analytics';
 
-const PIXEL_ID = import.meta.env.PUBLIC_META_PIXEL_ID as string | undefined;
+import { analyticsConfig } from '~/config/analytics.config';
+
+/** The Meta pixel id comes from the one measurement config. */
+const PIXEL_ID = analyticsConfig.pixelId ?? undefined;
 
 interface FbqFunction {
   (...args: unknown[]): void;
@@ -34,7 +37,9 @@ const PIXEL_SRC = 'https://connect.facebook.net/en_US/fbevents.js';
 
 let pixelBasePromise: Promise<FbqFunction> | null = null;
 let pixelLoaderScript: HTMLScriptElement | null = null;
-let pixelPageViewSent = false;
+
+/** Page views this tab has pushed: 0 until the first one, +1 per push. */
+let pageViewsSent = 0;
 
 function ensurePixelBaseStub(): FbqFunction {
   if (typeof window.fbq === 'function') return window.fbq;
@@ -105,10 +110,14 @@ export function metaTrack(name: string, params: Record<string, unknown>, eventId
   window.fbq('track', name, params, eventId ? { eventID: eventId } : {});
 }
 
-/** One Meta PageView for a client-side navigation. */
+/**
+ * One Meta PageView for a page the visitor landed on or navigated to.
+ * One call per logical page view — the caller (`initPageViews` in
+ * `analytics.ts`) owns the when; this only owns the one-per-call rule.
+ */
 export function trackPixelPageView(): void {
-  if (!PIXEL_ID || pixelPageViewSent || typeof window.fbq !== 'function') return;
-  pixelPageViewSent = true;
+  if (!PIXEL_ID || typeof window.fbq !== 'function') return;
+  pageViewsSent += 1;
   window.fbq('track', 'PageView');
 }
 
@@ -163,7 +172,20 @@ export function initMetaPixel(): void {
 
   void loadPixelBase().then((fbq) => {
     fbq('init', pixelId);
-    pixelPageViewSent = true;
-    fbq('track', 'PageView');
+    trackFirstPageView();
   });
+}
+
+/**
+ * The session's landing PageView, sent once the pixel base is ready.
+ * Skipped when `astro:page-load` already sent this tab's first view (a swap
+ * that landed before `initMetaPixel`'s async base resolved), so the landing
+ * is reported exactly once either way.
+ */
+function trackFirstPageView(): void {
+  if (!PIXEL_ID || pageViewsSent > 0) return;
+  const fbq = window.fbq;
+  if (typeof fbq !== 'function') return;
+  pageViewsSent += 1;
+  fbq('track', 'PageView');
 }

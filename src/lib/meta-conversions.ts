@@ -10,6 +10,7 @@
  * Graph API v26.0 (current 2026-07-29 — check the changelog before bumping).
  */
 import type { MetaEventName } from '~/lib/analytics';
+import { analyticsConfig } from '~/config/analytics.config';
 import { META_CAPI_ACCESS_TOKEN, META_TEST_EVENT_CODE } from 'astro:env/server';
 
 const GRAPH_URL = 'https://graph.facebook.com/v26.0';
@@ -85,7 +86,7 @@ export function buildFbc(fbclid: string, clickedAtMs: number): string {
 
 /** POST the event to the dataset's `/events` edge. Never throws, never logs PII. */
 export async function sendMetaConversion(input: LeadConversion): Promise<MetaConversionResult> {
-  const pixelId = import.meta.env.PUBLIC_META_PIXEL_ID as string | undefined;
+  const pixelId = analyticsConfig.pixelId ?? undefined;
   const token = META_CAPI_ACCESS_TOKEN;
   if (!pixelId || !token) return { accepted: false, reason: 'not-configured' };
 

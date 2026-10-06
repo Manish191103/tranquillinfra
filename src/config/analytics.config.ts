@@ -1,20 +1,15 @@
-import {
-  PUBLIC_GA_MEASUREMENT_ID,
-  PUBLIC_GOOGLE_ADS_ID,
-  PUBLIC_GOOGLE_ADS_CONVERSION_LABEL,
-  PUBLIC_META_PIXEL_ID,
-  PUBLIC_CONSENT_ENABLED,
-} from 'astro:env/client';
-
 /**
- * Build-time measurement ids — the single source for the Google tags, the Meta
- * pixel and the events in `src/lib/analytics.ts`.
+ * Build-time measurement ids — inlined at build time from the build env
+ * (which `astro.config.ts` fills from the `wrangler.jsonc` vars block, so the
+ * values land in the bundle whether or not an `.env` exists). Read directly
+ * through `import.meta.env` rather than `astro:env/client` so client code and
+ * the vitest runs share the same module without Astro's virtual stubs.
  *
  * Every value is public and optional: with none set the site ships no
  * measurement. Import this module from Astro components and client scripts
- * alike; Astro inlines the values wherever they are bundled. The Google tags
- * (loader injected by `src/lib/analytics.ts` after load + idle) load with
- * every optional consent signal denied until the banner records a decision.
+ * alike; Astro inlines the values wherever they are bundled. The Google tag
+ * bootstrap lives in `src/components/common/Analytics.astro` (GA4 id from
+ * `src/config.yaml`);Ads conversions are addressed here.
  */
 
 /**
@@ -29,22 +24,28 @@ import {
 export type MetaEventName = 'Lead' | 'NewsletterSignup';
 
 export const analyticsConfig = {
-  /** GA4 measurement id (`G-…`), `null` when not configured. */
-  gaId: PUBLIC_GA_MEASUREMENT_ID || null,
+  /** GA4 measurement id (`G-…`), read from `src/config.yaml` by Analytics.astro — kept here for callers that want it; null until the config carries one. */
+  gaId: null as string | null,
   /**
    * Google Ads tag / conversion id (`AW-…`), `null` disables the Ads tag and
    * the conversion event it routes.
    */
-  adsId: PUBLIC_GOOGLE_ADS_ID || null,
+  adsId: import.meta.env.PUBLIC_GOOGLE_ADS_ID || null,
   /**
    * Google Ads conversion label (the `send_to` half after the slash in the
    * `Submit lead form` action's event snippet), `null` disables the conversion.
    */
-  adsConversionLabel: PUBLIC_GOOGLE_ADS_CONVERSION_LABEL || null,
+  adsConversionLabel: import.meta.env.PUBLIC_GOOGLE_ADS_CONVERSION_LABEL || null,
   /** Meta pixel id, `null` when not configured. */
-  pixelId: PUBLIC_META_PIXEL_ID || null,
-  /** Whether the consent banner and Consent Mode gating are enabled. */
-  consentEnabled: PUBLIC_CONSENT_ENABLED,
+  pixelId: import.meta.env.PUBLIC_META_PIXEL_ID || null,
   /** Google tag ids the page configures: GA4 first, then Ads. */
-  gtagIds: [PUBLIC_GA_MEASUREMENT_ID, PUBLIC_GOOGLE_ADS_ID].filter((id): id is string => !!id),
+  gtagIds: (import.meta.env.PUBLIC_GOOGLE_ADS_ID ? [import.meta.env.PUBLIC_GOOGLE_ADS_ID] : []) as string[],
+  /** Google Ads destination for `send_to`, `null` when the pair is incomplete. */
+  adsDestination: analyticsDestination(),
 };
+
+function analyticsDestination(): string | null {
+  const id = import.meta.env.PUBLIC_GOOGLE_ADS_ID;
+  const label = import.meta.env.PUBLIC_GOOGLE_ADS_CONVERSION_LABEL;
+  return id && label ? `${id}/${label}` : null;
+}
