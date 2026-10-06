@@ -15,11 +15,7 @@ import {
 } from 'astro:env/server';
 
 import { contact } from '~/contact';
-import {
-  dayName,
-  openingWindowDays,
-  parseOpeningHours,
-} from '~/lib/opening-hours';
+import { dayName, openingWindowDays, parseOpeningHours } from '~/lib/opening-hours';
 import siteConfig from '~/config/site.config';
 import {
   PHONE_CTA_LABEL,
@@ -186,11 +182,12 @@ function emailUrl(path: string): string {
 
 /**
  * The "Book a site visit" destination for a reader of the mail: the contact
- * page's enquiry form, the inline form that carries all three request types.
- * `enquiryCtaTarget` is not reused here because it keys off the visitor's
- * own pathname, which an email does not have.
+ * page's inline enquiry form, the one surface that carries all three request
+ * types. The hash matches the site's own CTA target (`enquiryCtaTarget`);
+ * `enquiryCtaTarget` itself is not reused because it keys off the visitor's
+ * pathname, which an email does not have.
  */
-const BOOK_VISIT_PATH = '/contact-us/#contact-enquiry';
+const BOOK_VISIT_PATH = '/contact-us/#contact-form';
 
 interface EmailButton {
   href: string;
@@ -296,8 +293,8 @@ function emailShell({
   <tr><td style="padding:14px 40px 34px;font-family:${EMAIL.face};font-size:16px;line-height:1.65;color:${EMAIL.text};">
     ${body}
   </td></tr>
-  <tr><td style="padding:18px 40px;font-family:${EMAIL.face};font-size:12.5px;line-height:2;color:${EMAIL.faint};border-top:1px solid ${EMAIL.hairline};border-top-color:${EMAIL.hairline};">
-    <p style="margin:0;">${escapeHtml(contact.project?.lines.join(' · ') ?? '')}</p>
+  <tr><td style="padding:18px 40px;font-family:${EMAIL.face};font-size:12.5px;line-height:2;color:${EMAIL.faint};border-top:1px solid ${EMAIL.hairline};">
+    <p style="margin:0;">${escapeHtml(contact.project.lines.join(' · '))}</p>
     <p style="margin:0;">${escapeHtml(siteConfig.hours?.join(' · ') ?? '')}</p>
     <p style="margin:0;">${escapeHtml(approvalLine)}</p>
   </td></tr>
@@ -572,9 +569,7 @@ async function sendConfirmationEmail({
     opening,
     '',
     // The three channels, in the order the mail's button row reads.
-    ...(siteVisit
-      ? [`Change or add a visit: ${visitUrl}`]
-      : [`Book a site visit: ${visitUrl}`]),
+    ...(siteVisit ? [`Change or add a visit: ${visitUrl}`] : [`Book a site visit: ${visitUrl}`]),
     `Call sales: ${phone}`,
     `WhatsApp: ${contact.whatsapp}`,
     '',
