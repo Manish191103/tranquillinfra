@@ -1,6 +1,6 @@
 ---
 title: 'Open Plots & Villa Plots in Rudraram, Near Patancheru'
-description: Open plots and villa plots in Rudraram, near Patancheru and IIT Hyderabad — 78 saleable, from ₹50 lakh per plot. Book a site visit.
+description: Open plots and villa plots in Rudraram, near Patancheru and IIT Hyderabad — 78 saleable, from ₹48 lakh per plot. Book a site visit.
 publishedAt: 2026-09-16
 updatedAt: 2026-10-01
 author: Tranquill Infra
@@ -77,7 +77,7 @@ The layout publishes its own numbers:
 
 - **82 parcels**, of which **78 are for sale**. Four of them (plots 1 to 4) are held against HMDA Mortgage conditions and are not part of the saleable layout. The site covers 19,410 sq.m (4.8 acre).
 - Plot sizes of **125.42–250.84 sq.m (150–300 sq.yd)**, published as a range. Per-band plot counts are not published — the team confirms the size band, length, width and facing of any specific plot.
-- **From ₹50 lakh per plot.** That is the published entry price for the layout. Plots are priced per plot rather than per square metre, so a specific plot's price depends on its band and number; ask the team for the ones you are comparing.
+- **From ₹48 lakh per plot.** That is the published entry price for the layout. Plots are priced per plot rather than per square metre, so a specific plot's price depends on its band and number; ask the team for the ones you are comparing.
 - **No possession or handover date is published.** What is published is an approved layout, and the site images are renders of the plan rather than photographs of completed construction. Confirm the current stage with the team before you commit.
 - Advertised features: 40 ft and 33 ft CC internal roads, a gated community, 24/7 security, water connection points, a jogging track and cycle track, street lighting, rainwater harvesting, underground drainage, a children's play zone and landscaped parks of 1,040.50 sq.yd and 762.49 sq.yd.
 - HMDA layout permission **2103/HMDA/SWDL/2026** and RERA registration **REA01100108192**. Ask the team for both approval records — the RERA registration certificate and the HMDA sanction letter — and check the numbers, village, mandal and district on them against this page. The [approvals guide](/blog/hmda-or-dtcp-plot-approval-telangana/) says exactly which five details to match and where the authorities publish them.

@@ -9,7 +9,7 @@ confirmation · ⏳ blocked on P1-1 (`docs/rera-verification-request.md`)
 
 **Ground truth:** `src/config/project.config.ts` —
 19,410 sq.m / **4.8 acre**, `82` parcels, `4` HMDA-mortgage (not saleable),
-`78` saleable, plots `125.42–250.84 sq.m (150–300 sq.yd)`, entry **From ₹50 lakh
+`78` saleable, plots `125.42–250.84 sq.m (150–300 sq.yd)`, entry **From ₹48 lakh
 per plot**, layout in **Rudraram village, Patancheru mandal, Sangareddy district**.
 `src/pages/index.astro:368-424` records that the site already **removed** the
 unsourced "1 lakh+ employees" statistic and the appreciation / "Value Creation"
@@ -44,7 +44,7 @@ claims. The site is the clean reference; the violations below are in collateral.
 
 - ✅ 78 saleable of 82 parcels (4 under HMDA Mortgage, not for sale) · 19,410 sq.m (4.8 acre)
 - ✅ Plot range 125.42–250.84 sq.m (150–300 sq.yd)
-- ✅ From ₹50 lakh per plot (priced per plot, not per sq.m)
+- ✅ From ₹48 lakh per plot (priced per plot, not per sq.m)
 - ✅ RERA `REA01100108192` and HMDA `2103/HMDA/SWDL/2026` — publish the **numbers**; verification pending (P1-1)
 - ✅ Advertised features: 40 ft & 33 ft CC internal roads, gated community, entrance arch, compound wall, avenue plantation, jogging/cycle track, children's play zone, street lighting, water connection points, rainwater harvesting, underground drainage, 24/7 security
 - ✅ Location landmarks (as proximity, no times): Mumbai Highway NH-65, ORR, proposed RRR, IIT Hyderabad, BHEL / Ramachandrapuram, ICRISAT, Patancheru & BDL Township, Isnapur & Kazipally, Pashamylaram, Miyapur & Lingampally, Gachibowli & Financial District, GITAM University Rudraram, Patancheru/Sangareddy hospitals
@@ -60,4 +60,4 @@ claims. The site is the clean reference; the violations below are in collateral.
 - Gated vs semi-gated (affects the site, brochure and every ad).
 - Current unsold vs saleable inventory (for any scarcity line).
 - "24/7 security" as delivered vs planned.
-- Any price/band detail beyond the published ₹50 lakh entry.
+- Any price/band detail beyond the published ₹48 lakh entry.

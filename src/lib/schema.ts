@@ -672,7 +672,7 @@ export function createProjectSchema(project: {
       '@type': 'Offer',
       price: price.from,
       priceCurrency: 'INR',
-      // Without this the price reads as a rate: an extractor quotes ₹50 lakh
+      // Without this the price reads as a rate: an extractor quotes ₹48 lakh
       // "per square metre" for land that is priced per plot, which is the one
       // number on this page a buyer must not misread.
       eligibleQuantity: {

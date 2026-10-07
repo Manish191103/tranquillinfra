@@ -58,8 +58,8 @@ export const contact = {
     totalParcels: 82,
     /** Parcels held against HMDA Mortgage conditions; not for sale. */
     mortgageHeldParcels: 4,
-    /** Entry price per plot, in rupees (₹50 lakh); rendered per-plot, not per unit area. */
-    priceDisplay: 'From ₹50 lakh per plot',
+    /** Entry price per plot, in rupees (₹48 lakh); rendered per-plot, not per unit area. */
+    priceDisplay: 'From ₹48 lakh per plot',
     /**
      * Where a buyer can independently check each approval. Per-number deep
      * links are not known: neither authority publishes a stable public

@@ -526,7 +526,7 @@ ${emailActionRow([
 ${emailSignature()}`;
 
   const html = emailShell({
-    preheader: `Your brochure is ready — plots from ₹50 lakh, with the approval documents inside.`,
+    preheader: `Your brochure is ready — plots from ₹48 lakh, with the approval documents inside.`,
     body,
     footnote: `You received this email because a brochure was requested on <a href="${escapeHtml(
       emailUrl('/')

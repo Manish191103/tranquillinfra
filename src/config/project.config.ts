@@ -30,9 +30,9 @@ interface ProjectConfig {
    * price must belong to the smallest saleable band.
    */
   price: {
-    /** Entry price per plot, in rupees (₹50 lakh). */
+    /** Entry price per plot, in rupees (₹48 lakh). */
     from: number;
-    /** Rendered entry price, e.g. `From ₹50 lakh per plot`. */
+    /** Rendered entry price, e.g. `From ₹48 lakh per plot`. */
     display: string;
   };
   /**
@@ -110,8 +110,8 @@ export const projectConfig: ProjectConfig = {
   totalPlots: '82',
   projectType: 'Premium villa plots',
   price: {
-    from: 5000000,
-    display: 'From ₹50 lakh per plot',
+    from: 4800000,
+    display: 'From ₹48 lakh per plot',
   },
   availability: {
     total: 82,

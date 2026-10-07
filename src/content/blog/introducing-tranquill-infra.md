@@ -16,7 +16,7 @@ faq:
   - question: Where is Tranquill City?
     answer: Tranquill City is in Rudraram village, Patancheru mandal, Sangareddy district, near Patancheru, Hyderabad. The project page carries the layout plan, the directions and the enquiry form.
   - question: How do I enquire about plots in Tranquill City?
-    answer: Use the enquiry form on the project page, or call the team on +91 95503 62288. Published plots start from ₹50 lakh per plot — priced per plot, not per square metre. A team member will share the current price of the specific plots you are looking at, their availability, and the approval documentation behind them.
+    answer: Use the enquiry form on the project page, or call the team on +91 95503 62288. Published plots start from ₹48 lakh per plot — priced per plot, not per square metre. A team member will share the current price of the specific plots you are looking at, their availability, and the approval documentation behind them.
   - question: Is there a brochure I can read?
     answer: Yes. Download the Tranquill City brochure from the project page for the advertised features, the layout, and the location context.
 ---
