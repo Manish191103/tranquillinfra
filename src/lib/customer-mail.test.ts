@@ -27,6 +27,13 @@ beforeEach(() => {
 });
 afterEach(() => vi.restoreAllMocks());
 describe('sales acceptance response', () => {
+  it('accepts an enquiry without an email and passes the missing address through', async () => {
+    vi.mocked(deliverLeadMail).mockResolvedValue({ sales: true, confirmation: false });
+    const result = await post({ phone: '+919550362288' });
+    expect(result.status).toBe(200);
+    expect(result.body).toMatchObject({ accepted: true, sent: true });
+    expect(vi.mocked(deliverLeadMail).mock.calls[0][0]).not.toHaveProperty('email');
+  });
   it.each([true, false])('accepts sales independently of confirmation=%s', async (confirmation) => {
     vi.mocked(deliverLeadMail).mockResolvedValue({ sales: true, confirmation });
     const result = await post({ email: 'asha@example.test', event_id: 'event-1234' });

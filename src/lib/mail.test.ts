@@ -59,6 +59,17 @@ describe('lead mail transport', () => {
       expect(result).toMatchObject({ sales: false, confirmation: false });
     }
   );
+  it('skips only the visitor send on a lead without an email', async () => {
+    const fetcher = vi.fn().mockResolvedValue(new Response('{"id":"email-id"}', { status: 200 }));
+    vi.stubGlobal('fetch', fetcher);
+    const result = await deliverLeadMail({ ...lead, to: '' });
+    expect(fetcher).toHaveBeenCalledOnce();
+    expect(result).toMatchObject({ sales: true, confirmation: false });
+    const sales = JSON.parse(String(fetcher.mock.calls[0][1]?.body));
+    expect(sales.text).toContain('Email: not provided');
+    expect(sales.text).toContain('call or WhatsApp');
+    expect(sales.reply_to).toBeUndefined();
+  });
   it('keeps sales acceptance when visitor mail fails', async () => {
     vi.stubGlobal(
       'fetch',

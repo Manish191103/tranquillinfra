@@ -45,9 +45,9 @@ export interface AutoOpenSignals {
 /** Tunables for the policy above. */
 export const AUTO_OPEN_RULES = {
   /** Earliest the popup may appear after the page armed it. */
-  minDwellSeconds: 8,
+  minDwellSeconds: 5,
   /** Engagement floor for touch devices (and for a reader who scrolls, not leaves). */
-  scrollFraction: 0.55,
+  scrollFraction: 0.4,
   /** How long a dismissed popup stays away. */
   dismissCooldownMs: 30 * 24 * 60 * 60 * 1000,
 } as const;

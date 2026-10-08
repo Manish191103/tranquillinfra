@@ -469,7 +469,7 @@ async function sendBrochureEmail({
   name,
   submittedAt,
   leadId,
-}: Pick<LeadMail, 'to' | 'name' | 'submittedAt' | 'leadId'>): Promise<void> {
+}: Pick<LeadMail, 'to' | 'name' | 'submittedAt' | 'leadId'> & { to: string }): Promise<void> {
   const brochureUrl = emailUrl(BROCHURE_PATH);
   const projectUrl = emailUrl('/projects/tranquill-city/');
   const visitUrl = emailUrl(BOOK_VISIT_PATH);
@@ -659,8 +659,12 @@ ${emailSignature()}`;
 export interface LeadMail {
   /** Server-side id: quoted in the mail, in the log line and to the client. */
   leadId: string;
-  /** The visitor's address, used as Reply-To so a reply reaches them. */
-  to: string;
+  /**
+   * The visitor's address, used as Reply-To so a reply reaches them. Optional
+   * in practice: the forms no longer require an email, and an empty `to` skips
+   * the visitor send and reads as "not provided" in the sales copy.
+   */
+  to?: string;
   requestType: EnquiryRequestType;
   name?: string;
   phone?: string;
@@ -714,7 +718,7 @@ async function sendSalesNotification(lead: LeadMail): Promise<void> {
   if (lead.enquirySubject) rows.push(['Subject', lead.enquirySubject]);
   if (lead.formType) rows.push(['Form', lead.formType]);
   if (phone) rows.push(['Phone', phone]);
-  rows.push(['Email', lead.to]);
+  rows.push(['Email', lead.to || 'not provided']);
   if (visitDate) rows.push(['Preferred site-visit date', visitDate]);
   if (page) rows.push(['Submitted from', page]);
   rows.push(['Reference', lead.leadId]);
@@ -723,6 +727,9 @@ async function sendSalesNotification(lead: LeadMail): Promise<void> {
     if (value) rows.push([field, value]);
   }
 
+  const replyLine = lead.to
+    ? 'Reply to this mail and it goes straight to the visitor.'
+    : 'This visitor left no email, so call or WhatsApp them.';
   const text = [
     `${label}: ${who}`,
     '',
@@ -731,7 +738,7 @@ async function sendSalesNotification(lead: LeadMail): Promise<void> {
     ...(message ? ['Message:', message] : ['(No message left.)']),
     '',
     ...(attached ? ['The project brochure is attached.'] : []),
-    'Reply to this mail and it goes straight to the visitor.',
+    replyLine,
     "Sent by the website as the team's copy of this enquiry; the browser also submits it to Formspree.",
   ].join('\n');
 
@@ -781,8 +788,9 @@ async function sendSalesNotification(lead: LeadMail): Promise<void> {
     text,
     html,
     // A reply from sales must land on the visitor, not on the site's own
-    // no-reply sender.
-    replyTo: lead.to,
+    // no-reply sender — unless the visitor gave no address, in which case a
+    // blank reply-to would hand the same mail back to the team.
+    ...(lead.to ? { replyTo: lead.to } : {}),
     idempotencyKey: `lead-sales/${lead.leadId}`,
     // The team gets the asset with the lead: a brochure request is a request
     // for the brochure, and this is the copy that survives a dead Formspree.
@@ -796,6 +804,8 @@ export interface LeadMailOutcome {
   sales: boolean;
   /** The visitor received their copy. */
   confirmation: boolean;
+  /** No visitor copy was attempted: a phone-only lead with nothing to send. */
+  confirmationSkipped?: boolean;
   /** Why the sales copy did not go out; absent when it did. */
   salesError?: Error;
   /** Why the visitor's copy did not go out; absent when it did. */
@@ -837,12 +847,21 @@ export async function deliverLeadMail(
   }
 
   try {
-    if (lead.requestType === 'brochure') {
-      await sendBrochureEmail(lead);
+    // The visitor mail needs an address to arrive at. A lead with a phone but
+    // no email still reached the sales inbox above; here the absence just
+    // means there is nothing to send, not a failed delivery.
+    const visitorTo = lead.to;
+    if (visitorTo) {
+      const visitorLead = { ...lead, to: visitorTo };
+      if (lead.requestType === 'brochure') {
+        await sendBrochureEmail(visitorLead);
+      } else {
+        await sendConfirmationEmail({ ...visitorLead, requestType: lead.requestType });
+      }
+      outcome.confirmation = true;
     } else {
-      await sendConfirmationEmail({ ...lead, requestType: lead.requestType });
+      outcome.confirmationSkipped = true;
     }
-    outcome.confirmation = true;
   } catch (error) {
     outcome.confirmationError = error instanceof Error ? error : new Error(String(error));
   }

@@ -41,7 +41,7 @@ interface Props {
   };
   /** Availability caveat under the copy; project-agnostic, so it has a default */
   note?: string;
-  /** On-page enquiry anchor; the card with the intent buttons and form lives there */
+  /** No-JS fallback for the hero CTA; with JS the dialog trigger wins */
   enquiryHref?: string;
   /** On-page layout anchor */
   planHref?: string;
@@ -94,7 +94,14 @@ const quietAction =
 
   <ul class="mt-8 flex flex-wrap items-center gap-3">
     <li>
-      <Button href={enquiryHref} size="lg" data-track="site_visit" class={accentAction}>
+      <Button
+        href={enquiryHref}
+        size="lg"
+        data-track="site_visit"
+        data-dialog-trigger="enquiry-dialog"
+        data-dialog-request-type="site_visit"
+        class={accentAction}
+      >
         {SITE_VISIT_CTA_LABEL}
       </Button>
     </li>

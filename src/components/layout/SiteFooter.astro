@@ -39,7 +39,18 @@ const linkGroups = [
   { title: 'Get started', links: navItems.filter((item) => item.href === CONTACT_HREF) },
   {
     title: 'Resources',
-    links: [{ label: 'Download brochure', href: BROCHURE_DOWNLOAD_HREF, track: 'brochure' }],
+    // A trigger, not a download: the brochure arrives as part of a lead, so
+    // the PDF never hands itself over without a name and a number first.
+    // The `href` is only the no-dialog fallback.
+    links: [
+      {
+        label: 'Request the brochure',
+        href: BROCHURE_DOWNLOAD_HREF,
+        track: 'brochure',
+        dialog: 'enquiry-dialog',
+        requestType: 'brochure',
+      },
+    ],
   },
 ];
 

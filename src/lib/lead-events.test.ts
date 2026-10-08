@@ -83,4 +83,27 @@ describe('lead destinations', () => {
     );
     expect(gtag.mock.calls.at(-1)).toEqual(['set', 'user_data', null]);
   });
+
+  it('fires each lead kind + event id once, however often trackLead re-runs', () => {
+    const gtag = vi.fn();
+    vi.stubGlobal('window', { gtag, location: { href: 'https://example.test/' } });
+    vi.stubGlobal('document', { title: 'Contact' });
+    trackLead('contact', 'retry-1', {}, { email: 'buyer@example.com' });
+    trackLead('contact', 'retry-1', {}, { email: 'buyer@example.com' });
+    trackLead('newsletter', 'retry-1', {});
+    // Contact: generate_lead + user_data + conversion + user_data reset, once.
+    expect(gtag.mock.calls.filter(([command]) => command === 'set')).toHaveLength(2);
+    expect(
+      gtag.mock.calls.filter(([command, name]) => command === 'event' && name === 'generate_lead')
+    ).toHaveLength(1);
+    expect(
+      gtag.mock.calls.filter(([command, name]) => command === 'event' && name === 'conversion')
+    ).toHaveLength(1);
+    // But a different kind with the same id is its own lead.
+    expect(
+      gtag.mock.calls.filter(([command, name]) => command === 'event' && name === 'newsletter_signup')
+    ).toHaveLength(1);
+    // One Meta event per fired lead.
+    expect(metaTrack).toHaveBeenCalledTimes(2);
+  });
 });

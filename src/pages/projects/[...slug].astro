@@ -133,7 +133,12 @@ const videoSchemas = (data.testimonials?.items ?? [])
   );
 ---
 
-<PageLayout title={data.title} description={data.description} enquiryDialog={false}>
+<!-- The enquiry dialog mounts (autoOpen on, its `site_visit` default): the
+     page is the destination of a live brand campaign, its inline form sits at
+     the bottom of eight sections, and the hero CTA opens the dialog. The
+     `#project-brochure` form stays as the no-JS fallback.
+-->
+<PageLayout title={data.title} description={data.description}>
   <ProjectHero
     eyebrow={data.projectType}
     title={data.title}

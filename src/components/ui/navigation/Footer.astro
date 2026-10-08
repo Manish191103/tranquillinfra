@@ -30,6 +30,15 @@ export interface NavItem {
   external?: boolean;
   /** Analytics hook; the tracking layer reads `data-track` when it lands. */
   track?: string;
+  /**
+   * Dialog element to open instead of navigating — the `href` stays the no-JS
+   * fallback (same contract as the hero and contact-bar actions). Where the
+   * trigger's dialog is not rendered on the page, the click falls through to
+   * the `href`.
+   */
+  dialog?: string;
+  /** What the visitor is asking for; the dialog opens prefilled on it. */
+  requestType?: string;
 }
 
 export interface FooterLinkGroup {
@@ -239,6 +248,8 @@ function getSocialIcon(platform: string): string {
                       <a
                         href={link.href}
                         data-track={link.track}
+                        data-dialog-trigger={link.dialog}
+                        data-dialog-request-type={link.requestType}
                         class="text-foreground-muted hover:text-foreground text-sm transition-colors"
                         target={
                           link.external || link.href.startsWith('http') ? '_blank' : undefined

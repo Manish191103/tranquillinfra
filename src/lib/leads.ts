@@ -520,20 +520,21 @@ export function bindLeadForm({
         message.className = successClass;
         if (kind === 'newsletter') {
           message.textContent = successMessage;
+        } else if (requestType === 'brochure') {
+          // Email became optional on the forms, so the brochure wording has to
+          // work with and without an address — and the browser-side fallback
+          // link is where a visitor without one picks the PDF up.
+          message.textContent =
+            email && mail?.confirmation
+              ? `${successMessage} The brochure is on its way to ${email}.`
+              : `${successMessage} Pick the brochure up right here.`;
+          if (brochureFallback) appendStatusLink(message, brochureFallback);
         } else if (!mail?.confirmation) {
-          message.textContent = `${successMessage} ${
-            requestType === 'brochure'
-              ? 'The brochure email did not go through.'
-              : 'Your confirmation email did not go through, but your enquiry has reached us.'
-          }`;
-          if (requestType === 'brochure' && brochureFallback)
-            appendStatusLink(message, brochureFallback);
+          message.textContent = email
+            ? `${successMessage} Your confirmation email did not go through, but your enquiry has reached us.`
+            : successMessage;
         } else {
-          message.textContent = `${successMessage} ${
-            requestType === 'brochure'
-              ? `The brochure is on its way to ${email}.`
-              : 'A confirmation is on its way to your email.'
-          }`;
+          message.textContent = `${successMessage} A confirmation is on its way to your email.`;
         }
         if (!lead.ok)
           message.append(

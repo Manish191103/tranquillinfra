@@ -113,6 +113,14 @@ let firstTouchCache: Record<string, string> | null = null;
 
 let initialized = false;
 const startedForms = new WeakSet<HTMLFormElement>();
+/**
+ * Leads whose browser events already fired. The GA4 event, the Ads conversion
+ * and the Meta pixel event are one accepted submission: a second trackLead
+ * call with the same kind + event id (a retry path, or a future caller
+ * rebinding after a view transition) must be a no-op, not another conversion
+ * the Ads account gets to dedupe only by luck.
+ */
+const firedLeads = new Set<string>();
 
 /**
  * Push a GA4 event through the Google tag the page loaded.
@@ -167,6 +175,9 @@ export function trackLead(
   params: Record<string, unknown> = {},
   identifiers: AdsUserData = {}
 ): void {
+  const fired = `${kind}:${eventId}`;
+  if (firedLeads.has(fired)) return;
+  firedLeads.add(fired);
   const events = LEAD_EVENTS[kind];
   // gtag keeps the `config`-time page context, so a submission after a
   // client-side navigation must carry the page it happened on.

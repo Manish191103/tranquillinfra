@@ -82,9 +82,11 @@ export interface EnquiryCtaTarget {
 
 /**
  * The "Book a site visit" call to action opens the enquiry dialog on most
- * pages, but the pages that render the inline enquiry form (project, contact)
- * must scroll to it instead — the dialog is not rendered there and a dialog
- * trigger would silently fall through to a page navigation.
+ * pages, contact included. Project detail pages have BOTH paths now: the dialog
+ * mounts there (auto-open included), so hero triggers open it and fall through
+ * to the inline form only when JavaScript is off; targets that name a dialog
+ * the page does not render (see `enquiryCtaTarget`) still navigate to the
+ * on-page form as the fallback.
  */
 export function enquiryCtaTarget(pathname: string): EnquiryCtaTarget {
   // Normalised before matching: a request without the trailing slash must land

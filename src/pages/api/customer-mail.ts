@@ -15,9 +15,17 @@ export const prerender = false;
  * answered with a 400 that would cost the lead.
  */
 const customerMailSchema = z.object({
+  /**
+   * Optional: the phone is the working contact channel, so a plot buyer without
+   * an email still becomes a lead. When one is given it must be deliverable —
+   * the visitor mail (brochure, confirmation) and the reply-to on the sales
+   * copy both hinge on it. An absent address skips the visitor mail entirely
+   * (`src/lib/mail.ts`) and reads as "not provided" in the sales copy.
+   */
   email: z
     .email('Please enter a valid email address')
-    .max(254, 'Please enter a valid email address'),
+    .max(254, 'Please enter a valid email address')
+    .optional(),
   name: z.string().max(100).optional(),
   /** The enquiry form's honeypot; a filled value answers like a success and sends nothing. */
   gotcha: z.string().max(200).optional(),
@@ -64,22 +72,29 @@ function logDelivery(entry: {
   requestType: string;
   sales: boolean;
   confirmation: boolean;
+  /** No visitor mail was attempted: a phone-only lead has nothing to send. */
+  confirmationSkipped?: boolean;
   salesError?: string;
   confirmationError?: string;
 }): void {
+  const confirmation = entry.confirmationSkipped
+    ? 'skipped'
+    : entry.confirmation
+      ? 'sent'
+      : 'failed';
   const line = [
     'customer_mail',
     `lead_id=${JSON.stringify(entry.leadId)}`,
     `request_type=${JSON.stringify(entry.requestType)}`,
     `sales=${entry.sales ? 'sent' : 'failed'}`,
-    `confirmation=${entry.confirmation ? 'sent' : 'failed'}`,
+    `confirmation=${confirmation}`,
     ...(entry.salesError ? [`sales_error=${JSON.stringify(entry.salesError)}`] : []),
     ...(entry.confirmationError
       ? [`confirmation_error=${JSON.stringify(entry.confirmationError)}`]
       : []),
   ].join(' ');
 
-  if (entry.sales && entry.confirmation) {
+  if (entry.sales && (entry.confirmation || entry.confirmationSkipped)) {
     console.info(line);
     return;
   }
@@ -101,7 +116,8 @@ function logDelivery(entry: {
  * `sales_mail_failed`, `confirmation_failed` or `request_failed` — so the
  * client can word the visitor's status line for the case rather than reading
  * a boolean. `sent` and `confirmation` are the delivery contract and only mean
- * anything together.
+ * anything together. A phone-only lead (no email) skips the visitor send by
+ * design: it answers `accepted` with no `reason`.
  *
  * Same-origin callers only: middleware rejects every unsafe method whose Origin
  * header is not the request host.
@@ -120,7 +136,7 @@ export const POST: APIRoute = async ({ request, clientAddress, locals }) => {
       body.formData.get(name)?.toString() || undefined;
 
     const parsed = customerMailSchema.safeParse({
-      email: field('email') ?? '',
+      email: field('email') || undefined,
       name: field('name'),
       gotcha: field('_gotcha'),
       request_type: field('request_type'),
@@ -212,7 +228,7 @@ export const POST: APIRoute = async ({ request, clientAddress, locals }) => {
     const outcome = await deliverLeadMail(
       {
         leadId,
-        to: parsed.data.email,
+        to: parsed.data.email || undefined,
         name: parsed.data.name,
         phone: parsed.data.phone,
         message: parsed.data.message,
@@ -271,6 +287,7 @@ export const POST: APIRoute = async ({ request, clientAddress, locals }) => {
       requestType: parsed.data.request_type,
       sales: outcome.sales,
       confirmation: outcome.confirmation,
+      confirmationSkipped: outcome.confirmationSkipped,
       salesError: outcome.salesError?.message,
       confirmationError: outcome.confirmationError?.message,
     });
@@ -298,7 +315,9 @@ export const POST: APIRoute = async ({ request, clientAddress, locals }) => {
         sent: true,
         confirmation: outcome.confirmation,
         lead_id: leadId,
-        ...(outcome.confirmation
+        // A phone-only lead skipped the visitor send by design; without an
+        // email there is nothing that could have failed, so no failure reason.
+        ...(outcome.confirmation || outcome.confirmationSkipped
           ? {}
           : {
               reason: 'confirmation_failed',

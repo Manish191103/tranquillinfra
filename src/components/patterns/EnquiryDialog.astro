@@ -104,7 +104,9 @@ const telHref = siteConfig.phoneE164 ? `tel:${siteConfig.phoneE164}` : undefined
         hint="We call back during business hours."
       />
 
-      <Input label="Email" name="email" type="email" required autocomplete="email" />
+      <!-- Optional: the phone is the channel this form promises a callback on,
+           so a plot buyer without an email is not blocked here either. -->
+      <Input label="Email" name="email" type="email" autocomplete="email" />
     </div>
 
     <Select
@@ -128,13 +130,19 @@ const telHref = siteConfig.phoneE164 ? `tel:${siteConfig.phoneE164}` : undefined
       />
     </div>
 
-    <Textarea
-      label="Anything we should know?"
-      name="message"
-      maxlength="5000"
-      rows={4}
-      hint="Optional — plot size, budget, or a time that suits you."
-    />
+    <!-- The free-text note only earns its space on the general enquiry path:
+         the site-visit and brochure asks have their own dedicated controls and
+         a pre-filled request type, so the script hides this wrapper whenever
+         the select is not on the general option. -->
+    <div data-note-field>
+      <Textarea
+        label="Anything we should know?"
+        name="message"
+        maxlength="5000"
+        rows={4}
+        hint="Optional — plot size, budget, or a time that suits you."
+      />
+    </div>
 
     <!-- Formspree reads `subject` as the notification subject; the script
          composes it from the request type (the static value covers a submission
@@ -243,6 +251,10 @@ const telHref = siteConfig.phoneE164 ? `tel:${siteConfig.phoneE164}` : undefined
       // brochure request must not be blocked on a date nobody wants to give.
       // A date already in the field wins over the control, because a visitor
       // who has picked a day has asked for a visit whatever they last selected.
+      // The free-text note follows the other side of the same rule: it is a
+      // space-filler on the site-visit and brochure asks, which have their own
+      // dedicated controls, so it only shows on the general enquiry path.
+      const noteField = form.querySelector<HTMLElement>('[data-note-field]');
       const syncVisitDate = () => {
         if (!visitDateField || !visitDate) return;
         const isVisit = select?.value === 'site_visit';
@@ -250,6 +262,7 @@ const telHref = siteConfig.phoneE164 ? `tel:${siteConfig.phoneE164}` : undefined
         visitDate.required = Boolean(isVisit);
         visitDate.min = todayIso();
         if (!isVisit) visitDate.value = '';
+        if (noteField) noteField.hidden = isVisit || select?.value === 'brochure';
       };
 
       select?.addEventListener('change', syncVisitDate);
@@ -303,8 +316,8 @@ const telHref = siteConfig.phoneE164 ? `tel:${siteConfig.phoneE164}` : undefined
    * capture phase: the view-transition router listens for the same clicks on
    * `document` and only skips a link it sees already cancelled, so the
    * `preventDefault` has to land before its listener runs. A trigger whose
-   * dialog is not rendered (`/contact-us/` and the project pages keep the inline form)
-   * is left alone, so its `href` navigates instead.
+   * dialog is not rendered on the page is left alone, so its `href` navigates
+   * instead.
    */
   function bindDialogTriggers() {
     const scope = window as Window & { __tqDialogTriggers?: boolean };
