@@ -14,7 +14,6 @@ import siteConfig from '~/config/site.config';
 import projectConfig from '~/config/project.config';
 import { navItems } from '~/config/nav.config';
 import {
-  BROCHURE_DOWNLOAD_HREF,
   enquiryCtaTarget,
   PHONE_CTA_LABEL,
   SITE_VISIT_CTA_LABEL,
@@ -41,11 +40,12 @@ const linkGroups = [
     title: 'Resources',
     // A trigger, not a download: the brochure arrives as part of a lead, so
     // the PDF never hands itself over without a name and a number first.
-    // The `href` is only the no-dialog fallback.
+    // The `href` is only the no-dialog fallback — and a dialog-less page
+    // (contact-us) falls straight into its inline enquiry form, NOT the PDF.
     links: [
       {
         label: 'Request the brochure',
-        href: BROCHURE_DOWNLOAD_HREF,
+        href: `${CONTACT_HREF}#contact-form`,
         track: 'brochure',
         dialog: 'enquiry-dialog',
         requestType: 'brochure',
