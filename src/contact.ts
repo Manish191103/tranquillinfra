@@ -57,7 +57,7 @@ export const contact = {
     /** Every parcel in the layout (saleable and mortgage parcels together). */
     totalParcels: 82,
     /** Parcels held against HMDA Mortgage conditions; not for sale. */
-    mortgageHeldParcels: 4,
+    mortgageHeldParcels: 12,
     /** Entry price per plot, in rupees (₹48 lakh); rendered per-plot, not per unit area. */
     priceDisplay: 'From ₹48 lakh per plot',
     /**
@@ -85,7 +85,7 @@ export const contact = {
 
   /** Project site address, one line per entry (footer block). */
   project: {
-    lines: ['Tranquill City, Rudraram', 'Near Patancheru, Hyderabad'],
+    lines: ['Tranquill City, Mamidipally', 'Near Rudraram, Patancheru, Hyderabad'],
   },
 
   /** Business hours, one line per entry. */

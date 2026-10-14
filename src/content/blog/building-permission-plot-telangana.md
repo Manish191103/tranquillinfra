@@ -2,10 +2,9 @@
 title: 'Building Permission on a Plot in Telangana'
 description: What you need before you can build on a Telangana plot, which authority grants building permission, and why filing an application is not an approval.
 publishedAt: 2026-10-01
-updatedAt: 2026-10-01
+updatedAt: 2026-10-14
 author: Tranquill Infra
 category: Approvals
-featured: false
 tags:
   - building permission
   - TS-bPASS Act 2020
@@ -35,8 +34,8 @@ faq:
     answer: BuildNow (https://buildnow.telangana.gov.in/) is the live system for GHMC, HMDA and DTCP building and layout applications. TG-bPASS, the earlier single-window portal, is being permanently closed after 15 December 2025. Confirm on the BuildNow portal itself which channel applies to your application before you pay any fee, and keep the acknowledgement that the portal issues.
   - question: What does a building permission cost?
     answer: This post does not publish a fee figure, and you should treat any number you find repeated online with care. The widely repeated ₹5,000 figure associated with bPASS is a correction charge, not a building-permission fee, and the current fee schedule is set by government orders that change. Ask the sanctioning authority or the local body for the current schedule applicable to your plot and confirm it before you pay.
-  - question: My plot is in Rudraram. Which authority will sanction my building plan?
-    answer: Rudraram village, Patancheru mandal, Sangareddy district lies outside GHMC limits, so the GHMC route does not apply. Your application will most likely go to the Gram Panchayat or the municipal body that has jurisdiction there, subject to any layout approval held by HMDA. Confirm the correct local body in writing before you file, and check the current position because jurisdiction boundaries have been redrawn by government orders.
+  - question: My plot is at Mamidipally, near Rudraram. Which authority will sanction my building plan?
+    answer: Mamidipally village, Kandi mandal, Sangareddy district lies outside GHMC limits, so the GHMC route does not apply. Your application will most likely go to the Gram Panchayat or the municipal body that has jurisdiction there, subject to any layout approval held by HMDA. Confirm the correct local body in writing before you file, and check the current position because jurisdiction boundaries have been redrawn by government orders.
   - question: Do I need land conversion before applying for building permission?
     answer: Ask the local body before you file. Land use conversion, where it applies to your parcel, and building permission are separate processes under different authorities, and the order in which they must be obtained is a matter for the sanctioning authority. Confirm the sequence with the office that will sanction your plan rather than assuming one follows from the other.
   - question: What documents should I ask the seller for before I design the house?
@@ -64,9 +63,9 @@ The boundaries that decide the answer have been redrawn more than once recently,
 
 Check the current position at the authority's own portal or office, and ask for the position in writing if you are relying on it for a purchase decision.
 
-## The Rudraram case
+## The Mamidipally case
 
-A plot in Rudraram village, Patancheru mandal, Sangareddy district lies outside GHMC limits, so the GHMC route does not apply to it. The likely route is the Gram Panchayat or the municipal body with jurisdiction over that village, alongside whatever layout approval was granted by HMDA for the layout as a whole.
+A plot in Mamidipally village, Kandi mandal, Sangareddy district lies outside GHMC limits, so the GHMC route does not apply to it. The likely route is the Gram Panchayat or the municipal body with jurisdiction over that village, alongside whatever layout approval was granted by HMDA for the layout as a whole.
 
 "Likely" is deliberate. Do not build the route into your plan until you have confirmed it with the local body in writing, and do not assume it is the same body for every plot in a layout. Ask the team for the approval documentation that applies to the layout you are looking at.
 

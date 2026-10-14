@@ -213,7 +213,7 @@ const siteConfig: SiteConfig = {
   legalName: LEGAL_NAME,
   alternateName: 'Tranquill Infra',
   description:
-    'HMDA-approved gated community plots and villa plots in Rudraram, near Patancheru, Hyderabad.',
+    'HMDA-approved semi-gated community plots and villa plots at Mamidipally, near Rudraram and Patancheru, Hyderabad.',
   url: SITE_URL || 'https://www.tranquillinfra.com',
   author: LEGAL_NAME,
   email: 'info@tranquillinfra.com',
@@ -236,7 +236,7 @@ const siteConfig: SiteConfig = {
     country: registeredOffice.country,
   },
   project: {
-    lines: ['Tranquill City, Rudraram', 'Near Patancheru, Hyderabad'],
+    lines: ['Tranquill City, Mamidipally', 'Near Rudraram, Patancheru, Hyderabad'],
   },
   hours: [
     'Monday: 9:00 AM to 6:00 PM',

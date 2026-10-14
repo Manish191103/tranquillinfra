@@ -128,7 +128,20 @@ const projects = defineCollection({
         title: z.string(),
         intro: z.string(),
         note: z.string(),
-        groups: z.array(z.object({ title: z.string(), landmarks: z.array(z.string()) })),
+        groups: z.array(
+          z.object({
+            title: z.string(),
+            /**
+             * A plain name, or a name with a measured straight-line distance
+             * from the site pin (haversine, rounded to 0.5 km, published as
+             * "about X km"). Straight-line only — a drive time varies with
+             * route and traffic, which is why none is published.
+             */
+            landmarks: z.array(
+              z.union([z.string(), z.object({ name: z.string(), distanceKm: z.number() })])
+            ),
+          })
+        ),
       }),
       facts: z.object({
         eyebrow: z.string(),

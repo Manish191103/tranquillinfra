@@ -480,7 +480,7 @@ async function sendBrochureEmail({
   const text = [
     greeting,
     '',
-    'Thank you for your interest in Tranquill City, Rudraram. The latest project brochure is ready:',
+    'Thank you for your interest in Tranquill City, Mamidipally. The latest project brochure is ready:',
     '',
     `Download the brochure: ${brochureUrl}`,
     '',
@@ -501,7 +501,7 @@ async function sendBrochureEmail({
   const body = `
 <p style="margin:0 0 16px;">${escapeHtml(greeting)}</p>
 <p style="margin:0 0 8px;">
-  Thank you for your interest in <b>Tranquill City, Rudraram</b>. The latest project
+  Thank you for your interest in <b>Tranquill City, Mamidipally</b>. The latest project
   brochure is ready — every plot, price and approval document inside.
 </p>
 ${emailHeroButton({ href: brochureUrl, label: 'Download the brochure' })}
@@ -571,7 +571,7 @@ async function sendConfirmationEmail({
   // day, which holds on any day; the enquiry branch carries the promise the
   // published hours can actually keep (see `callbackPromise`).
   const opening = siteVisit
-    ? 'Thank you for requesting a site visit to Tranquill City, Rudraram. We have received your request and a member of our team will call you to confirm a day and time.'
+    ? 'Thank you for requesting a site visit to Tranquill City, Mamidipally. We have received your request and a member of our team will call you to confirm a day and time.'
     : `Thank you for contacting ${contact.name}. We have received your enquiry. ${callbackPromise(
         new Date(submittedAt ?? Date.now())
       )}`;

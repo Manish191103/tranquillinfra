@@ -105,7 +105,7 @@ interface ProjectConfig {
 
 export const projectConfig: ProjectConfig = {
   name: 'Tranquill City',
-  location: 'Rudraram, near Patancheru, Hyderabad',
+  location: 'Mamidipally, near Rudraram and Patancheru, Hyderabad',
   plotSizes: '125.42–250.84 sq.m (150–300 sq.yd)',
   totalPlots: '82',
   projectType: 'Premium villa plots',
@@ -113,40 +113,54 @@ export const projectConfig: ProjectConfig = {
     from: 4800000,
     display: 'From ₹48 lakh per plot',
   },
+  /**
+   * 2026-10-14, client-confirmed: 12 parcels are held under HMDA Mortgage
+   * conditions. The draft scrutiny plan corroborates the scale: plots 1-4
+   * are the fee-installment mortgage (1,980.29 sq.m, 15.29%), and the plan
+   * proposes two further NALA-conversion mortgage tranches — 762.19 (5.89%)
+   * and 671.11 (5.18%) sq.m — which together point at roughly twelve held
+   * parcels. The client confirmed the count; the exact held plot numbers
+   * were not supplied, so no copy names plot numbers for the held parcels.
+   * If the final approval letter's mortgage schedule differs, update this
+   * and the count copy in one pass.
+   */
   availability: {
     total: 82,
-    mortgageHeld: 4,
-    saleable: 78,
+    mortgageHeld: 12,
+    saleable: 70,
   },
   /**
-   * Revenue administration for the layout, as a buyer's approval letter states it.
+   * The client-supplied HMDA scrutiny plan (Application ID
+   * 00a9b2f5-0e54-4e39-a161-cda1b32dd702, report generated 2026-02-10) for
+   * the draft residential open plotted layout in Sy. No. 411/PART names this
+   * exact layout — its plot table matches parcel-for-parcel: 82 numbered
+   * plots, 125.42 sq.m standard plots, 19,410 sq.m net layout area and the
+   * 1,980.29 sq.m fee-installment mortgage on plots 1-4 — and it situates
+   * the layout in Mamidipally village, Kandi mandal, Sangareddy district.
+   * The plan's location-plan surroundings (Ismailkhanpet, "To Kandi",
+   * Aparna Enterprises) corroborate the Kandi side, and the published pin
+   * reverse-geocodes into Kandi mandal.
    *
-   * `mandal` was corrected from `'Rudraram'` to `'Patancheru'` on 2026-09-30.
-   * There is no Rudraram mandal: Sangareddy district publishes all 28 of its
-   * mandals/tehsils and it is not among them, and its village list records
-   * Patancheruvu with 19 villages beginning Rudraram. A separate village of the
-   * same name sits in the Narayankhed block roughly 66km north, which is likely
-   * how the mistake happened — but at 17.59N this is unambiguously the southern
-   * one. Anyone sent to a "Rudraram Mandal" office would have found nothing.
-   *
-   * `village` and `coordinates` are deliberately UNCHANGED. The pin sits about
-   * 3km from the Rudraram village centre and reverse-geocodes into Kandi mandal,
-   * adjacent to an HMDA-sanctioned layout at Erdanoor/Mamidipally — but Rudraram
-   * village is 1,685ha, roughly 4km across, so 3km is well inside it, and the
-   * layout is independently described as "Rudraram Village, towards Ismailkhanpet
-   * Road" in third-party listings. That is not settled, so it stays as published
-   * until the approval letter or the revenue boundary settles it. Do not "tidy"
-   * either value without that document.
+   * `village` and `mandal` were corrected from 'Rudraram'/'Patancheru' on
+   * 2026-10-14 on that document's authority. 'Rudraram' remains a marketing
+   * anchor — the layout sits roughly 3 km from Rudraram village — but it is
+   * not the revenue identity. Match the final approval letter if it ever
+   * differs from the scrutiny plan.
    */
   locality: {
-    village: 'Rudraram',
-    mandal: 'Patancheru',
+    village: 'Mamidipally',
+    mandal: 'Kandi',
     district: 'Sangareddy',
   },
   coordinates: { latitude: 17.585611, longitude: 78.148361 },
   siteArea: { sqM: 19410, acre: 4.8 },
   approvals: {
     /**
+     * 2026-10-14: the client's final Tranquill City brochure prints both
+     * numbers on its cover (RERA REA01100108192, HMDA 2103/HMDA/SWDL/2026)
+     * and the HMDA number on its layout plan — the business stands behind
+     * them in print. The portal-resolution caveats below are unchanged;
+     * the certificate remains the closing item for the RERA escalation.
      * ===================================================================
      * UNRESOLVED — ESCALATE BEFORE PUBLISHING ANY "VERIFY IT YOURSELF" COPY
      * ===================================================================
@@ -237,12 +251,12 @@ const hmda: ProjectFactRow = {
   href: projectConfig.approvals.hmda.verify,
 };
 
-/** The homepage proof belt: the four numbers a buyer checks first. */
+/** The homepage proof belt: the figures a buyer checks first. */
 export function projectProofPoints(): ProjectFactRow[] {
   return [
     { label: 'Plot sizes', value: projectConfig.plotSizes },
-    { label: 'RERA', value: projectConfig.approvals.rera.number },
-    { label: 'HMDA', value: projectConfig.approvals.hmda.number },
+    { label: 'Plots available', value: `${projectConfig.availability.saleable} of ${projectConfig.availability.total}` },
+    { label: 'Entry price', value: projectConfig.price.display },
     { label: 'Project type', value: projectConfig.projectType },
   ];
 }
@@ -275,8 +289,6 @@ export function projectIdentityFacts(developer: string): ProjectFactRow[] {
     { label: 'Project type', value: projectConfig.projectType },
     { label: 'Plot sizes', value: projectConfig.plotSizes },
     { label: 'Total plots', value: projectConfig.totalPlots },
-    rera,
-    hmda,
   ];
 }
 

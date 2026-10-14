@@ -2,7 +2,7 @@
 title: 'What a Telangana RERA Number Proves'
 description: 'A RERA number records that a project is registered and its disclosures are on file. It is not proof of title, of a valid layout, or of an unencumbered plot.'
 publishedAt: 2026-10-01
-updatedAt: 2026-10-01
+updatedAt: 2026-10-14
 author: Tranquill Infra
 category: Approvals
 featured: false
@@ -167,8 +167,8 @@ that document.
 2. Read the project registration number off it, character for character.
 3. If you want to confirm it against the Authority's own record, go to the
    public project search, solve the captcha, and select the district, mandal and
-   village from the dropdowns rather than typing them in. For a Rudraram village
-   project that is Sangareddy district, Patancheru mandal, Rudraram village.
+   village from the dropdowns rather than typing them in. For a Mamidipally village
+   project that is Sangareddy district, Kandi mandal, Mamidipally village.
 4. Read the project name, the promoter name and the number on the record, and
    compare.
 

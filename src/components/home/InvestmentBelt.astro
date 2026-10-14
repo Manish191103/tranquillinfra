@@ -41,7 +41,7 @@ const { eyebrow, title, intro, stat, pillars } = Astro.props;
         {stat && <p class="investment-stat" set:html={stat} />}
 
         {pillars.length > 0 && (
-          <ul class="investment-pillars" aria-label="What we publish and do not">
+          <ul class="investment-pillars" aria-label="Our commitments">
             {pillars.map((pillar) => (
               /*
                * Each pillar is a well inside the plate — a slightly darker

@@ -130,7 +130,7 @@ export const companyFaqs: Array<{ question: string; answer: string }> = [
   {
     question: 'Who is Tranquill Infra?',
     answer:
-      'Tranquill Infra Projects Pvt. Ltd. is a Hyderabad-based real estate development company creating premium residential plot developments with a clear, customer-first approach. Its premium project is Tranquill City, a villa plot development in Rudraram near Patancheru.',
+      'Tranquill Infra Projects Pvt. Ltd. is a Hyderabad-based real estate development company creating premium residential plot developments with a clear, customer-first approach. Its premium project is Tranquill City, a villa plot development at Mamidipally, near Rudraram and Patancheru.',
   },
   {
     question: 'Where is the office, and when can I visit?',

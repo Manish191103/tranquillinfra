@@ -41,9 +41,9 @@ const { eyebrow, title, intro, plan } = Astro.props;
 const { availability, plotSizes, siteArea } = projectConfig;
 
 /**
- * One published figure per row. `plan.note` already names plots 1–4 as the
- * HMDA-held parcels, so the count and the numbers are consistent by
- * construction: both sides of that claim are read from `availability`.
+ * One published figure per row. `plan.note` names the held-parcel rule, so
+ * the count and the rule stay consistent: the count is read from
+ * `availability`, the single source the page and the schema share.
  */
 const planFacts: Array<{ label: string; value: string; detail?: string }> = [
   {
@@ -72,10 +72,16 @@ const planFacts: Array<{ label: string; value: string; detail?: string }> = [
   },
   {
     label: 'Internal roads',
-    // The widths are advertised, and they are advertised in one place — the
-    // features list further down this page. Naming that section rather than
-    // copying the figures here keeps a single source for them; a second copy in
-    // a second table is exactly how a published number goes stale.
+    // The widths are as advertised in the final client brochure — its
+    // feature list and its layout plan (proposed 33' internal roads off an
+    // existing 40' road) both carry them — and they are advertised in one
+    // place on this page: the features list further down. Naming that
+    // section rather than copying the figures here keeps a single source for
+    // them; a second copy in a second table is exactly how a published
+    // number goes stale. The draft HMDA scrutiny plan labels the internal
+    // approach roads 9.14 m (30 ft); the final brochure is the later,
+    // client-approved document, so its figures are published. Revisit if
+    // the final approval letter states different widths.
     value: '40 ft and 33 ft CC internal roads',
     detail: 'Advertised in the features list on this page.',
   },

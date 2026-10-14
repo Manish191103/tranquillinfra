@@ -88,11 +88,11 @@ export function contactPlaces(): ContactPlace[] {
     },
     {
       id: 'project-site',
-      title: 'Project site · Rudraram, near Patancheru',
+      title: 'Project site · Mamidipally, near Rudraram',
       lines: projectLines,
       mapQuery: projectQuery,
       mapLabel:
-        'Map showing the Tranquill City project site at Rudraram, near Patancheru, Hyderabad',
+        'Map showing the Tranquill City project site at Mamidipally, near Rudraram, Hyderabad',
       directionsUrl: directionsTo(projectQuery),
       directionsLabel: 'Directions to the project site',
     },

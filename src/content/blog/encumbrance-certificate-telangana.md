@@ -2,7 +2,7 @@
 title: 'Encumbrance Certificate in Telangana: What It Shows'
 description: What an encumbrance certificate records in Telangana, what "nil encumbrance" actually means, the three search routes, the fee and where to confirm it.
 publishedAt: 2026-10-01
-updatedAt: 2026-10-01
+updatedAt: 2026-10-14
 author: Tranquill Infra
 category: Documents
 featured: false
@@ -142,7 +142,7 @@ The department's own recommendation is the right one: undertake a comprehensive 
 5. **Give the result to your lawyer** as one document in the file, not as the file.
 6. **Complete the rest of the checks** — revenue record, land classification, approvals, and the status of the specific plot on the approved plan.
 
-Tranquill City's layout holds 82 parcels at Rudraram in Patancheru mandal, Sangareddy district, under HMDA layout permission 2103/HMDA/SWDL/2026, with RERA registration REA01100108192. Ask the team for the approval documentation, the pattadar and 1B, and the EC covering that plot's survey number. Plots 1 to 4 are held under HMDA mortgage conditions and are not for sale, so they should not appear in anything you are asked to pay for. The [Tranquill City page](/projects/tranquill-city/) sets out the layout, and the [plot registration guide](/blog/plot-registration-telangana-costs/) covers the sub-registrar once you proceed.
+For a plot at Tranquill City (Sy. No. 411/PART, Mamidipally, Kandi mandal, Sangareddy district), ask the team for the EC covering that plot's survey number, alongside the pattadar passbook and 1B. Twelve of the layout's 82 parcels are held under HMDA Mortgage conditions — they should not appear in anything you are asked to pay for. The [Tranquill City page](/projects/tranquill-city/) sets out the layout and the approvals.
 
 ## The next step
 

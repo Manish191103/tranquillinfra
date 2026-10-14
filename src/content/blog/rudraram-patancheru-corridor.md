@@ -1,6 +1,6 @@
 ---
 title: 'Open Plots & Villa Plots in Rudraram, Near Patancheru'
-description: Open plots and villa plots in Rudraram, near Patancheru and IIT Hyderabad — 78 saleable, from ₹48 lakh per plot. Book a site visit.
+description: Open plots and villa plots in Rudraram, near Patancheru and IIT Hyderabad — 70 saleable, plots from ₹48 lakh. Book a site visit.
 publishedAt: 2026-09-16
 updatedAt: 2026-10-01
 author: Tranquill Infra
@@ -32,7 +32,7 @@ sources:
     url: https://rera.telangana.gov.in/
 faq:
   - question: Where exactly is Tranquill City?
-    answer: In Rudraram village, Patancheru mandal, Sangareddy district, near Patancheru on the western side of Hyderabad in Telangana — coordinates 17.585611°N, 78.148361°E. The site is reached from the Mumbai Highway (NH-65) side of the corridor, with the ORR serving the wider belt.
+    answer: In Mamidipally village, Kandi mandal, Sangareddy district, near Rudraram and Patancheru on the western side of Hyderabad in Telangana — coordinates 17.585611°N, 78.148361°E. The site is reached from the Mumbai Highway (NH-65) side of the corridor, with the ORR serving the wider belt.
   - question: Which landmarks are near the project?
     answer: IIT Hyderabad, BHEL Township at Ramachandrapuram, ICRISAT, the Patancheru industrial belt with the BDL Township, Isnapur, Kazipally and Pashamylaram, GITAM University at Rudraram, plus Miyapur, Lingampally, Gachibowli and the Financial District further along the city side. Hospitals and international and CBSE schools serve the belt from Patancheru and Sangareddy. These are names in the area, not measured distances — we publish no drive times, because they change with the route, the traffic and the hour. Use Google Maps for live figures, or ask the team.
   - question: How do I reach the site for a visit?
@@ -75,15 +75,14 @@ To check the revenue record behind any of these names, the Sangareddy district a
 
 The layout publishes its own numbers:
 
-- **82 parcels**, of which **78 are for sale**. Four of them (plots 1 to 4) are held against HMDA Mortgage conditions and are not part of the saleable layout. The site covers 19,410 sq.m (4.8 acre).
-- Plot sizes of **125.42–250.84 sq.m (150–300 sq.yd)**, published as a range. Per-band plot counts are not published — the team confirms the size band, length, width and facing of any specific plot.
-- **From ₹48 lakh per plot.** That is the published entry price for the layout. Plots are priced per plot rather than per square metre, so a specific plot's price depends on its band and number; ask the team for the ones you are comparing.
-- **No possession or handover date is published.** What is published is an approved layout, and the site images are renders of the plan rather than photographs of completed construction. Confirm the current stage with the team before you commit.
-- Advertised features: 40 ft and 33 ft CC internal roads, a gated community, 24/7 security, water connection points, a jogging track and cycle track, street lighting, rainwater harvesting, underground drainage, a children's play zone and landscaped parks of 1,040.50 sq.yd and 762.49 sq.yd.
-- HMDA layout permission **2103/HMDA/SWDL/2026** and RERA registration **REA01100108192**. Ask the team for both approval records — the RERA registration certificate and the HMDA sanction letter — and check the numbers, village, mandal and district on them against this page. The [approvals guide](/blog/hmda-or-dtcp-plot-approval-telangana/) says exactly which five details to match and where the authorities publish them.
-- **What you can build on it, and who sanctions that.** A layout approval is not the whole picture. Whether the land was converted out of agricultural use is a separate track run by the Revenue Department, and the order that does that work is [land conversion on Telangana plots](/blog/land-conversion-telangana-plots/) — it also sets out why a clean 1B extract is not evidence of conversion. Your own house on your plot is a further, separate permission, and because Rudraram village, Patancheru mandal, Sangareddy district lies outside GHMC limits, the route runs through the Gram Panchayat or the local body rather than GHMC. That route, and why an application receipt is not a sanction, is [building permission for plots in Telangana](/blog/building-permission-plot-telangana/).
+- **82 parcels**, of which **70 are for sale** — twelve are held under HMDA Mortgage conditions. The site covers 19,410 sq.m (4.8 acre).
+- Plot sizes of **125.42–250.84 sq.m (150–300 sq.yd)**, published as a range; **from ₹48 lakh per plot**, priced per plot, not per square metre.
+- **No possession or handover date is published.** What is published is an approved layout; the site images are renders, not completed construction.
+- Advertised features: 40 ft and 33 ft CC internal roads, a semi-gated community with compound wall and 24/7 security, water connection points, a jogging track and cycle track, street lighting, rainwater harvesting, underground drainage, a children's play zone and landscaped parks of 1,040.50 sq.yd and 762.49 sq.yd.
+- HMDA layout permission **2103/HMDA/SWDL/2026** and RERA registration **REA01100108192** — the buyer guides set out how to verify each number yourself: [which authority approves a layout](/blog/hmda-or-dtcp-plot-approval-telangana/) and [what a RERA number proves](/blog/rera-telangana-project-registration/).
+- **What you can build on it.** A layout approval is not a building permission. Mamidipally lies outside GHMC limits, so the route runs through the Gram Panchayat or the local body — [building permission for plots in Telangana](/blog/building-permission-plot-telangana/) covers it, and [land conversion](/blog/land-conversion-telangana-plots/) is a separate track again.
 
-The full layout plan, the amenities grouped by use, the documents and the enquiry form are on the [project page](/projects/tranquill-city/), and [how we work as a developer](/blog/introducing-tranquill-infra/) is worth reading before the first call. Before you commit to anything, work through [how to verify a plot before you buy in Hyderabad](/blog/verify-plot-hyderabad/). More guides are collected in [Insights](/blog/).
+The full layout plan, the amenities and the enquiry form are on the [project page](/projects/tranquill-city/). Before you commit, work through [how to verify a plot before you buy in Hyderabad](/blog/verify-plot-hyderabad/); more guides are in [Insights](/blog/).
 
 ## Visiting the site
 

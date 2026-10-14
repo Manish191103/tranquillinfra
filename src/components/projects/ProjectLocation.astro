@@ -18,7 +18,16 @@ interface Props {
   title: string;
   intro: string;
   note: string;
-  groups: Array<{ title: string; landmarks: string[] }>;
+  /**
+   * Landmarks carry an optional `distanceKm`: the straight-line distance from
+   * the site pin, haversine-measured against a verified landmark coordinate
+   * and rounded to 0.5 km. Rendered as "about X km" — approximate by design,
+   * because the underlying figure is straight-line, not road.
+   */
+  groups: Array<{
+    title: string;
+    landmarks: Array<string | { name: string; distanceKm: number }>;
+  }>;
   directionsUrl: string;
   coordinates: { latitude: number; longitude: number };
 }
@@ -39,12 +48,25 @@ const coordinateLine = `${coordinates.latitude}° N, ${coordinates.longitude}° 
           <section class="border-border border-t pt-5">
             <h3 class="display-xs">{group.title}</h3>
             <ul class="text-foreground-muted mt-3 grid gap-1.5 text-sm sm:grid-cols-2">
-              {group.landmarks.map((landmark) => (
-                <li class="flex items-start gap-2">
-                  <Icon name="map-pin" size="xs" class="text-accent-ink mt-1" />
-                  <span>{landmark}</span>
-                </li>
-              ))}
+              {group.landmarks.map((landmark) => {
+                const name = typeof landmark === 'string' ? landmark : landmark.name;
+                const distance =
+                  typeof landmark === 'string' ? null : `about ${landmark.distanceKm} km`;
+                return (
+                  <li class="flex items-start gap-2">
+                    <Icon name="map-pin" size="xs" class="text-accent-ink mt-1" />
+                    <span>
+                      {name}
+                      {distance && (
+                        <span class="text-foreground-subtle">
+                          <span aria-hidden="true"> · </span>
+                          <span class="font-medium">{distance}</span>
+                        </span>
+                      )}
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
           </section>
         ))}
@@ -66,7 +88,7 @@ const coordinateLine = `${coordinates.latitude}° N, ${coordinates.longitude}° 
         zoom={14}
         size="xl"
         class="self-start"
-        ariaLabel="Map showing the location of Tranquill City, Rudraram"
+        ariaLabel="Map showing the location of Tranquill City, Mamidipally"
         placeholderTitle="Tranquill City location"
       />
     ) : (

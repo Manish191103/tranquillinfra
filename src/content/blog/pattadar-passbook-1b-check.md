@@ -2,7 +2,7 @@
 title: 'Pattadar Passbook and 1B Extract in Telangana'
 description: 'The first check on any plot sale is whether the seller is the recorded owner of that survey number. Here is what the pattadar passbook and 1B extract show.'
 publishedAt: 2026-10-01
-updatedAt: 2026-10-01
+updatedAt: 2026-10-14
 author: Tranquill Infra
 category: Documents
 featured: false
@@ -108,8 +108,8 @@ The practical point needs no fine legal reading: if your adviser, the seller, or
 
 ## A Tranquill City example
 
-Tranquill City sits in Rudraram village, Patancheru mandal, Sangareddy district. Its RERA registration is **REA01100108192** and its HMDA layout permission is **2103/HMDA/SWDL/2026**. Those are the references to put through the official portals yourself, alongside the survey-number check above for the specific parcel you are buying. Plots 1 to 4 in the layout are held under HMDA Mortgage conditions and are not for sale.
+Tranquill City sits in Mamidipally village, Kandi mandal, Sangareddy district — RERA **REA01100108192**, HMDA **2103/HMDA/SWDL/2026**. Put both numbers through the official portals yourself, alongside the survey-number check above.
 
-When you enquire about [Tranquill City](/projects/tranquill-city/), ask our team for the 1B extract for the parcel you are considering and for the layout plan showing its survey number, then check both the way this post describes. We would rather you verify the record than take our word for it.
+When you enquire about [Tranquill City](/projects/tranquill-city/), ask for the 1B extract of the parcel you are considering and the layout plan showing its survey number, then check both the way this post describes.
 
 Call or WhatsApp **+91 95503 62288**, or use the form on the [contact page](/contact-us/) to ask for those documents. Bring your property lawyer to the table before you sign anything — the sequence we would suggest is: 1B and passbook first, then the [encumbrance search](/blog/encumbrance-certificate-telangana/), then the conversion record if the classification is agricultural, then the layout approval, and only then a token. More on how these documents fit the wider picture in the [Insights archive](/blog/).

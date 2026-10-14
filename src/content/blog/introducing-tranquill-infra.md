@@ -2,7 +2,7 @@
 title: Introducing Tranquill Infra — Our Approach to Land
 description: Why we are taking a clear, considered approach to real estate, and what it means for our first project, Tranquill City.
 publishedAt: 2026-08-29
-updatedAt: 2026-10-01
+updatedAt: 2026-10-14
 author: Tranquill Infra
 category: Buying Guide
 tags:
@@ -12,22 +12,22 @@ tags:
   - Tranquill City
 faq:
   - question: What is Tranquill Infra?
-    answer: Tranquill Infra Projects Pvt. Ltd. is a Hyderabad-based real estate development company that plans and develops gated residential plot layouts. Tranquill City is its first development.
+    answer: Tranquill Infra Projects Pvt. Ltd. is a Hyderabad-based real estate development company. Tranquill City, its first development, is at Mamidipally near Rudraram and Patancheru.
   - question: Where is Tranquill City?
-    answer: Tranquill City is in Rudraram village, Patancheru mandal, Sangareddy district, near Patancheru, Hyderabad. The project page carries the layout plan, the directions and the enquiry form.
+    answer: Tranquill City is in Mamidipally village, Kandi mandal, Sangareddy district, near Rudraram and Patancheru, Hyderabad. The project page carries the layout plan, the directions and the enquiry form.
   - question: How do I enquire about plots in Tranquill City?
-    answer: Use the enquiry form on the project page, or call the team on +91 95503 62288. Published plots start from ₹48 lakh per plot — priced per plot, not per square metre. A team member will share the current price of the specific plots you are looking at, their availability, and the approval documentation behind them.
+    answer: Use the enquiry form on the project page, or call the team on +91 95503 62288. Plots are priced per plot, from ₹48 lakh; the team shares the current price of the specific plots you are looking at, their availability, and the approval documentation behind them.
   - question: Is there a brochure I can read?
     answer: Yes. Download the Tranquill City brochure from the project page for the advertised features, the layout, and the location context.
 ---
 
-Tranquill Infra Projects Pvt. Ltd. is a Hyderabad-based real estate development company. We plan and develop gated residential plot layouts — and we publish the layout, the approvals and the plot details before the sales conversation.
+Tranquill Infra Projects Pvt. Ltd. is a Hyderabad-based real estate development company. We plan and develop semi-gated residential plot layouts — and we publish the layout, the approvals and the plot details before the sales conversation.
 
 ## Where is Tranquill City?
 
-Tranquill City is our first development: 78 saleable premium villa plots, of 125.42–250.84 sq.m (150–300 sq.yd), in a gated layout of 82 parcels at Rudraram village, Patancheru mandal, Sangareddy district, near Patancheru, Hyderabad. Four parcels are held under HMDA Mortgage conditions and are not part of the saleable layout. Published features include 40 ft and 33 ft CC internal roads, two landscaped parks, avenue plantation, jogging and cycle tracks, a children's play zone, street lighting, water connection points, rainwater harvesting, underground drainage and 24/7 security. RERA REA01100108192 and HMDA layout permission 2103/HMDA/SWDL/2026 are on the project page.
+Tranquill City is our first development: 70 saleable villa plots of 125.42–250.84 sq.m (150–300 sq.yd) at Mamidipally, near Rudraram and Patancheru. Approvals: HMDA 2103/HMDA/SWDL/2026, RERA REA01100108192. The advertised features — 40 ft and 33 ft CC internal roads, a compound wall with 24/7 security, two landscaped parks, a jogging track and cycle track, a children's play zone, street lighting, water connection points, rainwater harvesting and underground drainage — are on the [project page](/projects/tranquill-city/).
 
-Two things we do not publish, on the project page or here: a possession or handover date, and photographs of completed construction. The images on this site are renders of the planned layout.
+Two things this site will not show you: a possession or handover date, and photographs of completed construction. The images on this site are renders of the planned layout.
 
 [See the layout and approvals →](/projects/tranquill-city/)
 

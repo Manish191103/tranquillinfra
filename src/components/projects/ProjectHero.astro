@@ -26,6 +26,7 @@ import ImageHero from '~/components/layout/ImageHero.astro';
 import Button from '~/components/ui/form/Button/Button.astro';
 import Icon from '~/components/ui/primitives/Icon/Icon.astro';
 import { SITE_VISIT_CTA_LABEL } from '~/lib/enquiry-cta';
+import projectConfig from '~/config/project.config';
 
 interface Props {
   eyebrow: string;
@@ -90,6 +91,14 @@ const quietAction =
     <span>{location}</span>
   </p>
   <p class="text-on-invert-secondary mt-5 max-w-[36rem] text-lg text-pretty">{intro}</p>
+  <p class="mt-4 flex flex-wrap gap-2 text-sm">
+    <span class="border border-on-invert/30 bg-on-invert/10 rounded-full px-3 py-1 font-medium">
+      RERA {projectConfig.approvals.rera.number}
+    </span>
+    <span class="border border-on-invert/30 bg-on-invert/10 rounded-full px-3 py-1 font-medium">
+      HMDA {projectConfig.approvals.hmda.number}
+    </span>
+  </p>
   <p class="text-on-invert-muted mt-4 max-w-[36rem] text-sm text-pretty">{note}</p>
 
   <ul class="mt-8 flex flex-wrap items-center gap-3">

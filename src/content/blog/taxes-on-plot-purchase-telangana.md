@@ -2,7 +2,7 @@
 title: 'Taxes on a Plot Purchase in Telangana'
 description: 'Stamp duty, TDS under section 393 of the Income-tax Act 2025, capital gains under section 72, and the land tax question outside GHMC limits.'
 publishedAt: 2026-10-01
-updatedAt: 2026-10-01
+updatedAt: 2026-10-14
 author: Tranquill Infra
 category: Taxes
 featured: false
@@ -40,7 +40,7 @@ faq:
   - question: 'Which section of the Income-tax Act, 2025 computes capital gains on the sale of a plot?'
     answer: 'Section 72 of the 2025 Act is the mode of computation of capital gains. You will see section 123 quoted online as the capital gains section under the new Act; that is not correct. Section 123 deals with a deduction for life insurance premia and related contributions, and section 48 of the 2025 Act deals with development accounts for tea, coffee and rubber. Read section 72 in the Act as enacted before you file.'
   - question: 'Will I owe GHMC property tax on a plot at Rudraram?'
-    answer: 'Most likely not, because Rudraram village in Patancheru mandal, Sangareddy district sits outside GHMC limits. GHMC property tax and GHMC Vacant Land Tax are instruments of the Greater Hyderabad Municipal Corporation and do not attach to land outside its jurisdiction. Confirm the limits against your survey number on the GHMC portal, and check with the Gram Panchayat or municipal office that does have jurisdiction.'
+    answer: 'Most likely not, because Mamidipally village in Kandi mandal, Sangareddy district sits outside GHMC limits. GHMC property tax and GHMC Vacant Land Tax are instruments of the Greater Hyderabad Municipal Corporation and do not attach to land outside its jurisdiction. Confirm the limits against your survey number on the GHMC portal, and check with the Gram Panchayat or municipal office that does have jurisdiction.'
   - question: 'Which land tax should I actually budget for?'
     answer: 'Ask the local body with jurisdiction over the revenue village, which is normally the Gram Panchayat or the municipality, rather than a GHMC counter. Rates are set by that body and are revised, so no rate is published here. Ask for the current demand notice, or a no-demand certificate, against the specific survey number.'
   - question: 'Does this post give the stamp duty or registration fee payable in Telangana?'
@@ -182,10 +182,11 @@ Greater Hyderabad Municipal Corporation. They apply within GHMC limits, which is
 the GHMC property tax page asks you for a PTIN and the vacant land tax search asks for
 a ward and assessment number.
 
-Rudraram is a village in Patancheru mandal, Sangareddy district. It sits outside GHMC
-limits. GHMC property tax and GHMC Vacant Land Tax most likely do not attach to a plot
-there. Confirm the limits against your survey number on the GHMC portal, and confirm
-with the Gram Panchayat office of the revenue village where the plot sits.
+Mamidipally is a village in Kandi mandal, Sangareddy district, near Rudraram on the western
+side of Hyderabad. It sits outside GHMC limits. GHMC property tax and GHMC Vacant Land Tax
+most likely do not attach to a plot there. Confirm the limits against your survey number on
+the GHMC portal, and confirm with the Gram Panchayat office of the revenue village where the
+plot sits.
 
 The local body with jurisdiction will tell you whether any land tax or vacant land tax
 demand stands against the survey number. Rates are set by that body and are revised, so
@@ -229,10 +230,4 @@ gains and land tax has a much shorter conversation with a lawyer. Use the
 then take them to a lawyer of your choice with your own tax adviser. Nothing here is
 legal or tax advice. It is a map of which body charges what.
 
-Tranquill City is a gated layout of 82 parcels over 19,410 sq.m (4.8 acre) at Rudraram,
-Patancheru mandal, Sangareddy district, under HMDA layout permission
-2103/HMDA/SWDL/2026 and RERA registration REA01100108192. Ask the team for the
-approval documentation and the stamped title records when you visit. More buyer
-education is in the [Insights archive](/blog/), or reach the team on +91 95503 62288 by
-phone or WhatsApp, Monday and Wednesday to Sunday, 9:00 AM to 6:00 PM. The office is
-closed on Tuesday.
+Tranquill City — 82 parcels over 19,410 sq.m (4.8 acre) at Mamidipally, Kandi mandal, Sangareddy district, HMDA 2103/HMDA/SWDL/2026, RERA REA01100108192 — sits outside GHMC limits, so the local body there sets the land tax. Ask the team for the approval documentation and the stamped title records when you visit, or reach the team on +91 95503 62288 by phone or WhatsApp, Monday and Wednesday to Sunday, 9:00 AM to 6:00 PM (closed Tuesday). More buyer education is in the [Insights archive](/blog/).
