@@ -1,0 +1,116 @@
+---
+/**
+ * PublishedPosition
+ *
+ * "The layout, the numbers, the approvals": a short argument in prose beside
+ * a plate of the figures a buyer scans first. Moved from the homepage to the
+ * project page (2026-10-27), so the approval numbers sit with the rest of the
+ * project detail. The plate is built from `project.config.ts`, so it cannot
+ * drift from the stats and facts sections on the same page.
+ */
+import Prose from '~/components/patterns/Prose.astro';
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+import projectConfig from '~/config/project.config';
+import { breakableReference } from '~/lib/breakable-reference';
+
+interface Props {
+  id?: string;
+}
+
+const { id = 'project-published' } = Astro.props;
+const { availability, approvals } = projectConfig;
+
+const publishedDetails: { label: string; value: string; href?: string }[] = [
+  { label: 'Plot sizes', value: projectConfig.plotSizes },
+  {
+    label: 'Plots available',
+    value: `${availability.saleable} saleable of ${availability.total}`,
+  },
+  { label: 'Entry price', value: projectConfig.price.display },
+  {
+    label: 'Approvals',
+    value: `RERA ${approvals.rera.number} · HMDA ${approvals.hmda.number}`,
+    href: '#project-stats',
+  },
+];
+
+const mortgageNote = `${availability.mortgageHeld} parcels are held under HMDA Mortgage conditions, a standard HMDA development requirement. They are released on completion and are not for sale.`;
+---
+
+<section
+  id={id}
+  class="section border-border bg-background-secondary scroll-mt-24 border-y"
+  aria-labelledby={`${id}-title`}
+>
+  <div
+    class="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.92fr)] lg:gap-16"
+  >
+    <div>
+      <p class="eyebrow reveal">The published position</p>
+      <h2 id={`${id}-title`} class="display-md reveal-2 mt-6">
+        The layout, the numbers, the approvals
+      </h2>
+      <div class="reveal-3 mt-8">
+        <Prose>
+          <p>
+            Tranquill City is a semi-gated layout of premium villa plots at Mamidipally, near
+            Rudraram and Patancheru, Hyderabad. Plot sizes run from 125.42 to 250.84 sq.m (150 to
+            300 sq.yd); {availability.saleable} of the {availability.total} parcels are for sale. HMDA-approved,
+            RERA registered.
+          </p>
+          <p>
+            No possession or handover date is published, and the project images are renders of the
+            planned layout, not photographs of completed construction.
+          </p>
+          <p>
+            Buyers want to know what the land costs, whether the paperwork holds up, and what the
+            area is like. The first two are covered in <a href="/blog/verify-plot-hyderabad/"
+              >how to verify a plot before you buy in Hyderabad</a
+            > and <a href="/blog/rudraram-patancheru-corridor/"
+              >plots in the Rudraram–Patancheru corridor</a
+            >, and we would rather you check them yourself than take our word for it. Bring your
+            lawyer.
+          </p>
+        </Prose>
+      </div>
+    </div>
+
+    <aside class="shell reveal-4 lg:sticky lg:top-28 lg:self-start">
+      <div class="shell-core p-6 md:p-8">
+        <h3 class="display-xs">Published details</h3>
+        <p class="text-foreground-muted mt-2 text-sm">
+          Every figure below is on the page you can check independently.
+        </p>
+
+        <dl class="mt-7 grid gap-6">
+          {
+            publishedDetails.map((row) => (
+              <div class="border-border border-t pt-4">
+                <dt class="text-foreground-muted text-[0.7rem] font-extrabold tracking-[0.13em] uppercase">
+                  {row.label}
+                </dt>
+                <dd class="mt-1.5 [overflow-wrap:break-word]">
+                  {row.href ? (
+                    <a
+                      class="display-xs hover:text-accent-ink inline-flex items-baseline gap-2 transition-colors"
+                      href={row.href}
+                    >
+                      <span class="min-w-0" set:html={breakableReference(row.value)} />
+                      <Icon name="arrow-up-right" size="xs" class="text-accent-ink shrink-0" />
+                    </a>
+                  ) : (
+                    <span class="display-xs" set:html={breakableReference(row.value)} />
+                  )}
+                </dd>
+              </div>
+            ))
+          }
+        </dl>
+
+        <p class="text-foreground-muted border-border mt-7 border-t pt-5 text-sm text-pretty">
+          {mortgageNote}
+        </p>
+      </div>
+    </aside>
+  </div>
+</section>

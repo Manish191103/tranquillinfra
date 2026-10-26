@@ -1,0 +1,455 @@
+---
+/**
+ * LocationStory
+ *
+ * The brochure's "connected future" page as a scroll: the schematic location
+ * map stays pinned while four steps pass (the site and its corridor, roads,
+ * jobs, education), and the map lights the pins and roads of the step in view.
+ * Every landmark carries its own icon and links to the corridor guide, so the
+ * section is also the homepage's internal link hub for the location.
+ *
+ * Without JavaScript the map shows plain and every step is fully shown.
+ * Distances are straight-line, as on the project page, never drive times.
+ */
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+import LocationMap from '~/components/projects/LocationMap.astro';
+import { connectivity, corridor } from '~/config/highlights.config';
+import projectConfig from '~/config/project.config';
+
+interface Props {
+  eyebrow?: string;
+  title?: string;
+  intro?: string;
+  id?: string;
+}
+
+const {
+  eyebrow = 'Location',
+  title = 'Mamidipally, on the Mumbai Highway growth corridor.',
+  intro = 'Tranquill City is in Mamidipally village, Kandi mandal, off NH-65 between Patancheru and Sangareddy. IIT Hyderabad is up the road, and the site sits between the Outer Ring Road and the proposed Regional Ring Road.',
+  id = 'location-story',
+} = Astro.props;
+
+const { latitude, longitude } = projectConfig.coordinates;
+const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
+const pad = (value: number) => String(value).padStart(2, '0');
+const stepCount = connectivity.length + 1;
+---
+
+<section
+  id={id}
+  class="ls invert-section bg-background text-foreground section scroll-mt-24"
+  data-ls
+  aria-labelledby={`${id}-title`}
+>
+  <div class="mx-auto max-w-6xl px-6">
+    <header class="max-w-3xl">
+      <p class="eyebrow eyebrow-on-invert">{eyebrow}</p>
+      <h2 id={`${id}-title`} class="display-md mt-6">{title}</h2>
+      <p class="text-foreground-muted mt-5 max-w-[56ch] text-lg text-pretty">{intro}</p>
+    </header>
+
+    <div class="ls-grid">
+      <div class="ls-map">
+        <div class="ls-map-frame">
+          <LocationMap id={`${id}-map`} focus="site" />
+        </div>
+        <div class="ls-legend" aria-hidden="true">
+          <span><i class="dot dot-site"></i>Tranquill City</span>
+          <span><i class="dot dot-focus"></i>In focus</span>
+          <span><i class="dot"></i>Landmark</span>
+        </div>
+      </div>
+
+      <ol class="ls-steps">
+        <li class="ls-step is-active" data-ls-step="site">
+          <div class="ls-step-head">
+            <span class="ls-icon"><Icon name="map-pin" size="lg" /></span>
+            <span class="ls-num">{pad(1)} / {pad(stepCount)}</span>
+          </div>
+          <h3 class="ls-title">The site and its corridor</h3>
+          <p class="ls-body">
+            West Hyderabad grew out along the Mumbai Highway. The same road now carries the
+            residential belt past Patancheru towards Sangareddy, and Rudraram is on it.
+          </p>
+          <div class="ls-chains">
+            <p class="ls-chain-label">The city grew along this corridor</p>
+            <p class="ls-chain">
+              {
+                corridor.established.map((place, index) => (
+                  <>
+                    {index > 0 && <Icon name="arrow-right" size="sm" class="ls-arrow" />}
+                    <span class="ls-place">{place}</span>
+                  </>
+                ))
+              }
+            </p>
+            <p class="ls-chain-label mt-4">The residential belt continues</p>
+            <p class="ls-chain">
+              {
+                corridor.next.map((place, index) => (
+                  <>
+                    {index > 0 && <Icon name="arrow-right" size="sm" class="ls-arrow" />}
+                    <span class:list={['ls-place', place === 'Rudraram' && 'ls-here']}>
+                      {place}
+                    </span>
+                  </>
+                ))
+              }
+            </p>
+          </div>
+          <a class="ls-link" href={directionsUrl}>
+            <Icon name="map-pin" size="sm" />
+            Directions in Google Maps
+            <span class="ls-coords">{latitude.toFixed(4)}° N, {longitude.toFixed(4)}° E</span>
+          </a>
+        </li>
+
+        {
+          connectivity.map((group, index) => (
+            <li class="ls-step" data-ls-step={group.id}>
+              <div class="ls-step-head">
+                <span class="ls-icon">
+                  <Icon name={group.icon} size="lg" />
+                </span>
+                <span class="ls-num">
+                  {pad(index + 2)} / {pad(stepCount)}
+                </span>
+              </div>
+              <h3 class="ls-title">{group.title}</h3>
+              <ul class="ls-items">
+                {group.items.map((item) => (
+                  <li>
+                    <span class="ls-item-icon">
+                      <Icon name={item.icon} size="md" />
+                    </span>
+                    {item.href ? <a href={item.href}>{item.label}</a> : <span>{item.label}</span>}
+                    {item.distanceKm && <span class="ls-km">~{item.distanceKm} km</span>}
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+
+    <p class="text-foreground-muted mt-10 text-sm">
+      Distances are straight-line from the site, not road distances or drive times. Map redrawn from
+      the project brochure, not to scale. <a
+        class="text-foreground underline underline-offset-4"
+        href="/blog/rudraram-patancheru-corridor/"
+        >Read the Rudraram and Patancheru corridor guide</a
+      >.
+    </p>
+  </div>
+</section>
+
+<script>
+  function mountLocationStory(): void {
+    document.querySelectorAll<HTMLElement>('[data-ls]').forEach((root) => {
+      if (root.dataset.lsInit === 'true') return;
+      root.dataset.lsInit = 'true';
+      root.classList.add('is-enhanced');
+
+      const map = root.querySelector<SVGElement>('[data-location-map]');
+      const steps = [...root.querySelectorAll<HTMLElement>('[data-ls-step]')];
+      if (!map || !('IntersectionObserver' in window)) return;
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            const step = entry.target as HTMLElement;
+            steps.forEach((el) => el.classList.toggle('is-active', el === step));
+            map.dataset.focus = step.dataset.lsStep ?? 'all';
+          });
+        },
+        { rootMargin: '-50% 0px -40% 0px' }
+      );
+      steps.forEach((step) => observer.observe(step));
+    });
+  }
+
+  mountLocationStory();
+  document.addEventListener('astro:page-load', mountLocationStory);
+</script>
+
+<style>
+  .ls-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: clamp(2.5rem, 6vw, 5.5rem);
+    margin-top: clamp(2.5rem, 6vw, 4rem);
+  }
+
+  /* Map on the right on desktop, steps on the left. */
+  .ls-map {
+    position: sticky;
+    top: 6.5rem;
+    order: 2;
+    align-self: start;
+  }
+
+  .ls-map-frame {
+    padding: 0.6rem;
+    border-radius: var(--radius-shell);
+    background: var(--shell-surface-invert);
+    box-shadow: var(--shell-edge-invert);
+  }
+
+  .ls-map-frame :global(svg) {
+    display: block;
+    max-height: calc(100svh - 11rem);
+    margin-inline: auto;
+  }
+
+  .ls-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 0.9rem;
+    color: var(--color-foreground-muted);
+    font-size: 0.75rem;
+  }
+
+  .ls-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .dot {
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: #2f8a3b;
+  }
+
+  .dot-site {
+    background: #b0157e;
+  }
+
+  .dot-focus {
+    background: #c8932a;
+  }
+
+  .ls-steps {
+    order: 1;
+  }
+
+  .ls-step {
+    display: flex;
+    min-height: 78svh;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: 2.5rem;
+  }
+
+  .ls-step + .ls-step {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .is-enhanced .ls-step {
+    opacity: 0.35;
+    transition: opacity 500ms var(--ease-in-out-quint);
+  }
+
+  .is-enhanced .ls-step.is-active {
+    opacity: 1;
+  }
+
+  .ls-step-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .ls-icon {
+    display: grid;
+    width: 3.25rem;
+    height: 3.25rem;
+    place-items: center;
+    border-radius: 1rem;
+    background: var(--accent);
+    color: var(--accent-foreground);
+  }
+
+  .ls-num {
+    color: var(--color-foreground-muted);
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ls-title {
+    margin-top: 1.4rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 2.8vw, 2.4rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .ls-body {
+    max-width: 46ch;
+    margin-top: 1rem;
+    color: var(--color-foreground-muted);
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+
+  .ls-chains {
+    margin-top: 1.75rem;
+  }
+
+  .ls-chain-label {
+    color: var(--color-foreground-muted);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+  }
+
+  .ls-chain {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+  }
+
+  .ls-chain :global(.ls-arrow) {
+    color: var(--accent);
+  }
+
+  .ls-place {
+    padding: 0.4rem 0.9rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-full);
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .ls-here {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--accent-foreground);
+  }
+
+  .ls-link {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.75rem;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .ls-coords {
+    color: var(--color-foreground-muted);
+    font-size: 0.8rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ls-items {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .ls-items li {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.7rem 0.9rem 0.7rem 0.7rem;
+    border-radius: 1rem;
+    background: color-mix(in srgb, var(--on-invert) 6%, transparent);
+    box-shadow: inset 0 0 0 1px var(--color-border);
+  }
+
+  .ls-item-icon {
+    display: grid;
+    flex: none;
+    width: 2.5rem;
+    height: 2.5rem;
+    place-items: center;
+    border-radius: 0.75rem;
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    color: var(--accent);
+  }
+
+  .ls-items a,
+  .ls-items li > span:not([class]) {
+    color: var(--color-foreground);
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  .ls-items a:hover {
+    color: var(--accent);
+  }
+
+  .ls-km {
+    flex: none;
+    margin-left: auto;
+    padding: 0.15rem 0.6rem;
+    border-radius: var(--radius-full);
+    background: var(--accent);
+    color: var(--accent-foreground);
+    font-size: 0.75rem;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  /*
+   * Phone: the map pins to the top of the screen at a reduced height and the
+   * steps scroll up beneath it, so the highlight still follows the reading.
+   */
+  @media (max-width: 60rem) {
+    .ls-grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+    }
+
+    .ls-map {
+      top: 3.9rem;
+      z-index: 2;
+      order: 1;
+      margin-inline: -1.5rem;
+      padding: 0.75rem 1.5rem 0.5rem;
+      background: var(--color-background);
+    }
+
+    .ls-map-frame :global(svg) {
+      width: auto;
+      max-width: 100%;
+      max-height: 36svh;
+    }
+
+    .ls-legend {
+      justify-content: center;
+      margin-top: 0.5rem;
+    }
+
+    .ls-steps {
+      order: 2;
+    }
+
+    .ls-step {
+      min-height: 0;
+      padding-block: 2.25rem;
+    }
+
+    .ls-title {
+      font-size: 1.65rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .is-enhanced .ls-step {
+      transition: none;
+    }
+  }
+</style>

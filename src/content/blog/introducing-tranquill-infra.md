@@ -1,5 +1,5 @@
 ---
-title: Introducing Tranquill Infra — Our Approach to Land
+title: 'Introducing Tranquill Infra: Our Approach to Land'
 description: Why we are taking a clear, considered approach to real estate, and what it means for our first project, Tranquill City.
 publishedAt: 2026-08-29
 updatedAt: 2026-10-14
@@ -21,11 +21,11 @@ faq:
     answer: Yes. Download the Tranquill City brochure from the project page for the advertised features, the layout, and the location context.
 ---
 
-Tranquill Infra Projects Pvt. Ltd. is a Hyderabad-based real estate development company. We plan and develop semi-gated residential plot layouts — and we publish the layout, the approvals and the plot details before the sales conversation.
+Tranquill Infra Projects Pvt. Ltd. is a Hyderabad-based real estate development company. We plan and develop semi-gated residential plot layouts, and we publish the layout, the approvals and the plot details before the sales conversation.
 
 ## Where is Tranquill City?
 
-Tranquill City is our first development: 70 saleable villa plots of 125.42–250.84 sq.m (150–300 sq.yd) at Mamidipally, near Rudraram and Patancheru. Approvals: HMDA 2103/HMDA/SWDL/2026, RERA REA01100108192. The advertised features — 40 ft and 33 ft CC internal roads, a compound wall with 24/7 security, two landscaped parks, a jogging track and cycle track, a children's play zone, street lighting, water connection points, rainwater harvesting and underground drainage — are on the [project page](/projects/tranquill-city/).
+Tranquill City is our first development: 70 saleable villa plots of 125.42–250.84 sq.m (150–300 sq.yd) at Mamidipally, near Rudraram and Patancheru. Approvals: HMDA 2103/HMDA/SWDL/2026, RERA REA01100108192. The advertised features: 40 ft and 33 ft CC internal roads, a compound wall with 24/7 security, two landscaped parks, a jogging track and cycle track, a children's play zone, street lighting, water connection points, rainwater harvesting and underground drainage, are on the [project page](/projects/tranquill-city/).
 
 Two things this site will not show you: a possession or handover date, and photographs of completed construction. The images on this site are renders of the planned layout.
 
@@ -33,7 +33,7 @@ Two things this site will not show you: a possession or handover date, and photo
 
 ## How we work
 
-Three rules: the layout plan is public, the approval numbers are published with links to the official portals, and the documents for a specific plot — approval letter, layout plan, title details — are available before you visit.
+Three rules: the layout plan is public, the approval numbers are published with links to the official portals, and the documents for a specific plot (approval letter, layout plan, title details) are available before you visit.
 
 They go together. A number you cannot check is a claim, not an approval, so [how to verify a plot before you buy in Hyderabad](/blog/verify-plot-hyderabad/) is the checklist we would want in your own hands, and we would rather you ran it on us than take our word for it.
 

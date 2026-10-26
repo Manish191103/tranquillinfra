@@ -1,0 +1,469 @@
+---
+/**
+ * BuildVisual
+ *
+ * The figure that stands in for a ScrollBuildStory beat's paragraph: a plot
+ * grid, the road widths, the land-use split, feature tiles or the approval
+ * seals. The beat keeps its paragraph as screen-reader text, so the visual is
+ * `aria-hidden` and carries no fact the paragraph does not.
+ *
+ * Motion is gated on `[data-build-init]` (the story's controller has run) and
+ * plays when the beat turns `.is-active`; without either the figure is drawn
+ * in its final state.
+ */
+import ApprovalSeals from '~/components/ui/primitives/ApprovalSeals.astro';
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+
+export type BuildVisualSpec =
+  | {
+      kind: 'plots';
+      total: number;
+      saleable: number;
+      stats: { value: string; label: string }[];
+    }
+  | {
+      kind: 'roads';
+      roads: { label: string; feet: number }[];
+      notes: { icon: string; label: string }[];
+    }
+  | {
+      kind: 'landuse';
+      shares: { label: string; percent: number; tone: string }[];
+      stats: { value: string; label: string }[];
+    }
+  | { kind: 'tiles'; tiles: { icon: string; label: string; note: string }[] }
+  | { kind: 'approvals'; price: string; priceNote: string };
+
+interface Props {
+  spec: BuildVisualSpec;
+}
+
+const { spec } = Astro.props;
+const maxFeet = spec.kind === 'roads' ? Math.max(...spec.roads.map((road) => road.feet)) : 1;
+---
+
+<div class:list={['bv', `bv-${spec.kind}`]} aria-hidden="true">
+  {
+    spec.kind === 'plots' && (
+      <>
+        <div class="bv-plot-grid">
+          {Array.from({ length: spec.total }, (_, i) => (
+            <span
+              class:list={['bv-plot', i >= spec.saleable && 'bv-plot-held']}
+              style={`--i:${i}`}
+            />
+          ))}
+        </div>
+        <div class="bv-legend">
+          <span>
+            <i class="bv-key bv-key-sale" />
+            {spec.saleable} for sale
+          </span>
+          <span>
+            <i class="bv-key bv-key-held" />
+            {spec.total - spec.saleable} held under HMDA Mortgage
+          </span>
+        </div>
+        <dl class="bv-stats">
+          {spec.stats.map((stat) => (
+            <div>
+              <dt>{stat.label}</dt>
+              <dd>{stat.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </>
+    )
+  }
+
+  {
+    spec.kind === 'roads' && (
+      <>
+        <div class="bv-roads">
+          {spec.roads.map((road, i) => (
+            <div class="bv-road-row">
+              <span class="bv-road" style={`--w:${(road.feet / maxFeet) * 100}%;--i:${i}`}>
+                <span class="bv-road-line" />
+              </span>
+              <span class="bv-road-label">{road.label}</span>
+            </div>
+          ))}
+        </div>
+        <ul class="bv-notes">
+          {spec.notes.map((note) => (
+            <li>
+              <Icon name={note.icon} size="sm" />
+              {note.label}
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+
+  {
+    spec.kind === 'landuse' && (
+      <>
+        <div class="bv-bar">
+          {spec.shares.map((share, i) => (
+            <span class="bv-bar-seg" style={`--p:${share.percent};--tone:${share.tone};--i:${i}`} />
+          ))}
+        </div>
+        <ul class="bv-bar-legend">
+          {spec.shares.slice(0, 4).map((share) => (
+            <li>
+              <i class="bv-key" style={`background:${share.tone}`} />
+              <span>{share.label}</span>
+              <b>{share.percent}%</b>
+            </li>
+          ))}
+        </ul>
+        <dl class="bv-stats">
+          {spec.stats.map((stat) => (
+            <div>
+              <dt>{stat.label}</dt>
+              <dd>{stat.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </>
+    )
+  }
+
+  {
+    spec.kind === 'tiles' && (
+      <ul class="bv-tiles">
+        {spec.tiles.map((tile, i) => (
+          <li class="bv-tile" style={`--i:${i}`}>
+            <span class="bv-tile-icon">
+              <Icon name={tile.icon} size="lg" />
+            </span>
+            <span class="bv-tile-label">{tile.label}</span>
+            <span class="bv-tile-note">{tile.note}</span>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  {
+    spec.kind === 'approvals' && (
+      <>
+        <ApprovalSeals />
+        <p class="bv-price">
+          <span class="bv-price-value">{spec.price}</span>
+          <span class="bv-price-note">{spec.priceNote}</span>
+        </p>
+      </>
+    )
+  }
+</div>
+
+<style>
+  .bv {
+    width: min(30rem, 100%);
+    padding: 1.1rem 1.2rem;
+    border: 1px solid rgb(255 255 255 / 14%);
+    border-radius: 1.25rem;
+    background: rgb(8 12 10 / 58%);
+    backdrop-filter: blur(10px);
+    color: var(--color-foreground);
+  }
+
+  /* Plots */
+  .bv-plot-grid {
+    display: grid;
+    grid-template-columns: repeat(14, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .bv-plot {
+    aspect-ratio: 1;
+    border-radius: 3px;
+    background: var(--accent);
+  }
+
+  .bv-plot-held {
+    border: 1.5px solid rgb(255 255 255 / 55%);
+    background: transparent;
+  }
+
+  .bv-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.1rem;
+    margin-top: 0.85rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .bv-legend span,
+  .bv-bar-legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .bv-key {
+    display: inline-block;
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 2px;
+  }
+
+  .bv-key-sale {
+    background: var(--accent);
+  }
+
+  .bv-key-held {
+    border: 1.5px solid rgb(255 255 255 / 60%);
+  }
+
+  .bv-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid rgb(255 255 255 / 14%);
+  }
+
+  .bv-stats dt {
+    color: rgb(255 255 255 / 66%);
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .bv-stats dd {
+    margin-top: 0.2rem;
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    line-height: 1.1;
+  }
+
+  /* Roads */
+  .bv-roads {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .bv-road-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.9rem;
+  }
+
+  .bv-road {
+    position: relative;
+    display: block;
+    width: var(--w);
+    height: 1.6rem;
+    border-block: 2px solid #d9d2c2;
+    border-radius: 3px;
+    background: #2f3330;
+    transform-origin: left center;
+  }
+
+  .bv-road-line {
+    position: absolute;
+    top: 50%;
+    right: 6%;
+    left: 6%;
+    border-top: 2px dashed var(--accent);
+  }
+
+  .bv-road-label {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    white-space: nowrap;
+  }
+
+  .bv-notes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem 0.9rem;
+    margin-top: 1rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid rgb(255 255 255 / 14%);
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .bv-notes li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .bv-notes :global(svg) {
+    flex-shrink: 0;
+    color: var(--accent);
+  }
+
+  /* Land use */
+  .bv-bar {
+    display: flex;
+    overflow: hidden;
+    height: 1.5rem;
+    gap: 2px;
+    border-radius: 0.5rem;
+  }
+
+  .bv-bar-seg {
+    flex: var(--p) 0 0;
+    min-width: 3px;
+    background: var(--tone);
+    transform-origin: left center;
+  }
+
+  .bv-bar-legend {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem 0.9rem;
+    margin-top: 0.85rem;
+    font-size: 0.8rem;
+  }
+
+  .bv-bar-legend b {
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Tiles */
+  /* Fill the panel: inside a shrink-to-fit parent the three columns collapsed
+     to their minimum and the labels ran into each other. */
+  .bv-tiles {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+    gap: 0.6rem;
+  }
+
+  .bv-tile {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    padding: 0.9rem 0.8rem;
+    border-radius: 0.9rem;
+    background: rgb(255 255 255 / 7%);
+    overflow-wrap: break-word;
+  }
+
+  .bv-tile-icon {
+    display: grid;
+    width: 2.6rem;
+    height: 2.6rem;
+    margin-bottom: 0.3rem;
+    place-items: center;
+    border-radius: 0.75rem;
+    background: var(--accent);
+    color: var(--accent-foreground);
+  }
+
+  .bv-tile-label {
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .bv-tile-note {
+    color: rgb(255 255 255 / 66%);
+    font-size: 0.78rem;
+    line-height: 1.3;
+  }
+
+  /* Approvals */
+  .bv-price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.6rem;
+    margin-top: 1rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid rgb(255 255 255 / 14%);
+  }
+
+  .bv-price-value {
+    color: var(--accent);
+    font-family: var(--font-display);
+    font-size: 1.9rem;
+    line-height: 1;
+  }
+
+  .bv-price-note {
+    color: rgb(255 255 255 / 72%);
+    font-size: 0.85rem;
+  }
+
+  /* Motion: build the figure when its beat becomes the active stage. */
+  @media (prefers-reduced-motion: no-preference) {
+    :global([data-build-init]) .bv-plot,
+    :global([data-build-init]) .bv-tile {
+      opacity: 0;
+      transform: scale(0.6);
+      transition:
+        opacity 300ms ease,
+        transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    :global([data-build-init]) .bv-plot {
+      transition-delay: calc(var(--i) * 9ms);
+    }
+
+    :global([data-build-init]) .bv-tile {
+      transform: translateY(0.75rem);
+      transition-delay: calc(var(--i) * 110ms);
+    }
+
+    :global([data-build-init]) .bv-road,
+    :global([data-build-init]) .bv-bar-seg {
+      transform: scaleX(0);
+      transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+      transition-delay: calc(var(--i) * 120ms);
+    }
+
+    :global(.build-beat.is-active) .bv-plot,
+    :global(.build-beat.is-active) .bv-tile {
+      opacity: 1;
+      transform: none;
+    }
+
+    :global(.build-beat.is-active) .bv-road,
+    :global(.build-beat.is-active) .bv-bar-seg {
+      transform: none;
+    }
+  }
+
+  @media (max-width: 42rem) {
+    .bv {
+      padding: 0.9rem;
+    }
+
+    .bv-plot-grid {
+      gap: 3px;
+    }
+
+    .bv-tiles {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .bv-tile {
+      flex-direction: row;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.6rem 0.75rem;
+    }
+
+    .bv-tile-icon {
+      margin-bottom: 0;
+    }
+
+    .bv-tile-note {
+      display: none;
+    }
+  }
+</style>

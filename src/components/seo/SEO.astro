@@ -38,7 +38,7 @@ const {
  */
 const TITLE_BUDGET = 60;
 const brandStem = siteConfig.name.split(' ').slice(0, 2).join(' ');
-const brandSuffix = ` — ${siteConfig.name}`;
+const brandSuffix = ` | ${siteConfig.name}`;
 const pageTitle = title
   ? title.includes(brandStem) || title.length + brandSuffix.length > TITLE_BUDGET
     ? title

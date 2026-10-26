@@ -1,0 +1,437 @@
+---
+/**
+ * LocationMap
+ *
+ * The location map redrawn from the brochure's location-map page: NH-65 and
+ * NH-161, the proposed Regional Ring Road, the Outer Ring Road with Exits 2
+ * and 3, every landmark the brochure marks, and the site. Relative positions only, no scale and no distances, and
+ * the map says so.
+ *
+ * Every pin carries a category (`roads`, `work`, `learn`). Set `focus` (or the
+ * `data-focus` attribute at runtime, as LocationStory does while it scrolls)
+ * and the map lights that category's pins and roads and dims the rest; `all`
+ * shows the map plain.
+ *
+ * Under a pointer each place opens up: the dot grows and turns gold, a ring
+ * ripples out from it, the label scales up, and the other pins recede.
+ */
+interface Props {
+  id: string;
+  focus?: 'all' | 'site' | 'roads' | 'work' | 'learn';
+  class?: string;
+}
+
+const { id, focus = 'all', class: className } = Astro.props;
+
+type Category = 'roads' | 'work' | 'learn' | 'place';
+type Pin = {
+  x: number;
+  y: number;
+  /** `|` breaks the label onto a second line */
+  label: string;
+  cat: Category;
+  /** Label side; `below` centres it under the dot */
+  side?: 'left' | 'right' | 'below' | 'above';
+};
+
+// Dots and labels placed as on the brochure's location-map page (relative,
+// not to scale), nudged where a label would otherwise run over a road or
+// another label. Long names inside the ring roads break onto two lines.
+const pins: Pin[] = [
+  { x: 404, y: 173, label: 'Sadashivpet', side: 'left', cat: 'place' },
+  { x: 494, y: 173, label: 'Nandikandi', cat: 'place' },
+  { x: 494, y: 236, label: 'Peddapur', cat: 'place' },
+  { x: 320, y: 440, label: "Rao's School", side: 'below', cat: 'learn' },
+  { x: 490, y: 490, label: 'IIT Hyderabad', cat: 'learn' },
+  { x: 270, y: 640, label: 'Ordnance Factory', side: 'left', cat: 'work' },
+  { x: 720, y: 617, label: 'Ismailkhanpet', cat: 'place' },
+  { x: 500, y: 650, label: 'Parivar Dhaba', cat: 'place' },
+  { x: 500, y: 676, label: 'Ganesh Gadda Temple', cat: 'place' },
+  { x: 96, y: 767, label: 'Shankarpally', side: 'above', cat: 'place' },
+  { x: 178, y: 792, label: 'Aurobindo Pharma', side: 'below', cat: 'work' },
+  { x: 414, y: 729, label: 'GITAM|University', side: 'left', cat: 'learn' },
+  { x: 500, y: 744, label: 'Toshiba', cat: 'work' },
+  { x: 500, y: 789, label: 'Maheshwara Medical College', cat: 'learn' },
+  { x: 176, y: 860, label: 'Pashamylaram TSIIC SEZ', side: 'below', cat: 'work' },
+  { x: 370, y: 845, label: 'Isnapur', side: 'left', cat: 'work' },
+  { x: 678, y: 890, label: 'Medical Park', cat: 'work' },
+  { x: 150, y: 975, label: 'Gaudium School', side: 'above', cat: 'learn' },
+  { x: 416, y: 1004, label: 'Candidus|School', side: 'left', cat: 'learn' },
+  { x: 412, y: 1050, label: 'Patancheru|Bus Stand', side: 'left', cat: 'roads' },
+  { x: 412, y: 1098, label: 'ICRISAT', side: 'left', cat: 'work' },
+  { x: 400, y: 1140, label: 'BHEL', side: 'left', cat: 'work' },
+  { x: 499, y: 1050, label: 'Beeramguda', cat: 'place' },
+  { x: 504, y: 1103, label: 'Lingampally', cat: 'roads' },
+  { x: 88, y: 1101, label: 'Kollur Exit 2', side: 'below', cat: 'roads' },
+  { x: 565, y: 1182, label: 'Madinaguda', cat: 'roads' },
+  { x: 684, y: 1256, label: 'Miyapur', cat: 'roads' },
+  { x: 325, y: 1196, label: 'ISB', side: 'left', cat: 'learn' },
+  { x: 468, y: 1212, label: 'Gopi Chand|Academy', side: 'below', cat: 'learn' },
+  { x: 294, y: 1236, label: 'Microsoft Q City', side: 'left', cat: 'work' },
+  { x: 259, y: 1279, label: 'ICICI', side: 'left', cat: 'work' },
+  { x: 395, y: 1300, label: 'IDBI', cat: 'work' },
+  { x: 350, y: 1335, label: 'Infosys', cat: 'work' },
+];
+
+const labelAt = (pin: Pin) => {
+  if (pin.side === 'below') return { x: pin.x, y: pin.y + 30, anchor: 'middle' };
+  if (pin.side === 'above') return { x: pin.x, y: pin.y - 16, anchor: 'middle' };
+  // Two-line labels beside a dot are centred on it.
+  const lift = (pin.label.split('|').length - 1) * 11;
+  if (pin.side === 'left') return { x: pin.x - 16, y: pin.y + 6 - lift, anchor: 'end' };
+  return { x: pin.x + 16, y: pin.y + 6 - lift, anchor: 'start' };
+};
+
+// The highway and the two ring roads, shared by the road and its glow.
+const highway = 'M452 140 L452 1130';
+const rrr = 'M207 540 A245 245 0 0 1 697 540';
+const orr = 'M190 1140 A262 225 0 0 1 714 1140';
+---
+
+<svg
+  viewBox="0 120 940 1240"
+  class:list={['location-map h-auto w-full', className]}
+  data-location-map
+  data-focus={focus}
+  role="img"
+  aria-labelledby={`${id}-title`}
+>
+  <title id={`${id}-title`}>
+    Location map: Tranquill City off the Mumbai Highway (NH-65) beside the Nanded Highway (NH-161)
+    and IIT Hyderabad, between the proposed Regional Ring Road and the Outer Ring Road at Exit 3
+  </title>
+  <rect x="0" y="120" width="940" height="1240" class="map-bg" rx="24"></rect>
+
+  {/* Regional Ring Road */}
+  <path id={`${id}-rrr`} d={rrr} class="road road-ring"></path>
+  <path d={rrr} class="road-dash"></path>
+  <path d={rrr} class="road-glow"></path>
+  <text class="road-label"
+    ><textPath href={`#${id}-rrr`} startOffset="20%" text-anchor="middle"
+      >REGIONAL RING ROAD</textPath
+    ></text
+  >
+  <text class="road-label"
+    ><textPath href={`#${id}-rrr`} startOffset="80%" text-anchor="middle"
+      >REGIONAL RING ROAD</textPath
+    ></text
+  >
+
+  {/* Outer Ring Road, with the Kollur Exit 2 crossing */}
+  <path id={`${id}-orr`} d={orr} class="road road-ring"></path>
+  <path d={orr} class="road-dash"></path>
+  <path d={orr} class="road-glow"></path>
+  <text class="road-label"
+    ><textPath href={`#${id}-orr`} startOffset="31%" text-anchor="middle">OUTER RING ROAD</textPath
+    ></text
+  >
+  <text class="road-label"
+    ><textPath href={`#${id}-orr`} startOffset="76%" text-anchor="middle">OUTER RING ROAD</textPath
+    ></text
+  >
+  <path d="M95 1025 L315 1135" class="road road-side"></path>
+
+  {/* Local roads off the highway */}
+  <path d="M452 532 L745 532" class="road road-local"></path>
+  <text x="600" y="539" class="road-label road-label-sm" text-anchor="middle">NANDED HIGHWAY</text>
+  <path d="M452 615 L710 615" class="road road-local"></path>
+  <path d="M452 707 L710 707" class="road road-local"></path>
+  <path d="M452 645 L205 742" class="road road-local"></path>
+  <path d="M430 835 L290 768" class="road road-local"></path>
+
+  {/* Mumbai Highway and the city-side branches */}
+  <path d="M452 1130 L290 1340" class="road road-main"></path>
+  <path d="M452 1130 L650 1295" class="road road-main"></path>
+  <path d={highway} class="road road-main"></path>
+  <path d={highway} class="road-dash"></path>
+  <path d={highway} class="road-glow"></path>
+  <text x="455" y="710" class="road-label" text-anchor="middle" transform="rotate(-90 455 710)"
+    >MUMBAI HIGHWAY · NH-65</text
+  >
+  <text x="410" y="420" class="small-label" text-anchor="middle" transform="rotate(-90 410 420)"
+    >SANGAREDDY</text
+  >
+
+  {/* Junctions */}
+  <circle cx="452" cy="295" r="46" class="junction"></circle>
+  <circle cx="452" cy="522" r="24" class="junction"></circle>
+  <text x="452" y="518" class="junction-label junction-label-sm" text-anchor="middle">NH</text>
+  <text x="452" y="534" class="junction-label junction-label-sm" text-anchor="middle">161</text>
+  <circle cx="452" cy="918" r="36" class="junction"></circle>
+  <text x="452" y="912" class="junction-label" text-anchor="middle">Exit</text>
+  <text x="452" y="934" class="junction-label" text-anchor="middle">No 3</text>
+  <circle cx="202" cy="1083" r="34" class="junction"></circle>
+  <circle cx="452" cy="1130" r="36" class="junction"></circle>
+
+  {
+    pins.map((pin) => {
+      const label = labelAt(pin);
+      return (
+        <g class="pin-g" data-cat={pin.cat}>
+          {/* Invisible hit area, so the hover catches the label as well as the dot */}
+          <circle cx={pin.x} cy={pin.y} r="22" class="pin-hit" fill="transparent" />
+          <circle cx={pin.x} cy={pin.y} r="8" class="pin-ring" fill="none" />
+          <circle cx={pin.x} cy={pin.y} r="8" class="pin" />
+          <text x={label.x} y={label.y} text-anchor={label.anchor} class="pin-label">
+            {pin.label.split('|').map((line, i) => (
+              <tspan x={label.x} dy={i === 0 ? 0 : 22}>
+                {line}
+              </tspan>
+            ))}
+          </text>
+        </g>
+      );
+    })
+  }
+
+  {/* The site */}
+  <g class="site">
+    <rect x="516" y="548" width="196" height="46" rx="10" class="site-halo"></rect>
+    <rect x="516" y="548" width="196" height="46" rx="10" class="site-tag"></rect>
+    <text x="614" y="579" text-anchor="middle" class="site-text">TRANQUILL CITY</text>
+  </g>
+  <text x="30" y="1345" class="note">Schematic · not to scale</text>
+</svg>
+
+<style>
+  .location-map {
+    font-family: var(--site-font-sans);
+  }
+
+  .map-bg {
+    fill: #f4efe2;
+  }
+
+  .road {
+    fill: none;
+    stroke: #2b2b2b;
+  }
+
+  .road-ring {
+    stroke-width: 54;
+  }
+
+  .road-main {
+    stroke-width: 52;
+  }
+
+  .road-side {
+    stroke-width: 40;
+  }
+
+  .road-local {
+    stroke-width: 26;
+  }
+
+  .road-dash {
+    fill: none;
+    stroke: #f4efe2;
+    stroke-width: 2;
+    stroke-dasharray: 10 10;
+    opacity: 0.7;
+  }
+
+  /* A gold centre line drawn over the main roads while they are in focus. */
+  .road-glow {
+    fill: none;
+    stroke: #e9c46a;
+    stroke-width: 6;
+    stroke-dasharray: 1600;
+    stroke-dashoffset: 1600;
+    opacity: 0;
+    transition:
+      stroke-dashoffset 1200ms cubic-bezier(0.65, 0, 0.35, 1),
+      opacity 300ms ease;
+  }
+
+  [data-focus='roads'] .road-glow {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+
+  .road-label {
+    fill: #f4efe2;
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    dominant-baseline: middle;
+  }
+
+  .road-label-sm {
+    font-size: 15px;
+  }
+
+  .junction {
+    fill: #8a8a8a;
+    stroke: #2b2b2b;
+    stroke-width: 6;
+  }
+
+  .junction-label {
+    fill: #fff;
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  .junction-label-sm {
+    font-size: 13px;
+  }
+
+  .small-label {
+    fill: #3a3a3a;
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+  }
+
+  .pin-g {
+    cursor: pointer;
+    transition: opacity 400ms ease;
+  }
+
+  .pin-hit {
+    fill: transparent;
+  }
+
+  .pin-ring {
+    fill: none;
+    stroke: #c8932a;
+    stroke-width: 3;
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    pointer-events: none;
+  }
+
+  .pin {
+    fill: #2f8a3b;
+    transform-box: fill-box;
+    transform-origin: center;
+    transition:
+      transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      fill 300ms ease;
+  }
+
+  /* A paper halo keeps a label readable where it crosses a road. */
+  .pin-label {
+    paint-order: stroke;
+    stroke: #f4efe2;
+    stroke-width: 7px;
+    stroke-linejoin: round;
+    fill: #2a2a2a;
+    font-size: 19px;
+    font-weight: 700;
+    text-transform: uppercase;
+    transform-box: fill-box;
+    transform-origin: center;
+    transition:
+      transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      fill 250ms ease;
+  }
+
+  /* Focused category: its pins grow and turn brand gold, the rest recede. */
+  [data-focus='site'] .pin-g,
+  [data-focus='roads'] .pin-g:not([data-cat='roads']),
+  [data-focus='work'] .pin-g:not([data-cat='work']),
+  [data-focus='learn'] .pin-g:not([data-cat='learn']) {
+    opacity: 0.22;
+  }
+
+  [data-focus='roads'] .pin-g[data-cat='roads'] .pin,
+  [data-focus='work'] .pin-g[data-cat='work'] .pin,
+  [data-focus='learn'] .pin-g[data-cat='learn'] .pin {
+    fill: #c8932a;
+    transform: scale(1.8);
+  }
+
+  [data-focus='roads'] .pin-g[data-cat='roads'] .pin-label,
+  [data-focus='work'] .pin-g[data-cat='work'] .pin-label,
+  [data-focus='learn'] .pin-g[data-cat='learn'] .pin-label {
+    font-weight: 800;
+  }
+
+  /* Pointer exploring the map: the place under it opens up, the rest recede. */
+  @media (hover: hover) {
+    .location-map:has(.pin-g:hover) .pin-g:not(:hover) {
+      opacity: 0.3;
+    }
+
+    .location-map .pin-g:hover {
+      opacity: 1;
+    }
+
+    .pin-g:hover .pin {
+      fill: #c8932a;
+      transform: scale(2.3);
+    }
+
+    .pin-g:hover .pin-label {
+      fill: #111;
+      font-weight: 800;
+      transform: scale(1.22);
+    }
+
+    .pin-g:hover .pin-ring {
+      animation: ripple 1.4s ease-out infinite;
+    }
+  }
+
+  @keyframes ripple {
+    0% {
+      opacity: 0.9;
+      transform: scale(1);
+    }
+
+    100% {
+      opacity: 0;
+      transform: scale(4.5);
+    }
+  }
+
+  .site-halo {
+    fill: color-mix(in oklch, #b0157e 40%, transparent);
+    animation: pulse 2.4s ease-in-out infinite;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  .site-tag {
+    fill: #b0157e;
+  }
+
+  .site-text {
+    fill: #fff;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+  }
+
+  .note {
+    fill: #6b6458;
+    font-size: 16px;
+  }
+
+  @keyframes pulse {
+    50% {
+      transform: scale(1.12, 1.5);
+      opacity: 0.25;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-halo {
+      animation: none;
+    }
+
+    .road-glow,
+    .pin,
+    .pin-g,
+    .pin-label {
+      transition: none;
+    }
+
+    .pin-g:hover .pin-ring {
+      animation: none;
+    }
+  }
+</style>

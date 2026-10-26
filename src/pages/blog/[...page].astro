@@ -49,14 +49,14 @@ const itemListSchema = createItemListSchema(
     url: canonicalUrl(`/blog/${post.id}/`, siteConfig.url),
     date: post.data.publishedAt,
   })),
-  page.currentPage > 1 ? `Insights — page ${page.currentPage}` : 'Insights'
+  page.currentPage > 1 ? `Insights, page ${page.currentPage}` : 'Insights'
 );
 ---
 
 <PageLayout
   title={
     page.currentPage > 1
-      ? `Insights: Plot Buying Guides — Page ${page.currentPage}`
+      ? `Insights: Plot Buying Guides, Page ${page.currentPage}`
       : 'Insights: Plot Buying Guides & Project Updates'
   }
   description="Guides on plot buying, approvals, registration and verification in Telangana, plus Tranquill City project updates."
@@ -68,7 +68,7 @@ const itemListSchema = createItemListSchema(
   <section class="mx-auto max-w-6xl px-6 pt-10 pb-16 md:pb-24">
     <h1 class="display-xl">Insights: plot buying guides &amp; project updates</h1>
     <p class="text-foreground-muted mt-4 max-w-2xl text-lg">
-      Guides, notes and project updates from the Tranquill Infra team — published as the details are
+      Guides, notes and project updates from the Tranquill Infra team, published as the details are
       reviewed.
     </p>
     <JsonLd schema={itemListSchema} />
@@ -212,7 +212,7 @@ const itemListSchema = createItemListSchema(
           New guides, as they are published.
         </h2>
         <p class="text-foreground-muted mt-4 max-w-[42rem] text-pretty">
-          Occasional notes on plot buying, verification and the project as details are reviewed — no
+          Occasional notes on plot buying, verification and the project as details are reviewed. No
           sales pressure. Prefer a feed reader?
           <a class="text-accent-ink font-bold hover:underline" href="/rss.xml">
             Subscribe via RSS

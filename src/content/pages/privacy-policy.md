@@ -18,12 +18,12 @@ Tranquill Infra Projects Pvt. Ltd. ("we", "our", "us") operates the website at t
 
 When you submit an enquiry through one of our forms, we collect:
 
-- **Name** — so we can address you correctly
-- **Email address** — to respond to your enquiry
-- **Phone number** — so the team can reach you by phone
-- **Subject** — what your enquiry is about (for example a site visit or a brochure request)
-- **Message** — the details of your question or request
-- **Submission time** — recorded when the form reaches us
+- **Name**: so we can address you correctly
+- **Email address**: to respond to your enquiry
+- **Phone number**: so the team can reach you by phone
+- **Subject**: what your enquiry is about (for example a site visit or a brochure request)
+- **Message**: the details of your question or request
+- **Submission time**: recorded when the form reaches us
 
 We do not ask for payment details, identity documents, or any special-category information through the website forms.
 
@@ -78,9 +78,9 @@ We retain enquiries for as long as needed to respond to your request, maintain r
 
 We do not sell your personal information. We may share data with:
 
-- **Service providers** — platforms that help us operate the site and respond to enquiries, such as our hosting provider (Cloudflare), our form provider (Formspree) and our email-delivery provider (Resend), under data-processing terms where applicable
-- **Legal authorities** — when required by applicable law or legal process
-- **Professional advisers** — where necessary to establish, exercise, or defend legal rights
+- **Service providers**: platforms that help us operate the site and respond to enquiries, such as our hosting provider (Cloudflare), our form provider (Formspree) and our email-delivery provider (Resend), under data-processing terms where applicable
+- **Legal authorities**: when required by applicable law or legal process
+- **Professional advisers**: where necessary to establish, exercise, or defend legal rights
 
 ## Your rights
 

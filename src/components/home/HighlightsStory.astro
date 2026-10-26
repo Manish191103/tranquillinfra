@@ -1,0 +1,428 @@
+---
+/**
+ * HighlightsStory
+ *
+ * The project's highlights as a sticky split: a framed render stays pinned on
+ * one side while the highlights scroll past on the other, and the render
+ * cross-fades to the one that belongs to the highlight in the middle of the
+ * screen. Full-colour renders in a frame, not a darkened full-bleed backdrop,
+ * so the imagery reads as the product and the copy never sits on a photograph.
+ *
+ * A phone drops the pin: each highlight carries its own render above its copy.
+ * Without JavaScript every step is fully shown and the first render stays.
+ */
+import { Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+
+export interface HighlightStep {
+  image: ImageMetadata;
+  imageAlt: string;
+  icon: string;
+  label: string;
+  title: string;
+  body: string;
+  /** Short figures set as chips under the copy */
+  stats: string[];
+  link?: { href: string; label: string };
+}
+
+interface Props {
+  steps: HighlightStep[];
+  eyebrow: string;
+  title: string;
+  intro: string;
+  id?: string;
+}
+
+const { steps, eyebrow, title, intro, id = 'highlights-story' } = Astro.props;
+const pad = (value: number) => String(value).padStart(2, '0');
+---
+
+<section
+  id={id}
+  class="hl-story section bg-background scroll-mt-24"
+  data-hl-story
+  aria-labelledby={`${id}-title`}
+>
+  <div class="mx-auto max-w-6xl px-6">
+    <header class="hl-head">
+      <p class="eyebrow">{eyebrow}</p>
+      <h2 id={`${id}-title`} class="display-md mt-6">{title}</h2>
+      <p class="text-foreground-muted mt-5 max-w-[52ch] text-lg text-pretty">{intro}</p>
+    </header>
+
+    <div class="hl-grid">
+      <div class="hl-visual" aria-hidden="true">
+        <div class="hl-frame">
+          {
+            steps.map((step, index) => (
+              <Picture
+                class:list={['hl-image', index === 0 && 'is-visible']}
+                data-hl-image={index}
+                src={step.image}
+                alt=""
+                formats={['avif', 'webp']}
+                fallbackFormat="webp"
+                quality={60}
+                widths={[640, 960, 1280]}
+                sizes="(width < 60rem) 100vw, 40rem"
+                loading="lazy"
+              />
+            ))
+          }
+          <span class="hl-frame-note">Illustrative render</span>
+          <div class="hl-frame-index">
+            <span data-hl-index>01</span>
+            <span class="hl-frame-total">/ {pad(steps.length)}</span>
+          </div>
+        </div>
+        <ol class="hl-progress">
+          {
+            steps.map((step, index) => (
+              <li class:list={[index === 0 && 'is-active']} data-hl-dot={index}>
+                {step.label}
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+
+      <ol class="hl-steps">
+        {
+          steps.map((step, index) => (
+            <li class:list={['hl-step', index === 0 && 'is-active']} data-hl-step={index}>
+              <div class="hl-step-media">
+                <Picture
+                  src={step.image}
+                  alt={step.imageAlt}
+                  formats={['avif', 'webp']}
+                  fallbackFormat="webp"
+                  quality={60}
+                  widths={[480, 800]}
+                  sizes="100vw"
+                  loading="lazy"
+                />
+              </div>
+              <div class="hl-step-meta">
+                <span class="hl-step-icon">
+                  <Icon name={step.icon} size="lg" />
+                </span>
+                <span class="hl-step-number">{pad(index + 1)}</span>
+                <span class="hl-step-label">{step.label}</span>
+              </div>
+              <h3 class="hl-step-title">{step.title}</h3>
+              <p class="hl-step-body">{step.body}</p>
+              {step.stats.length > 0 && (
+                <ul class="hl-stats">
+                  {step.stats.map((stat) => (
+                    <li>{stat}</li>
+                  ))}
+                </ul>
+              )}
+              {step.link && (
+                <a class="hl-link" href={step.link.href}>
+                  {step.link.label}
+                  <Icon name="arrow-up-right" size="sm" />
+                </a>
+              )}
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </div>
+</section>
+
+<script>
+  function mountHighlightsStory(): void {
+    document.querySelectorAll<HTMLElement>('[data-hl-story]').forEach((root) => {
+      if (root.dataset.hlInit === 'true') return;
+      root.dataset.hlInit = 'true';
+      root.classList.add('is-enhanced');
+
+      const steps = [...root.querySelectorAll<HTMLElement>('[data-hl-step]')];
+      const images = [...root.querySelectorAll<HTMLElement>('[data-hl-image]')];
+      const dots = [...root.querySelectorAll<HTMLElement>('[data-hl-dot]')];
+      const index = root.querySelector<HTMLElement>('[data-hl-index]');
+
+      const activate = (active: number): void => {
+        steps.forEach((el, i) => el.classList.toggle('is-active', i === active));
+        images.forEach((el, i) => el.classList.toggle('is-visible', i === active));
+        dots.forEach((el, i) => el.classList.toggle('is-active', i === active));
+        if (index) index.textContent = String(active + 1).padStart(2, '0');
+      };
+
+      if (!('IntersectionObserver' in window)) return;
+      // A step is active while it crosses the middle band of the viewport.
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) activate(steps.indexOf(entry.target as HTMLElement));
+          });
+        },
+        { rootMargin: '-45% 0px -45% 0px' }
+      );
+      steps.forEach((step) => observer.observe(step));
+    });
+  }
+
+  mountHighlightsStory();
+  document.addEventListener('astro:page-load', mountHighlightsStory);
+</script>
+
+<style>
+  .hl-head {
+    max-width: 44rem;
+  }
+
+  .hl-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: clamp(2.5rem, 6vw, 6rem);
+    margin-top: clamp(2.5rem, 6vw, 4.5rem);
+  }
+
+  .hl-visual {
+    position: sticky;
+    top: 6.5rem;
+    align-self: start;
+  }
+
+  .hl-frame {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 4 / 4.4;
+    max-height: calc(100svh - 12rem);
+    width: 100%;
+    border-radius: var(--radius-shell);
+    background: var(--surface-invert);
+    box-shadow: var(--site-shadow-md);
+  }
+
+  .hl-frame :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .hl-frame :global(.hl-image) {
+    opacity: 0;
+    transform: scale(1.04);
+    transition:
+      opacity 700ms var(--ease-in-out-quint),
+      transform 1400ms var(--ease-in-out-quint);
+  }
+
+  .hl-frame :global(.hl-image.is-visible) {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .hl-frame-note {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-full);
+    background: rgb(6 20 13 / 62%);
+    color: var(--on-invert);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .hl-frame-index {
+    position: absolute;
+    right: 1rem;
+    bottom: 1rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: var(--radius-full);
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hl-frame-total {
+    color: var(--color-foreground-muted);
+    font-size: 0.85rem;
+  }
+
+  .hl-progress {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 1rem;
+  }
+
+  .hl-progress li {
+    padding: 0.3rem 0.75rem;
+    border-radius: var(--radius-full);
+    box-shadow: var(--hairline);
+    color: var(--color-foreground-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition:
+      background-color var(--site-duration-fast) ease,
+      color var(--site-duration-fast) ease;
+  }
+
+  .hl-progress li.is-active {
+    background: var(--surface-invert);
+    color: var(--on-invert);
+  }
+
+  .hl-steps {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hl-step {
+    display: flex;
+    min-height: 72svh;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: 2.5rem;
+  }
+
+  .hl-step + .hl-step {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .is-enhanced .hl-step {
+    opacity: 0.32;
+    transition: opacity 500ms var(--ease-in-out-quint);
+  }
+
+  .is-enhanced .hl-step.is-active {
+    opacity: 1;
+  }
+
+  .hl-step-media {
+    display: none;
+  }
+
+  .hl-step-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+  }
+
+  .hl-step-icon {
+    display: grid;
+    width: 3.25rem;
+    height: 3.25rem;
+    place-items: center;
+    border-radius: 1rem;
+    background: var(--surface-invert);
+    color: var(--accent);
+  }
+
+  .hl-step-number {
+    color: var(--color-accent-ink);
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hl-step-label {
+    color: var(--color-foreground-muted);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .hl-step-title {
+    margin-top: 1.4rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.9rem, 3vw, 2.6rem);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  .hl-step-body {
+    max-width: 44ch;
+    margin-top: 1rem;
+    color: var(--color-foreground-muted);
+    font-size: 1.05rem;
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+
+  .hl-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .hl-stats li {
+    padding: 0.45rem 0.9rem;
+    border-radius: var(--radius-full);
+    background: color-mix(in oklch, var(--color-accent) 16%, transparent);
+    color: var(--color-foreground);
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hl-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 1.5rem;
+    color: var(--color-accent-ink);
+    font-weight: 700;
+  }
+
+  .hl-link:hover {
+    color: var(--color-foreground);
+  }
+
+  @media (max-width: 60rem) {
+    .hl-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .hl-visual {
+      display: none;
+    }
+
+    .hl-step,
+    .is-enhanced .hl-step {
+      min-height: 0;
+      padding-block: 2rem;
+      opacity: 1;
+    }
+
+    .hl-step-media {
+      display: block;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+      aspect-ratio: 16 / 11;
+      border-radius: var(--radius-core);
+      box-shadow: var(--site-shadow-md);
+    }
+
+    .hl-step-media :global(img) {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hl-frame :global(.hl-image),
+    .is-enhanced .hl-step {
+      transition: none;
+      transform: none;
+    }
+  }
+</style>

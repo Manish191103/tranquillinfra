@@ -29,6 +29,7 @@ import Prose from '~/components/patterns/Prose.astro';
 import FactsSection from '~/components/patterns/FactsSection.astro';
 import FaqSection from '~/components/patterns/FaqSection.astro';
 import HomeCta from '~/components/home/HomeCta.astro';
+import ProjectHighlights from '~/components/projects/ProjectHighlights.astro';
 import {
   approachItems,
   companyFaqs,
@@ -77,27 +78,27 @@ const publishedFacts = projectIdentityFacts(siteConfig.author);
     <Breadcrumbs slot="breadcrumbs" items={breadcrumbs} tone="invert" />
   </AboutHero>
 
-  {/*
+  {
+    /*
     The rest of the entry's body. The hero takes the heading and the lede; the
     project detail, the published trust line and the closing links belong in the
     page — a hero plate is a scrim-sized object and cannot hold an article
     (measured 2026-09-30: the last sentence was clipped at the fold).
-  */}
+  */
+  }
   <section
     id="about-story"
-    class="section scroll-mt-24 bg-background"
+    class="section bg-background scroll-mt-24"
     aria-labelledby="about-story-title"
   >
     <div class="mx-auto max-w-6xl px-6">
       <div class="grid gap-10 lg:grid-cols-[minmax(0,0.6fr)_minmax(0,1fr)] lg:gap-16">
         <div class="lg:sticky lg:top-28 lg:self-start">
           <p class="eyebrow reveal">The detail</p>
-          <h2 id="about-story-title" class="display-md reveal-2 mt-6">
-            The project, in facts
-          </h2>
+          <h2 id="about-story-title" class="display-md reveal-2 mt-6">The project, in facts</h2>
           <p class="text-foreground-muted reveal-3 mt-6 max-w-[38ch] text-pretty">
-            The project, its location and its published figures — and the two
-            things the team confirms rather than prints.
+            The project, its location and its published figures, and the two things the team
+            confirms rather than prints.
           </p>
         </div>
 
@@ -109,6 +110,8 @@ const publishedFacts = projectIdentityFacts(siteConfig.author);
       </div>
     </div>
   </section>
+
+  <ProjectHighlights variant="compact" id="about-highlights" />
 
   <ApproachStrip
     eyebrow="Our approach"
@@ -160,7 +163,7 @@ const publishedFacts = projectIdentityFacts(siteConfig.author);
     id="about-facts"
     eyebrow="Published details"
     title="The details a buyer asks for first."
-    intro="Project type, plot sizes and location are published here. The approval numbers and the documents behind them — approval letter, layout plan, title information — are on the project page and shared on request."
+    intro="Project type, plot sizes and location are published here. The approval numbers and the documents behind them (approval letter, layout plan, title information) are on the project page and shared on request."
     facts={publishedFacts}
   />
 
@@ -174,15 +177,17 @@ const publishedFacts = projectIdentityFacts(siteConfig.author);
 
   <HomeCta
     title="Talk to the team."
-    body="Ask for current availability, pricing, or a site visit at Mamidipally, near Rudraram — the team walks you through the documents behind the published details."
+    body="Ask for current availability, pricing, or a site visit at Mamidipally, near Rudraram. The team walks you through the documents behind the published details."
     href="/contact-us/"
     label="Book a site visit"
     track="site_visit"
     dialog="enquiry-dialog"
   />
 
-  {/* The RealEstateAgent node is not emitted here: SEO.astro already ships it
+  {
+    /* The RealEstateAgent node is not emitted here: SEO.astro already ships it
       on every page, and this page used to emit a second byte-identical copy of
-      the same @id in the same document. */}
+      the same @id in the same document. */
+  }
   <JsonLd schema={createFAQSchema(companyFaqs)} />
 </PageLayout>

@@ -29,7 +29,7 @@ const STATIC_PAGES: Array<{ slug: string; title: string; description: string; en
     slug: 'contact-us',
     title: 'Contact us',
     description:
-      'Call, message or email the Tranquill Infra team — phone, WhatsApp, our Miyapur office address in Hyderabad, business hours and a contact form on this page.',
+      'Call, message or email the Tranquill Infra team: phone, WhatsApp, our Miyapur office address in Hyderabad, business hours and a contact form on this page.',
   },
   {
     slug: 'privacy-policy',
@@ -92,7 +92,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
     return {
       params: { slug: `blog/${page}` },
       props: {
-        title: `Insights — page ${page}`,
+        title: `Insights, page ${page}`,
         description:
           'Guides on plot buying, approvals, registration and verification in Telangana, plus Tranquill City project updates.',
         type: 'website' as const,

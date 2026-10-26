@@ -224,7 +224,7 @@ const siteConfig: SiteConfig = {
    * step and tells the team which project the message is about.
    */
   whatsapp: `https://wa.me/919550362288?text=${encodeURIComponent(
-    'Hi Tranquill Infra, I would like to know more about Tranquill City — plot availability, pricing and the documents.'
+    'Hi Tranquill Infra, I would like to know more about Tranquill City: plot availability, pricing and the documents.'
   )}`,
   office: { ...registeredOffice, lines: officeLines() },
   // Derived from `office`, not typed again: see the `address` field above.

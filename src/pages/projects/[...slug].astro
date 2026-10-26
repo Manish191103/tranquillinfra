@@ -38,8 +38,11 @@ import ProjectHero from '~/components/projects/ProjectHero.astro';
 import ProjectStats from '~/components/projects/ProjectStats.astro';
 import ProjectStory from '~/components/projects/ProjectStory.astro';
 import ProjectPlan from '~/components/projects/ProjectPlan.astro';
+import PublishedPosition from '~/components/projects/PublishedPosition.astro';
+import SitePlanExplorer from '~/components/projects/SitePlanExplorer.astro';
 import ProjectAmenities from '~/components/projects/ProjectAmenities.astro';
-import ProjectLocation from '~/components/projects/ProjectLocation.astro';
+import ProjectHighlights from '~/components/projects/ProjectHighlights.astro';
+import ProjectConnectivity from '~/components/projects/ProjectConnectivity.astro';
 import ProjectTestimonials from '~/components/projects/ProjectTestimonials.astro';
 import FactsSection from '~/components/patterns/FactsSection.astro';
 import FaqSection from '~/components/patterns/FaqSection.astro';
@@ -141,7 +144,8 @@ const videoSchemas = (data.testimonials?.items ?? [])
 <PageLayout title={data.title} description={data.description}>
   <ProjectHero
     eyebrow={data.projectType}
-    title={data.title}
+    title={data.displayTitle}
+    subtitle="Villa plots in Mamidipally, near Rudraram & Patancheru"
     location={data.location}
     intro={data.intro}
     hero={data.hero}
@@ -150,6 +154,12 @@ const videoSchemas = (data.testimonials?.items ?? [])
   </ProjectHero>
 
   <ProjectStats stats={stats} />
+
+  <ProjectHighlights
+    eyebrow="Project highlights"
+    title="Everything in the brochure, in one view."
+    showFeatures={false}
+  />
 
   <ProjectStory
     eyebrow={data.story.eyebrow}
@@ -160,12 +170,23 @@ const videoSchemas = (data.testimonials?.items ?? [])
     Content={Content}
   />
 
+  <SitePlanExplorer
+    id="plan-explorer"
+    surface="paper"
+    eyebrow="Interactive layout"
+    title="Explore all 82 plots."
+    intro="The brochure layout plan, redrawn so you can zoom in, tap any plot for its size and frontage, and highlight plots by size."
+  />
+
   <ProjectPlan
     eyebrow={data.plan.eyebrow}
     title={data.plan.title}
     intro={data.plan.intro}
     plan={data.plan}
   />
+
+  {/* The layout, the numbers, the approvals: moved here from the homepage. */}
+  <PublishedPosition />
 
   <ProjectAmenities
     eyebrow={data.amenities.eyebrow}
@@ -175,25 +196,26 @@ const videoSchemas = (data.testimonials?.items ?? [])
     groups={data.amenities.groups}
   />
 
-  <ProjectLocation
+  {/* The location: brochure location map, corridor and landmark groups. */}
+  <ProjectConnectivity
     eyebrow={data.locationSection.eyebrow}
     title={data.locationSection.title}
-    intro={data.locationSection.intro}
-    note={data.locationSection.note}
-    groups={data.locationSection.groups}
+    intro={data.locationSection.intro.replace(/ The list below.*$/, '')}
+    id="project-location"
     directionsUrl={data.directionsUrl}
-    coordinates={data.coordinates}
   />
 
-  {data.testimonials && data.testimonials.items.length > 0 && (
-    <ProjectTestimonials
-      eyebrow={data.testimonials.eyebrow}
-      title={data.testimonials.title}
-      intro={data.testimonials.intro}
-      note={data.testimonials.note}
-      items={data.testimonials.items}
-    />
-  )}
+  {
+    data.testimonials && data.testimonials.items.length > 0 && (
+      <ProjectTestimonials
+        eyebrow={data.testimonials.eyebrow}
+        title={data.testimonials.title}
+        intro={data.testimonials.intro}
+        note={data.testimonials.note}
+        items={data.testimonials.items}
+      />
+    )
+  }
 
   <FactsSection
     id="project-facts"

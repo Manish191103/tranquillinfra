@@ -90,7 +90,7 @@ function watchLabel(item: TestimonialItem, index: number): string {
  * own position in the rail, and a named item still wins outright.
  */
 function dialogTitle(item: TestimonialItem, index: number): string {
-  if (item.name) return item.context ? `${item.name} — ${item.context}` : item.name;
+  if (item.name) return item.context ? `${item.name}, ${item.context}` : item.name;
   return `Buyer account ${index + 1} of ${items.length}`;
 }
 

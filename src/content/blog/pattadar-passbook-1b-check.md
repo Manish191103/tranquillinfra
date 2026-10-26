@@ -15,19 +15,19 @@ tags:
   - due diligence
   - title check
 sources:
-  - label: Telangana Bhu Bharati — the state's official land records system (GIS and land record services)
+  - label: 'Telangana Bhu Bharati: the state''s official land records system (GIS and land record services)'
     url: https://bhubharati.telangana.gov.in/homePage?lang=en
-  - label: Telangana Bhu Bharati — GIS land search by survey number
+  - label: 'Telangana Bhu Bharati: GIS land search by survey number'
     url: https://bhubharati.telangana.gov.in/gis
-  - label: Telangana Bhu Bharati — land details search
+  - label: 'Telangana Bhu Bharati: land details search'
     url: https://bhubharati.telangana.gov.in/knowLandStatus
-  - label: Telangana Revenue Department — the department-level services
+  - label: 'Telangana Revenue Department: the department-level services'
     url: https://www.telangana.gov.in/departments/revenue/
-  - label: Telangana MeeSeva — state service portal where revenue services are also listed
+  - label: 'Telangana MeeSeva: state service portal where revenue services are also listed'
     url: https://ts.meeseva.telangana.gov.in/
-  - label: Telangana Bhu Bharati (Record of Rights in Land) Rules, 2025 — G.O.Ms.No.39, dated 14.04.2025
+  - label: 'Telangana Bhu Bharati (Record of Rights in Land) Rules, 2025: G.O.Ms.No.39, dated 14.04.2025'
     url: https://bhubharati.telangana.gov.in/assets/images/userManuals/G_O_Ms_no_39_Dated_14_04_2025.pdf
-  - label: Sangareddy district administration — district revenue office details
+  - label: 'Sangareddy district administration: district revenue office details'
     url: https://sangareddy.telangana.gov.in/
 faq:
   - question: Is the pattadar passbook enough to prove a seller owns a plot?
@@ -42,7 +42,7 @@ faq:
     answer: It is widely quoted online and is not the statute to rely on for the current position. The record is run under the Telangana Land Revenue Act, 1979 and the Telangana Bhu Bharati (Record of Rights in Land) Act, 2024, with the Bhu Bharati (Record of Rights in Land) Rules, 2025 notified by G.O.Ms.No.39 dated 14.04.2025. Read those, and confirm with the Revenue Department which enactment applies to the document in your hand.
 ---
 
-Before anything else — before the price, before the site visit, before the token — find out whether the person selling you the plot is the person the state's own record names as owner of that survey number. That single question is what the pattadar passbook and the 1B extract exist to answer, and it is the cheapest check available to you. This is general buyer education, not legal advice. Land record procedure changes, and the record for one survey number can be corrected by an order you have not seen, so confirm everything on the official surface named below before you rely on it.
+Before anything else (before the price, before the site visit, before the token) find out whether the person selling you the plot is the person the state's own record names as owner of that survey number. That single question is what the pattadar passbook and the 1B extract exist to answer, and it is the cheapest check available to you. This is general buyer education, not legal advice. Land record procedure changes, and the record for one survey number can be corrected by an order you have not seen, so confirm everything on the official surface named below before you rely on it.
 
 This post sits inside the broader [plot verification checklist](/blog/verify-plot-hyderabad/). Read it as the first spoke of that checklist rather than as a substitute for it.
 
@@ -61,7 +61,7 @@ What it is not: it is a statement about rights, not a valuation, not a title gua
 
 ## 2. Check the record yourself, by survey number
 
-You do not need to take the seller's word, or even the seller's document, to start. **Bhu Bharati is Telangana's current official land records system, and it succeeds the earlier Dharani system** — the Dharani-era sites and screenshots you find in older articles are the previous platform, so treat anything that only describes Dharani as describing the past arrangement. The current place to look is the [Bhu Bharati portal](https://bhubharati.telangana.gov.in/homePage?lang=en).
+You do not need to take the seller's word, or even the seller's document, to start. **Bhu Bharati is Telangana's current official land records system, and it succeeds the earlier Dharani system**: the Dharani-era sites and screenshots you find in older articles are the previous platform, so treat anything that only describes Dharani as describing the past arrangement. The current place to look is the [Bhu Bharati portal](https://bhubharati.telangana.gov.in/homePage?lang=en).
 
 The portal publishes two surfaces a buyer can use directly:
 
@@ -73,13 +73,13 @@ In order:
 1. Get the **survey number** of the plot from the seller's document. Do not accept a plot number from a layout plan as a substitute; a plot number is meaningful only against the sanctioned layout.
 2. Enter the district, mandal, village and survey number in the GIS search. Sangareddy district administration publishes district office details [on its own site](https://sangareddy.telangana.gov.in/) if you need to confirm the mandal a village falls under.
 3. Compare what the portal returns with what the seller's passbook or 1B says. Any difference in the holder's name, the extent, or the extent of the linked numbers is a reason to stop and ask, not a reason to proceed quickly.
-4. If the numbers do not match at all, ask the Revenue Department office for that mandal — usually the Tahasildar's office, working through the MRO — to explain the record before you go further.
+4. If the numbers do not match at all, ask the Revenue Department office for that mandal (usually the Tahasildar's office, working through the MRO) to explain the record before you go further.
 
 ## 3. Get an official copy, and pay the office that issues it
 
 A screenshot is not a document. Ask the seller for the **1B extract** itself, and, if you want your own copy rather than the seller's, request one from the office that maintains the record.
 
-The route is the Revenue Department — the Tahasildar or MRO office for the mandal — and the service is also listed on [MeeSeva](https://ts.meeseva.telangana.gov.in/) alongside the Bhu Bharati portal. Ask there for the current process, the documents required, and the fee.
+The route is the Revenue Department, the Tahasildar or MRO office for the mandal, and the service is also listed on [MeeSeva](https://ts.meeseva.telangana.gov.in/) alongside the Bhu Bharati portal. Ask there for the current process, the documents required, and the fee.
 
 One point we will not guess at: whether a prospective buyer who is not the pattadar can pull an official extract for a survey number, and on what authority, is not something we can confirm from a published rule. Ask the MRO or Tahasildar for that mandal what a third party needs to produce, and ask for the answer in writing if it matters to you. Until you have that, treat the seller's copy as the starting point and your own GIS check as corroboration, not as a substitute for an official extract in your own hands.
 
@@ -96,20 +96,20 @@ That gap is why the [land-conversion record is a separate document and a separat
 Even a current, official 1B extract leaves several things open, and each needs its own check:
 
 - **Whether the title chain is sound.** The extract tells you the recorded holder. It does not trace every link document back to the origin of the title. That chain has to be read.
-- **Whether there are registered claims.** Recorded mortgages, prior sales and liabilities are the subject of a separate search — see [the encumbrance certificate guide](/blog/encumbrance-certificate-telangana/). The 1B is not a substitute for it.
+- **Whether there are registered claims.** Recorded mortgages, prior sales and liabilities are the subject of a separate search. See [the encumbrance certificate guide](/blog/encumbrance-certificate-telangana/). The 1B is not a substitute for it.
 - **Whether the plot is inside the sanctioned layout, or reserved.** A survey number can be perfectly validly recorded and still be open space, amenity land, a road margin, or a plot excluded from sale.
 - **Whether the parcel is free of statutory overlays** such as lake buffer, nala, road widening or prohibited-land classification. These sit outside the record of rights.
 
 ## 6. Which statute is actually governing this
 
-Most online articles, including several written recently, still cite the **Telangana Land Records (Record of Rights in Land and Pattadar Pass Books) Act, 1971** as the governing statute for pattadar pass books and 1B extracts. Treat that citation with care. The Revenue Department runs the record on the **Telangana Land Revenue Act, 1979** together with the **Telangana Bhu Bharati (Record of Rights in Land) Act, 2024**, and the rules made under it — the **Bhu Bharati (Record of Rights in Land) Rules, 2025**, notified by **G.O.Ms.No.39 dated 14.04.2025**, whose text is published [on the Bhu Bharati portal](https://bhubharati.telangana.gov.in/assets/images/userManuals/G_O_Ms_no_39_Dated_14_04_2025.pdf). Read that rules text, and confirm the position applicable to the document in your hand with the [Revenue Department](https://www.telangana.gov.in/departments/revenue/).
+Most online articles, including several written recently, still cite the **Telangana Land Records (Record of Rights in Land and Pattadar Pass Books) Act, 1971** as the governing statute for pattadar pass books and 1B extracts. Treat that citation with care. The Revenue Department runs the record on the **Telangana Land Revenue Act, 1979** together with the **Telangana Bhu Bharati (Record of Rights in Land) Act, 2024**, and the rules made under it: the **Bhu Bharati (Record of Rights in Land) Rules, 2025**, notified by **G.O.Ms.No.39 dated 14.04.2025**, whose text is published [on the Bhu Bharati portal](https://bhubharati.telangana.gov.in/assets/images/userManuals/G_O_Ms_no_39_Dated_14_04_2025.pdf). Read that rules text, and confirm the position applicable to the document in your hand with the [Revenue Department](https://www.telangana.gov.in/departments/revenue/).
 
 The practical point needs no fine legal reading: if your adviser, the seller, or a website is relying on the 1971 Act alone, ask them which enactment they are applying and where they read it. Most of the material online that a buyer meets has not caught up with the change.
 
 ## A Tranquill City example
 
-Tranquill City sits in Mamidipally village, Kandi mandal, Sangareddy district — RERA **REA01100108192**, HMDA **2103/HMDA/SWDL/2026**. Put both numbers through the official portals yourself, alongside the survey-number check above.
+Tranquill City sits in Mamidipally village, Kandi mandal, Sangareddy district, RERA **REA01100108192**, HMDA **2103/HMDA/SWDL/2026**. Put both numbers through the official portals yourself, alongside the survey-number check above.
 
 When you enquire about [Tranquill City](/projects/tranquill-city/), ask for the 1B extract of the parcel you are considering and the layout plan showing its survey number, then check both the way this post describes.
 
-Call or WhatsApp **+91 95503 62288**, or use the form on the [contact page](/contact-us/) to ask for those documents. Bring your property lawyer to the table before you sign anything — the sequence we would suggest is: 1B and passbook first, then the [encumbrance search](/blog/encumbrance-certificate-telangana/), then the conversion record if the classification is agricultural, then the layout approval, and only then a token. More on how these documents fit the wider picture in the [Insights archive](/blog/).
+Call or WhatsApp **+91 95503 62288**, or use the form on the [contact page](/contact-us/) to ask for those documents. Bring your property lawyer to the table before you sign anything: the sequence we would suggest is: 1B and passbook first, then the [encumbrance search](/blog/encumbrance-certificate-telangana/), then the conversion record if the classification is agricultural, then the layout approval, and only then a token. More on how these documents fit the wider picture in the [Insights archive](/blog/).

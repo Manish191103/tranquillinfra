@@ -14,17 +14,17 @@ tags:
   - Telangana
   - Registration and Stamps
 sources:
-  - label: Telangana Registration & Stamps — Encumbrance Certificate (how to search, 1983 cut-off, department disclaimers)
+  - label: 'Telangana Registration & Stamps: Encumbrance Certificate (how to search, 1983 cut-off, department disclaimers)'
     url: https://registration.telangana.gov.in/ec.htm
-  - label: Telangana Registration & Stamps — FAQs on registration (Q38 definition, Q39 on nil EC, Q19 on registration)
+  - label: 'Telangana Registration & Stamps: FAQs on registration (Q38 definition, Q39 on nil EC, Q19 on registration)'
     url: https://registration.telangana.gov.in/faqsRegistration.htm
-  - label: Telangana Registration & Stamps — Table of Registration Fees effective 02.09.2021 (Section 78, Registration Act 1908)
+  - label: 'Telangana Registration & Stamps: Table of Registration Fees effective 02.09.2021 (Section 78, Registration Act 1908)'
     url: https://registration.telangana.gov.in/resources/downloads/RegistrationFees/RegistrationFeesRevison_02.09.2021.pdf
-  - label: Telangana MeeSeva — service centres and online services
+  - label: 'Telangana MeeSeva: service centres and online services'
     url: https://tg.meeseva.gov.in
 faq:
   - question: What does an encumbrance certificate actually tell me?
-    answer: It tells you which transactions the Registration & Stamps Department has indexed against a property description over the period searched — mortgages, prior sales, registered charges and registered liabilities. It records the department's index, nothing more. The department's own FAQ defines it as a record showing registered transactions, and states that where no deeds are registered it issues a nil encumbrance certificate. Confirm the position on the department's EC page at registration.telangana.gov.in before you rely on a certificate.
+    answer: 'It tells you which transactions the Registration & Stamps Department has indexed against a property description over the period searched: mortgages, prior sales, registered charges and registered liabilities. It records the department''s index, nothing more. The department''s own FAQ defines it as a record showing registered transactions, and states that where no deeds are registered it issues a nil encumbrance certificate. Confirm the position on the department''s EC page at registration.telangana.gov.in before you rely on a certificate.'
   - question: I have a nil encumbrance certificate. Is the land clear?
     answer: No, and the department says so itself. A nil EC means only that no registered transaction or liability was found for the period searched. The department's exact words are that "unregistered transactions are not included in this certificate since such details are not available with Registration Department." An oral agreement, an unregistered sale deed, a family partition never registered, or a claim under a court decree that has not been indexed will all stay invisible to an EC. Read it as one input into title review, never as the review.
   - question: How much does an encumbrance certificate cost in Telangana?
@@ -32,13 +32,13 @@ faq:
   - question: How far back does the online EC search reach?
     answer: The department states that online EC is available for transactions from 01-01-1983 only. If you need an encumbrance record for a period before that date, the online search cannot produce it and you must approach the jurisdictional Sub-Registrar. Confirm the cut-off on the department's EC page, since it is a statement of system coverage rather than a rule.
   - question: Why are there several different counters mentioned for getting an EC?
-    answer: Because the department's own FAQ and its later circulars do not fully agree. The FAQ says certificates are issued by MeeSeva centres and Sub Registrar and District Registrar offices. Later departmental instructions — G1/13559/2012 dated 24.07.2012 and Government Memo No. 29588/Regn-I/A1/2012-3 dated 06.07.2013 — stopped issue of encumbrance certificates and certified copies from SRO offices in the remaining districts and moved them to MeeSeva. Treat MeeSeva as the route to plan for, and confirm SRO availability by telephone before travelling. Neither the FAQ nor the circular index states whether MeeSeva levies an additional service charge.
+    answer: Because the department's own FAQ and its later circulars do not fully agree. The FAQ says certificates are issued by MeeSeva centres and Sub Registrar and District Registrar offices. Later departmental instructions, G1/13559/2012 dated 24.07.2012 and Government Memo No. 29588/Regn-I/A1/2012-3 dated 06.07.2013, stopped issue of encumbrance certificates and certified copies from SRO offices in the remaining districts and moved them to MeeSeva. Treat MeeSeva as the route to plan for, and confirm SRO availability by telephone before travelling. Neither the FAQ nor the circular index states whether MeeSeva levies an additional service charge.
   - question: Does an encumbrance certificate prove the seller's title?
     answer: >-
       No. It proves what the registration index contains about a property description. It does not establish who owns the land, whether the seller has title to convey, whether the land is assigned or prohibited land, or whether a layout approval exists for the parcel. The department puts it directly: "EC cannot be taken as a sole criterion to buy a property or lend money." The [plot verification guide](/blog/verify-plot-hyderabad/) sets out the documents that answer those questions.
 ---
 
-If you take one thing from this page, take this: an encumbrance certificate lists **registered** transactions only, and the Telangana Registration & Stamps Department says so in its own FAQ — "EC cannot be taken as a sole criterion to buy a property or lend money." A nil EC is a narrower result than most buyers assume, and the department's definition of it is worth reading in full before you treat one as comfort.
+If you take one thing from this page, take this: an encumbrance certificate lists **registered** transactions only, and the Telangana Registration & Stamps Department says so in its own FAQ, "EC cannot be taken as a sole criterion to buy a property or lend money." A nil EC is a narrower result than most buyers assume, and the department's definition of it is worth reading in full before you treat one as comfort.
 
 That is not a criticism of the certificate. It is a well-scoped document doing a well-scoped job, and the mistake is asking it a question it was never built to answer. This is general buyer education for plots in Telangana, not legal advice, and it is written so you can check every claim at the office that issues it.
 
@@ -59,7 +59,7 @@ A nil EC means that no deeds were found registered against the property describe
 
 > "If Certificate is issued in this form, it means that there are no registered transactions / liabilities on the property for a given period of time; and unregistered transactions are not included in this certificate since such details are not available with Registration Department."
 
-Read that second clause as the operative one. An unregistered sale deed, an oral agreement to sell, an unregistered family partition, a claim under a decree never indexed — none of these appear on a nil EC. Not because they do not exist, but because the Registration Department holds no record of them.
+Read that second clause as the operative one. An unregistered sale deed, an oral agreement to sell, an unregistered family partition, a claim under a decree never indexed: none of these appear on a nil EC. Not because they do not exist, but because the Registration Department holds no record of them.
 
 The same FAQ entry adds two further cautions worth carrying into any negotiation:
 
@@ -90,7 +90,7 @@ The fees come from the **Table of Registration Fees effective 02.09.2021**, noti
 - Encumbrance certificate for a search of **more than 30 years: Rs.1,000 per certificate**.
 - Conducting search and issue of a certified copy: Rs.500 per certificate.
 
-That table superseded the earlier 2013 fee structure. Fees are set by departmental order and are revised by further order, so confirm the figure in force on the day you pay — on the department's fee table and at the counter.
+That table superseded the earlier 2013 fee structure. Fees are set by departmental order and are revised by further order, so confirm the figure in force on the day you pay, on the department's fee table and at the counter.
 
 ### Two errors you will meet online
 
@@ -98,7 +98,7 @@ Both are common enough to name.
 
 **The stale 2013 figure.** Several live commercial pages still quote Rs.200 for a search up to 30 years and Rs.500 beyond it. That is the superseded 2013 table, roughly half the current figure, and the old order still sits in the department's own downloads folder. If a source quotes you Rs.200, ask which instrument it cites and check the date on it.
 
-**The garbled age-based split.** A number of aggregator sites restate the two tiers as being about the _applicant's_ age — a different rate below 30 and another at 30 and above. That is wrong. The split in the gazette table is by the **search period**, that is, how far back you are asking the index to reach. It has nothing to do with the age of the person applying.
+**The garbled age-based split.** A number of aggregator sites restate the two tiers as being about the _applicant's_ age: a different rate below 30 and another at 30 and above. That is wrong. The split in the gazette table is by the **search period**, that is, how far back you are asking the index to reach. It has nothing to do with the age of the person applying.
 
 Also note the split is per certificate, not per year searched, and the period is the one you request rather than a fixed default.
 
@@ -110,7 +110,7 @@ If the chain of title may run back before that date, the online search will not 
 
 ## MeeSeva and the Sub-Registrar: which counter does what
 
-The department's own published material handles this least cleanly, so here is the position as it stands. The FAQ says encumbrance certificates are issued by "MeeSeva Centres and Sub Registrar and District Registrar Offices." However, later departmental instructions — Memo No. G1/13559/2012 dated 24.07.2012, and Government Memo No. 29588/Regn-I/A1/2012-3 dated 06.07.2013 — stopped the issue of encumbrance certificates and certified copies from Sub-Registrar offices in the remaining districts and moved delivery to the MeeSeva channel. The FAQ text appears not to have been revised to reflect that.
+The department's own published material handles this least cleanly, so here is the position as it stands. The FAQ says encumbrance certificates are issued by "MeeSeva Centres and Sub Registrar and District Registrar Offices." However, later departmental instructions (Memo No. G1/13559/2012 dated 24.07.2012, and Government Memo No. 29588/Regn-I/A1/2012-3 dated 06.07.2013) stopped the issue of encumbrance certificates and certified copies from Sub-Registrar offices in the remaining districts and moved delivery to the MeeSeva channel. The FAQ text appears not to have been revised to reflect that.
 
 Practical guidance:
 
@@ -137,12 +137,12 @@ The department's own recommendation is the right one: undertake a comprehensive 
 
 1. **Get the survey number and plot number** from the approved plan, and the SRO jurisdiction for the village.
 2. **Run the EC yourself** on the department's portal, across all three search modes if needed, and save the output.
-3. **Pay for the certificate** at the current fee — Rs.500 up to 30 years, Rs.1,000 beyond — and confirm the figure in force that day.
+3. **Pay for the certificate** at the current fee (Rs.500 up to 30 years, Rs.1,000 beyond) and confirm the figure in force that day.
 4. **If the chain predates 01-01-1983**, go to the Sub-Registrar for the earlier period rather than relying on the online result.
 5. **Give the result to your lawyer** as one document in the file, not as the file.
-6. **Complete the rest of the checks** — revenue record, land classification, approvals, and the status of the specific plot on the approved plan.
+6. **Complete the rest of the checks**: revenue record, land classification, approvals, and the status of the specific plot on the approved plan.
 
-For a plot at Tranquill City (Sy. No. 411/PART, Mamidipally, Kandi mandal, Sangareddy district), ask the team for the EC covering that plot's survey number, alongside the pattadar passbook and 1B. Twelve of the layout's 82 parcels are held under HMDA Mortgage conditions — they should not appear in anything you are asked to pay for. The [Tranquill City page](/projects/tranquill-city/) sets out the layout and the approvals.
+For a plot at Tranquill City (Sy. No. 411/PART, Mamidipally, Kandi mandal, Sangareddy district), ask the team for the EC covering that plot's survey number, alongside the pattadar passbook and 1B. Twelve of the layout's 82 parcels are held under HMDA Mortgage conditions. They should not appear in anything you are asked to pay for. The [Tranquill City page](/projects/tranquill-city/) sets out the layout and the approvals.
 
 ## The next step
 

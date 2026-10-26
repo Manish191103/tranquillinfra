@@ -14,11 +14,11 @@ tags:
   - due diligence
   - buying guide
 sources:
-  - label: Hyderabad Metropolitan Development Authority — FAQs
+  - label: 'Hyderabad Metropolitan Development Authority: FAQs'
     url: https://www.hmda.gov.in/faqs/
   - label: Telangana Real Estate Regulatory Authority
     url: https://rera.telangana.gov.in/
-  - label: Telangana RERA public project search — captcha-gated, no permalink for a single number
+  - label: 'Telangana RERA public project search: captcha-gated, no permalink for a single number'
     url: https://rerait.telangana.gov.in/SearchList/Search
 faq:
   - question: How do I verify if a plot is HMDA approved in Hyderabad?
@@ -35,7 +35,7 @@ faq:
     answer: Ask to see the approach road, the plot boundary and number, the approved layout plan, current infrastructure, available documents, pricing, maintenance arrangements, and the next step for receiving written information. Bring your own questions and adviser where appropriate.
 ---
 
-Buying a plot is usually a major financial decision. The difference between a well-understood purchase and a disputed one rarely shows in the brochure — it shows in the documents. This is general buyer education, not legal advice; planning rules and document requirements depend on the land, project, and transaction. Use this checklist to prepare questions for the developer, the relevant authority, and your own property lawyer.
+Buying a plot is usually a major financial decision. The difference between a well-understood purchase and a disputed one rarely shows in the brochure. It shows in the documents. This is general buyer education, not legal advice; planning rules and document requirements depend on the land, project, and transaction. Use this checklist to prepare questions for the developer, the relevant authority, and your own property lawyer.
 
 This guide applies to any residential plot in Hyderabad, regardless of which developer or venture you are considering.
 
@@ -43,16 +43,16 @@ An informed buyer is good for everyone, so we publish this. It is the same stand
 
 ## A Tranquill City example
 
-For example, Tranquill City publishes RERA registration number **REA01100108192** and HMDA layout permission number **2103/HMDA/SWDL/2026**. A buyer can use those exact references to check the project against the HMDA layout permission report and the Telangana RERA record, then compare the project name, location, survey details, and layout documents. For the RERA number, read it off the Form-C certificate the promoter gives you rather than from this page — the reasons are in section 2. This example is for practical checking only, not legal advice.
+For example, Tranquill City publishes RERA registration number **REA01100108192** and HMDA layout permission number **2103/HMDA/SWDL/2026**. A buyer can use those exact references to check the project against the HMDA layout permission report and the Telangana RERA record, then compare the project name, location, survey details, and layout documents. For the RERA number, read it off the Form-C certificate the promoter gives you rather than from this page, the reasons are in section 2. This example is for practical checking only, not legal advice.
 
-## 1. Ask for the layout approval details — get the number, not the claim
+## 1. Ask for the layout approval details: get the number, not the claim
 
 Ask which planning authority reviewed the layout and request the exact approval or permission number. Within the Hyderabad Metropolitan Region, HMDA may be relevant; in other locations, DTCP or another authority may apply. Confirm the correct authority for the project rather than relying on an advertisement. Which authority has jurisdiction over a given village, and what a Gram Panchayat approval is actually worth, is the subject of its own guide: [HMDA vs DTCP: which approved your plot?](/blog/hmda-or-dtcp-plot-approval-telangana/).
 
 The single most important habit: **ask for the exact approval number**, not the word "approved."
 
 - Ask whether the document is an HMDA **Layout Permission (LP)** or another applicable permission.
-- Verify the number through the relevant official authority or portal, such as the [HMDA Layout Permission Report](https://masterplan.hmda.gov.in/planning/LO.aspx), where applicable. That report takes the year, file number, district, mandal and village and returns the proceedings and the sanctioned plan — it does not resolve a number on its own, so have all five with you.
+- Verify the number through the relevant official authority or portal, such as the [HMDA Layout Permission Report](https://masterplan.hmda.gov.in/planning/LO.aspx), where applicable. That report takes the year, file number, district, mandal and village and returns the proceedings and the sanctioned plan. It does not resolve a number on its own, so have all five with you.
 - Match the **survey numbers, village, and mandal** in the approval letter against the plot you are being shown.
 
 A glossy "approved" badge on a website or hoarding is not evidence. The applicable permission number and independent verification are what matter.
@@ -75,7 +75,7 @@ You are not buying a plot; you are buying the seller's legal right to that plot.
 
 - Ask for the **title deed** and the chain of **link documents** showing how ownership passed to the current seller.
 - Confirm the seller named on the documents is the entity signing your agreement.
-- Have an independent property lawyer read the documents — this is not the place to save money.
+- Have an independent property lawyer read the documents: this is not the place to save money.
 
 Before the link documents, check the state record. The **pattadar passbook** and the **1B extract** show who is recorded as owner of the survey number; [checking the pattadar passbook and 1B extract in Telangana](/blog/pattadar-passbook-1b-check/) sets out how.
 
@@ -87,7 +87,7 @@ An **encumbrance certificate (EC)** records every registered transaction and lia
 - It reveals outstanding **mortgages, prior sales, or legal claims**.
 - Note that an EC shows registered transactions; it does not capture every possible dispute, which is why it is one check among several.
 
-For what an EC actually records, what "nil encumbrance" does and does not mean, and the routes by which one is obtained, read [encumbrance certificates in Telangana](/blog/encumbrance-certificate-telangana/). What an EC costs, and the registration charges that follow it, are set out in [plot registration charges in Telangana](/blog/plot-registration-telangana-costs/). The taxes a buyer meets at the sub-registrar and afterwards — TDS under section 393 of the Income-tax Act, 2025, and capital gains under section 72 — are covered in [taxes on a plot purchase in Telangana](/blog/taxes-on-plot-purchase-telangana/).
+For what an EC actually records, what "nil encumbrance" does and does not mean, and the routes by which one is obtained, read [encumbrance certificates in Telangana](/blog/encumbrance-certificate-telangana/). What an EC costs, and the registration charges that follow it, are set out in [plot registration charges in Telangana](/blog/plot-registration-telangana-costs/). The taxes a buyer meets at the sub-registrar and afterwards (TDS under section 393 of the Income-tax Act, 2025, and capital gains under section 72) are covered in [taxes on a plot purchase in Telangana](/blog/taxes-on-plot-purchase-telangana/).
 
 ## 5. Ask about the specific plot, not only the layout
 
@@ -107,11 +107,11 @@ Approval to build is a later and separate instrument again. [Building permission
 
 ## 6. Visit the site and get important details in writing
 
-- **Visit the site** and confirm roads, drainage, water, and electricity exist as described — not just on a plan. If you are looking at a layout rather than a completed plot, [what is around it matters too](/blog/rudraram-patancheru-corridor/).
+- **Visit the site** and confirm roads, drainage, water, and electricity exist as described. Not just on a plan. If you are looking at a layout rather than a completed plot, [what is around it matters too](/blog/rudraram-patancheru-corridor/).
 - Check **approach-road ownership and width**.
-- Get every claim that matters to you — plot number, dimensions, facing, road width, possession, refund terms — **in writing in the agreement**.
+- Get every claim that matters to you (plot number, dimensions, facing, road width, possession, refund terms) **in writing in the agreement**.
 - If financing matters, ask your lender whether it will consider **that exact plot**, not merely the project in general. What a bank will fund on bare land, and what the tax treatment looks like once you build, is covered in [plot loans in Telangana](/blog/plot-loans-telangana/).
 
 ## A note on how we work
 
-At Tranquill Infra we would rather you verify us than trust us. When you enquire about [Tranquill City](/projects/tranquill-city/), ask our team for the approval documentation, the layout plan, and the title details — we will share what has been reviewed and help you check it independently. Bring your lawyer. A purchase this important deserves nothing less.
+At Tranquill Infra we would rather you verify us than trust us. When you enquire about [Tranquill City](/projects/tranquill-city/), ask our team for the approval documentation, the layout plan, and the title details. We will share what has been reviewed and help you check it independently. Bring your lawyer. A purchase this important deserves nothing less.

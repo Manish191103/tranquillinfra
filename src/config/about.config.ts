@@ -135,7 +135,7 @@ export const companyFaqs: Array<{ question: string; answer: string }> = [
   {
     question: 'Where is the office, and when can I visit?',
     answer:
-      'The office is in Nandini Nagar, Miyapur, Hyderabad — open Monday and Wednesday to Sunday, 9:00 AM to 6:00 PM, and closed on Tuesday. Call ahead and the team will guide you in.',
+      'The office is in Nandini Nagar, Miyapur, Hyderabad. It is open Monday and Wednesday to Sunday, 9:00 AM to 6:00 PM, and closed on Tuesday. Call ahead and the team will guide you in.',
   },
   {
     question: 'How does Tranquill Infra decide what to publish?',
@@ -149,6 +149,6 @@ export const companyFaqs: Array<{ question: string; answer: string }> = [
   {
     question: 'Should I verify the project for myself?',
     answer:
-      'Yes — that is the approach we encourage. Bring your own lawyer or financial adviser, ask for the approval letter, layout plan and title details, and confirm the published RERA and HMDA references on the official portals before you decide.',
+      'Yes, that is the approach we encourage. Bring your own lawyer or financial adviser, ask for the approval letter, layout plan and title details, and confirm the published RERA and HMDA references on the official portals before you decide.',
   },
 ];

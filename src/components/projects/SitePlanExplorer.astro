@@ -1,0 +1,1455 @@
+---
+/**
+ * SitePlanExplorer
+ *
+ * The brochure's layout plan redrawn as an explorable schematic: every plot
+ * is a button. Under a pointer the plot lifts and a card pops up beside the
+ * cursor with its number, size and road frontage; a click or tap pins it in
+ * the compact side panel with the enquiry action. The size chips light one
+ * band of plots, and the plan zooms (buttons, pinch, ctrl/⌘ + wheel) and pans
+ * (drag) inside its frame.
+ *
+ * Data is `src/config/site-plan.ts`. Availability is not shown: which plots
+ * are held under HMDA Mortgage is not published, so the panel sends the buyer
+ * to the team instead. Without JavaScript the plan is a static, labelled
+ * drawing and the panel keeps its intro text.
+ */
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+import { enquiryCtaTarget } from '~/lib/enquiry-cta';
+import projectConfig from '~/config/project.config';
+import { bandOf, planBox, planShapes, roadNames, sitePlots, sizeBands } from '~/config/site-plan';
+
+interface Props {
+  id?: string;
+  eyebrow: string;
+  title: string;
+  intro: string;
+  /** Section surface */
+  surface?: 'paper' | 'secondary';
+}
+
+const { id = 'site-plan', eyebrow, title, intro, surface = 'secondary' } = Astro.props;
+
+const enquiry = enquiryCtaTarget(Astro.url.pathname);
+const plotData = sitePlots.map((plot) => ({
+  no: plot.no,
+  sqyd: plot.sqyd,
+  sqm: Math.round(plot.sqyd * 0.836127 * 10) / 10,
+  roads: [...new Set(plot.roads.map((road) => roadNames[road]))],
+}));
+
+const P = planShapes;
+---
+
+<section
+  id={id}
+  class:list={[
+    'section scroll-mt-24',
+    surface === 'secondary' ? 'bg-background-secondary' : 'bg-background',
+  ]}
+  aria-labelledby={`${id}-title`}
+>
+  <div class="mx-auto max-w-7xl px-6">
+    <header class="max-w-3xl">
+      <p class="eyebrow">{eyebrow}</p>
+      <h2 id={`${id}-title`} class="display-md mt-6">{title}</h2>
+      <p class="text-foreground-muted mt-5 max-w-[56ch] text-lg text-pretty">{intro}</p>
+    </header>
+
+    <div class="sp" data-site-plan>
+      <div class="sp-stage">
+        <div class="sp-toolbar">
+          <div class="sp-filters" role="group" aria-label="Highlight plots by size">
+            <button type="button" class="sp-chip is-on" data-sp-band="all" aria-pressed="true">
+              All 82
+            </button>
+            {
+              sizeBands.map((band) => (
+                <button type="button" class="sp-chip" data-sp-band={band.id} aria-pressed="false">
+                  <i class={`sp-swatch sp-band-${band.id}`} />
+                  {band.label}
+                </button>
+              ))
+            }
+          </div>
+          <p class="sp-swipe" aria-hidden="true">
+            <Icon name="arrow-left" size="xs" /> Swipe the plan · tap a plot
+            <Icon name="arrow-right" size="xs" />
+          </p>
+          <div class="sp-zoom" role="group" aria-label="Zoom the plan">
+            <button type="button" data-sp-zoom="in" aria-label="Zoom in">
+              <Icon name="plus" size="sm" />
+            </button>
+            <button type="button" data-sp-zoom="out" aria-label="Zoom out">
+              <Icon name="minus" size="sm" />
+            </button>
+            <button type="button" data-sp-zoom="reset" aria-label="Reset the view">
+              <Icon name="compass" size="sm" />
+            </button>
+          </div>
+        </div>
+
+        <div class="sp-frame" data-sp-frame>
+          <svg
+            class="sp-svg"
+            viewBox={`0 0 ${planBox.w} ${planBox.h}`}
+            role="group"
+            aria-label="Layout plan of Tranquill City with 82 numbered plots, drawn from the brochure"
+          >
+            <g data-sp-view>
+              <defs>
+                <pattern
+                  id={`${id}-trees`}
+                  width="14"
+                  height="14"
+                  patternUnits="userSpaceOnUse"
+                  patternTransform="rotate(45)"
+                >
+                  <rect width="14" height="14" fill="#7fae6b"></rect>
+                  <line x1="0" y1="0" x2="0" y2="14" stroke="#6b9a58" stroke-width="5"></line>
+                </pattern>
+              </defs>
+              <rect width={planBox.w} height={planBox.h} class="sp-ground"></rect>
+              {/* Everything below is in the brochure's own coordinates. */}
+              <g transform={`translate(${-planBox.x} ${-planBox.y})`}>
+                <polygon class="sp-site" points={P.site}></polygon>
+                <polygon class="sp-buffer" points={P.buffer}></polygon>
+                <text
+                  class="sp-tiny sp-buffer-label"
+                  transform="translate(706 768) rotate(31)"
+                  text-anchor="middle"
+                >
+                  2 M WIDE BUFFER
+                </text>
+
+                <polygon class="sp-highway" points={P.highway}></polygon>
+                <polygon class="sp-road" points={P.road40}></polygon>
+                {P.roads.map((r) => <polygon points={r.points} class="sp-road" />)}
+
+                {/* Gold centre markings that run along the roads once the plan is in view */}
+                {P.centreLines.map((d, i) => <path d={d} class="sp-dash" style={`--i:${i}`} />)}
+
+                <text
+                  class="sp-road-label"
+                  transform={`translate(${P.highwayLabel.x} ${P.highwayLabel.y}) rotate(${P.highwayLabel.angle})`}
+                  text-anchor="middle"
+                >
+                  EXISTING 18 M ROAD · PROPOSED 90 M RRR
+                </text>
+                <text x="760" y="254" class="sp-road-label" text-anchor="middle"
+                  >EXISTING 40' ROAD</text
+                >
+                {
+                  P.roads.map((r) => (
+                    <text
+                      class="sp-road-label sp-road-label-sm"
+                      transform={`translate(${r.label[0]} ${r.label[1]}) rotate(-86.6)`}
+                      text-anchor="middle"
+                    >
+                      33' ROAD
+                    </text>
+                  ))
+                }
+
+                <polygon class="sp-park" points={P.park1.points} fill={`url(#${id}-trees)`}
+                ></polygon>
+                <text
+                  class="sp-area-label"
+                  transform={`translate(${P.park1.label[0]} ${P.park1.label[1]}) rotate(-86.6)`}
+                  text-anchor="middle"
+                >
+                  PARK 1,040.50 SQ.YD
+                </text>
+
+                <polygon class="sp-park" points={P.park2.points} fill={`url(#${id}-trees)`}
+                ></polygon>
+                <text
+                  x={P.park2.label[0]}
+                  y={P.park2.label[1]}
+                  class="sp-area-label"
+                  text-anchor="middle"
+                >
+                  PARK 762.49 SQ.YD
+                </text>
+                <text
+                  x={P.park2.label[0]}
+                  y={P.park2.label[1] + 14}
+                  class="sp-area-label"
+                  text-anchor="middle"
+                >
+                  CYCLE TRACK
+                </text>
+
+                <polygon class="sp-social" points={P.social.points}></polygon>
+                <text
+                  x={P.social.label[0]}
+                  y={P.social.label[1]}
+                  class="sp-area-label sp-area-dark"
+                  text-anchor="middle"
+                >
+                  SOCIAL INFRA
+                </text>
+                <text
+                  x={P.social.label[0]}
+                  y={P.social.label[1] + 14}
+                  class="sp-area-label sp-area-dark"
+                  text-anchor="middle"
+                >
+                  588.54 SQ.YD
+                </text>
+                <polygon class="sp-utility" points={P.sump.points}></polygon>
+                <text x={P.sump.label[0]} y={P.sump.label[1]} class="sp-tiny" text-anchor="middle"
+                  >SUMP</text
+                >
+                <polygon class="sp-utility" points={P.gbtf.points}></polygon>
+                <text
+                  transform={`translate(${P.gbtf.label[0]} ${P.gbtf.label[1]}) rotate(-90)`}
+                  class="sp-tiny"
+                  text-anchor="middle"
+                  dominant-baseline="middle">GB &amp; TF</text
+                >
+                <polygon class="sp-utility" points={P.st.points}></polygon>
+                <text
+                  x={P.st.label[0]}
+                  y={P.st.label[1]}
+                  class="sp-tiny"
+                  text-anchor="middle"
+                  dominant-baseline="middle">ST</text
+                >
+
+                <text
+                  x={P.neighbours[0]}
+                  y={P.neighbours[1]}
+                  class="sp-neighbour"
+                  text-anchor="middle">Neighbours' land</text
+                >
+
+                {
+                  sitePlots.map((plot, i) => (
+                    <g
+                      class={`sp-plot sp-band-${bandOf(plot.sqyd)}`}
+                      style={`--i:${i}`}
+                      data-sp-plot={plot.no}
+                      data-band={bandOf(plot.sqyd)}
+                      role="button"
+                      tabindex="0"
+                      aria-label={`Plot ${plot.no}, ${plot.sqyd} square yards`}
+                    >
+                      <polygon points={plot.points} class="sp-plot-shape" />
+                      <text
+                        x={plot.cx}
+                        y={plot.cy + (plot.h > 44 ? -3 : 4)}
+                        class="sp-plot-no"
+                        text-anchor="middle"
+                      >
+                        {plot.no}
+                      </text>
+                      {plot.h > 44 && (
+                        <text
+                          x={plot.cx}
+                          y={plot.cy + 12}
+                          class="sp-plot-size"
+                          text-anchor="middle"
+                        >
+                          {plot.sqyd}
+                        </text>
+                      )}
+                    </g>
+                  ))
+                }
+
+                {/* The hovered plot is copied here so it lifts above its neighbours. */}
+                <g class="sp-lift" data-sp-lift aria-hidden="true"></g>
+
+                <text x="1180" y="900" class="sp-note" text-anchor="middle"
+                  >Drawn from the brochure layout plan</text
+                >
+                <g class="sp-north" transform="translate(1180 840)">
+                  <circle r="16" class="sp-north-ring"></circle>
+                  <path d="M0 -12 L5 4 L0 1 L-5 4 Z" class="sp-north-arrow"></path>
+                  <text y="-20" text-anchor="middle" class="sp-tiny sp-north-n">N</text>
+                </g>
+              </g>
+            </g>
+          </svg>
+          <p class="sp-hint" data-sp-hint>
+            <Icon name="search" size="xs" /> Point at a plot for its details. Use + to zoom, drag to move.
+          </p>
+          <div class="sp-pop" data-sp-pop hidden aria-hidden="true">
+            <p class="sp-pop-no">Plot <span data-pop-no></span></p>
+            <p class="sp-pop-size">
+              <b><span data-pop-sqyd></span> sq.yd</b>
+              <span class="sp-pop-sqm"><span data-pop-sqm></span> sq.m</span>
+            </p>
+            <p class="sp-pop-label">Fronts</p>
+            <p class="sp-pop-roads" data-pop-roads></p>
+            <p class="sp-pop-cta">Click to enquire</p>
+          </div>
+        </div>
+      </div>
+
+      <aside class="sp-panel" aria-live="polite">
+        <div data-sp-empty>
+          <p class="sp-panel-kicker">Explore the layout</p>
+          <p class="sp-panel-title">82 plots, 150 sq.yd and up</p>
+          <ul class="sp-panel-facts">
+            <li><b>{projectConfig.siteArea.acre} acres</b> layout</li>
+            <li><b>{projectConfig.availability.saleable}</b> plots for sale</li>
+            <li><b>40' and 33'</b> CC roads</li>
+            <li><b>2 parks</b> and social infrastructure</li>
+          </ul>
+          <p class="sp-panel-note">
+            Point at any plot to see its size and the roads it fronts. Click it to enquire.
+          </p>
+        </div>
+
+        <div data-sp-detail hidden>
+          <p class="sp-panel-kicker">Your plot</p>
+          <p class="sp-detail-no">Plot <span data-sp-no></span></p>
+          <dl class="sp-detail-grid">
+            <div>
+              <dt>Size</dt>
+              <dd><span data-sp-sqyd></span> sq.yd</dd>
+            </div>
+            <div>
+              <dt>Area</dt>
+              <dd><span data-sp-sqm></span> sq.m</dd>
+            </div>
+          </dl>
+          <p class="sp-detail-label">Fronts</p>
+          <ul class="sp-detail-roads" data-sp-roads></ul>
+          <a
+            class="sp-cta"
+            href={enquiry.href}
+            data-track="enquiry"
+            data-dialog-trigger={enquiry.dialog}
+            data-dialog-request-type={enquiry.dialog ? 'enquiry' : undefined}
+          >
+            Enquire about this plot
+            <Icon name="arrow-up-right" size="sm" />
+          </a>
+        </div>
+
+        <p class="sp-disclaimer">
+          Sizes are as printed on the brochure plan (HMDA {projectConfig.approvals.hmda.number}).
+          {projectConfig.availability.mortgageHeld} plots are held under HMDA Mortgage, so ask the team
+          for the current availability of any plot.
+        </p>
+      </aside>
+
+      {/* Phones: a tapped plot opens this sheet above the contact bar. */}
+      <div class="sp-sheet" data-sp-sheet role="dialog" aria-label="Plot details" hidden>
+        <button type="button" class="sp-sheet-close" data-sp-sheet-close aria-label="Close">
+          <Icon name="x" size="sm" />
+        </button>
+        <p class="sp-panel-kicker">Your plot</p>
+        <p class="sp-sheet-no">Plot <span data-sheet-no></span></p>
+        <p class="sp-sheet-size">
+          <b><span data-sheet-sqyd></span> sq.yd</b>
+          <span><span data-sheet-sqm></span> sq.m</span>
+        </p>
+        <p class="sp-sheet-roads" data-sheet-roads></p>
+        <a
+          class="sp-cta sp-sheet-cta"
+          href={enquiry.href}
+          data-track="enquiry"
+          data-dialog-trigger={enquiry.dialog}
+          data-dialog-request-type={enquiry.dialog ? 'enquiry' : undefined}
+        >
+          Enquire about this plot
+          <Icon name="arrow-up-right" size="sm" />
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script type="application/json" data-sp-data set:html={JSON.stringify(plotData)} />
+</section>
+
+<script>
+  type PlotInfo = { no: number; sqyd: number; sqm: number; roads: string[] };
+
+  function mountSitePlan(): void {
+    document.querySelectorAll<HTMLElement>('[data-site-plan]').forEach((root) => {
+      if (root.dataset.spInit === 'true') return;
+      root.dataset.spInit = 'true';
+
+      const section = root.closest('section');
+      const data: PlotInfo[] = JSON.parse(
+        section?.querySelector('[data-sp-data]')?.textContent ?? '[]'
+      );
+      const byNo = new Map(data.map((plot) => [plot.no, plot]));
+      const frame = root.querySelector<HTMLElement>('[data-sp-frame]');
+      const svg = frame?.querySelector('svg');
+      const view = root.querySelector<SVGGElement>('[data-sp-view]');
+      const plots = [...root.querySelectorAll<SVGGElement>('[data-sp-plot]')];
+      const empty = root.querySelector<HTMLElement>('[data-sp-empty]');
+      const detail = root.querySelector<HTMLElement>('[data-sp-detail]');
+      if (!frame || !svg || !view || !empty || !detail) return;
+
+      const pop = root.querySelector<HTMLElement>('[data-sp-pop]');
+      const sheet = root.querySelector<HTMLElement>('[data-sp-sheet]');
+      const phone = window.matchMedia('(max-width: 60rem)');
+      const sheetSet = (selector: string, value: string) => {
+        const el = sheet?.querySelector(selector);
+        if (el) el.textContent = value;
+      };
+      const closeSheet = () => {
+        if (!sheet || sheet.hidden) return;
+        sheet.classList.remove('is-open');
+        window.setTimeout(() => {
+          if (!sheet.classList.contains('is-open')) sheet.hidden = true;
+        }, 260);
+      };
+      sheet?.querySelector('[data-sp-sheet-close]')?.addEventListener('click', () => {
+        closeSheet();
+        plots.forEach((plot) => plot.classList.remove('is-selected'));
+      });
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closeSheet();
+      });
+      const lift = root.querySelector<SVGGElement>('[data-sp-lift]');
+
+      const set = (selector: string, value: string) => {
+        const el = detail.querySelector(selector);
+        if (el) el.textContent = value;
+      };
+
+      const select = (no: number) => {
+        const info = byNo.get(no);
+        if (!info) return;
+        plots.forEach((plot) =>
+          plot.classList.toggle('is-selected', plot.dataset.spPlot === String(no))
+        );
+        set('[data-sp-no]', String(info.no));
+        set('[data-sp-sqyd]', info.sqyd.toLocaleString('en-IN'));
+        set('[data-sp-sqm]', info.sqm.toLocaleString('en-IN'));
+        const roads = detail.querySelector('[data-sp-roads]');
+        if (roads)
+          roads.replaceChildren(
+            ...info.roads.map((road) =>
+              Object.assign(document.createElement('li'), { textContent: road })
+            )
+          );
+        empty.hidden = true;
+        detail.hidden = false;
+
+        if (sheet && phone.matches) {
+          sheetSet('[data-sheet-no]', String(info.no));
+          sheetSet('[data-sheet-sqyd]', info.sqyd.toLocaleString('en-IN'));
+          sheetSet('[data-sheet-sqm]', info.sqm.toLocaleString('en-IN'));
+          sheetSet('[data-sheet-roads]', `Fronts ${info.roads.join(' · ')}`);
+          sheet.hidden = false;
+          requestAnimationFrame(() => sheet.classList.add('is-open'));
+          navigator.vibrate?.(8);
+        }
+      };
+
+      // Size filter
+      const chips = [...root.querySelectorAll<HTMLButtonElement>('[data-sp-band]')];
+      chips.forEach((chip) =>
+        chip.addEventListener('click', () => {
+          const band = chip.dataset.spBand ?? 'all';
+          chips.forEach((other) => {
+            const on = other === chip;
+            other.classList.toggle('is-on', on);
+            other.setAttribute('aria-pressed', String(on));
+          });
+          root.dataset.band = band;
+          plots.forEach((plot) =>
+            plot.classList.toggle('is-dim', band !== 'all' && plot.dataset.band !== band)
+          );
+        })
+      );
+
+      // Pan and zoom, as a transform on the plan group in viewBox units
+      const W = Number(svg.viewBox.baseVal.width) || 1260;
+      const H = Number(svg.viewBox.baseVal.height) || 780;
+      let scale = 1;
+      let tx = 0;
+      let ty = 0;
+      const clamp = () => {
+        scale = Math.min(4, Math.max(1, scale));
+        tx = Math.min(0, Math.max(W - W * scale, tx));
+        ty = Math.min(0, Math.max(H - H * scale, ty));
+      };
+      const apply = () => {
+        clamp();
+        view.setAttribute('transform', `translate(${tx} ${ty}) scale(${scale})`);
+        root.classList.toggle('is-zoomed', scale > 1.01);
+      };
+      const toView = (clientX: number, clientY: number) => {
+        const rect = svg.getBoundingClientRect();
+        return {
+          x: ((clientX - rect.left) / rect.width) * W,
+          y: ((clientY - rect.top) / rect.height) * H,
+        };
+      };
+      const zoomAt = (factor: number, cx = W / 2, cy = H / 2) => {
+        const next = Math.min(4, Math.max(1, scale * factor));
+        tx = cx - ((cx - tx) * next) / scale;
+        ty = cy - ((cy - ty) * next) / scale;
+        scale = next;
+        apply();
+      };
+
+      root.querySelectorAll<HTMLButtonElement>('[data-sp-zoom]').forEach((button) =>
+        button.addEventListener('click', () => {
+          const action = button.dataset.spZoom;
+          if (action === 'in') zoomAt(1.5);
+          else if (action === 'out') zoomAt(1 / 1.5);
+          else {
+            scale = 1;
+            tx = 0;
+            ty = 0;
+            apply();
+          }
+        })
+      );
+
+      frame.addEventListener(
+        'wheel',
+        (event) => {
+          if (!event.ctrlKey && !event.metaKey) return;
+          event.preventDefault();
+          const p = toView(event.clientX, event.clientY);
+          zoomAt(event.deltaY < 0 ? 1.15 : 1 / 1.15, p.x, p.y);
+        },
+        { passive: false }
+      );
+
+      const pointers = new Map<number, { x: number; y: number }>();
+      let moved = 0;
+      let pinch = 0;
+      frame.addEventListener('pointerdown', (event) => {
+        pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        moved = 0;
+        if (pointers.size === 2) {
+          const [a, b] = [...pointers.values()];
+          pinch = Math.hypot(a.x - b.x, a.y - b.y);
+        }
+      });
+      frame.addEventListener('pointermove', (event) => {
+        const last = pointers.get(event.pointerId);
+        if (!last) return;
+        const rect = svg.getBoundingClientRect();
+        if (pointers.size === 2) {
+          pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+          const [a, b] = [...pointers.values()];
+          const dist = Math.hypot(a.x - b.x, a.y - b.y);
+          if (pinch > 0) {
+            const mid = toView((a.x + b.x) / 2, (a.y + b.y) / 2);
+            zoomAt(dist / pinch, mid.x, mid.y);
+          }
+          pinch = dist;
+          moved += 10;
+          return;
+        }
+        const dx = event.clientX - last.x;
+        const dy = event.clientY - last.y;
+        moved += Math.abs(dx) + Math.abs(dy);
+        pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        if (scale > 1 && moved > 4) {
+          frame.setPointerCapture(event.pointerId);
+          tx += (dx / rect.width) * W;
+          ty += (dy / rect.height) * H;
+          apply();
+        }
+      });
+      const end = (event: PointerEvent) => {
+        pointers.delete(event.pointerId);
+        if (pointers.size < 2) pinch = 0;
+      };
+      frame.addEventListener('pointerup', end);
+      frame.addEventListener('pointercancel', end);
+
+      // Hover card: the plot lifts and its details pop up beside the cursor.
+      const fill = (selector: string, value: string) => {
+        const el = pop?.querySelector(selector);
+        if (el) el.textContent = value;
+      };
+      const showPop = (plot: SVGGElement, clientX?: number, clientY?: number) => {
+        const info = byNo.get(Number(plot.dataset.spPlot));
+        if (!pop || !info) return;
+        fill('[data-pop-no]', String(info.no));
+        fill('[data-pop-sqyd]', info.sqyd.toLocaleString('en-IN'));
+        fill('[data-pop-sqm]', info.sqm.toLocaleString('en-IN'));
+        fill('[data-pop-roads]', info.roads.join(' · '));
+        if (lift && lift.dataset.no !== plot.dataset.spPlot) {
+          const copy = plot.cloneNode(true) as SVGGElement;
+          copy.removeAttribute('tabindex');
+          copy.removeAttribute('role');
+          copy.removeAttribute('data-sp-plot');
+          copy.setAttribute('class', `${plot.getAttribute('class') ?? ''} is-lifted`);
+          lift.replaceChildren(copy);
+          lift.dataset.no = plot.dataset.spPlot;
+        }
+        pop.hidden = false;
+        const box = frame.getBoundingClientRect();
+        const anchor = plot.getBoundingClientRect();
+        const x = (clientX ?? anchor.right) - box.left;
+        const y = (clientY ?? anchor.top + anchor.height / 2) - box.top;
+        const w = pop.offsetWidth;
+        const h = pop.offsetHeight;
+        const left = x + 18 + w > box.width ? x - 18 - w : x + 18;
+        const top = Math.min(Math.max(8, y - h / 2), box.height - h - 8);
+        pop.style.transform = `translate(${Math.max(8, left)}px, ${top}px)`;
+        pop.classList.add('is-on');
+        root.classList.add('is-hovering');
+      };
+      const hidePop = () => {
+        pop?.classList.remove('is-on');
+        root.classList.remove('is-hovering');
+        lift?.replaceChildren();
+        if (lift) delete lift.dataset.no;
+      };
+      frame.addEventListener('pointerleave', hidePop);
+
+      plots.forEach((plot) => {
+        const no = Number(plot.dataset.spPlot);
+        plot.addEventListener('pointermove', (event) => {
+          if (event.pointerType !== 'mouse' || pointers.size > 0) return;
+          showPop(plot, event.clientX, event.clientY);
+        });
+        plot.addEventListener('pointerleave', (event) => {
+          if (event.pointerType === 'mouse') hidePop();
+        });
+        // Keyboard focus only: a tap already fills the panel below the plan.
+        plot.addEventListener('focus', () => {
+          if (plot.matches(':focus-visible')) showPop(plot);
+        });
+        plot.addEventListener('blur', hidePop);
+        plot.addEventListener('click', () => {
+          if (moved > 6) return;
+          select(no);
+        });
+        plot.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            select(no);
+          }
+        });
+      });
+
+      // Build the plan in when it scrolls into view; on a phone, nudge the
+      // scrollable plan once so the swipe is discoverable.
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              root.classList.add('is-in');
+              if (
+                frame.scrollWidth > frame.clientWidth + 8 &&
+                !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+              ) {
+                window.setTimeout(() => frame.scrollTo({ left: 90, behavior: 'smooth' }), 900);
+                window.setTimeout(() => frame.scrollTo({ left: 0, behavior: 'smooth' }), 1600);
+              }
+              io.disconnect();
+            }
+          });
+        },
+        { threshold: 0.25 }
+      );
+      io.observe(frame);
+      new IntersectionObserver(([entry]) => {
+        if (entry && !entry.isIntersecting) closeSheet();
+      }).observe(root);
+
+      root.classList.add('is-enhanced');
+    });
+  }
+
+  mountSitePlan();
+  document.addEventListener('astro:page-load', mountSitePlan);
+</script>
+
+<style>
+  .sp {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 14.5rem;
+    gap: 1.25rem;
+    margin-top: clamp(2rem, 5vw, 3.5rem);
+    align-items: start;
+  }
+
+  .sp-stage {
+    overflow: hidden;
+    border-radius: var(--radius-shell);
+    background: var(--color-background);
+    box-shadow: var(--site-shadow-md);
+  }
+
+  .sp-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .sp-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .sp-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--radius-full);
+    box-shadow: var(--hairline);
+    font-size: 0.8rem;
+    font-weight: 700;
+    transition:
+      background-color var(--site-duration-fast) ease,
+      color var(--site-duration-fast) ease;
+  }
+
+  .sp-chip.is-on {
+    background: var(--surface-invert);
+    color: var(--on-invert);
+  }
+
+  .sp-swatch {
+    width: 0.65rem;
+    height: 0.65rem;
+    border-radius: 2px;
+    background: var(--plot);
+    box-shadow: inset 0 0 0 1px #8fa47a;
+  }
+
+  .sp-zoom {
+    display: flex;
+    gap: 0.3rem;
+  }
+
+  .sp-zoom button {
+    display: grid;
+    width: 2.2rem;
+    height: 2.2rem;
+    place-items: center;
+    border-radius: 0.6rem;
+    box-shadow: var(--hairline);
+  }
+
+  .sp-zoom button:hover {
+    background: var(--surface-invert);
+    color: var(--on-invert);
+  }
+
+  .sp-frame {
+    position: relative;
+    touch-action: pan-y;
+  }
+
+  .is-zoomed .sp-frame {
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .sp-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    font-family: var(--site-font-sans);
+    user-select: none;
+  }
+
+  .sp-hint {
+    position: absolute;
+    bottom: 0.75rem;
+    left: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: var(--radius-full);
+    background: rgb(255 255 255 / 85%);
+    color: var(--color-foreground-muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    pointer-events: none;
+  }
+
+  /* Hover card */
+  .sp-pop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    min-width: 11.5rem;
+    max-width: 15rem;
+    padding: 0.85rem 1rem;
+    border-radius: 1rem;
+    background: var(--surface-invert);
+    box-shadow: 0 18px 40px -12px rgb(15 30 22 / 55%);
+    color: var(--on-invert);
+    opacity: 0;
+    pointer-events: none;
+    scale: 0.92;
+    transition:
+      opacity 160ms ease,
+      scale 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .sp-pop.is-on {
+    opacity: 1;
+    scale: 1;
+  }
+
+  .sp-pop-no {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    line-height: 1;
+  }
+
+  .sp-pop-size {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-top: 0.45rem;
+  }
+
+  .sp-pop-size b {
+    color: var(--accent);
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 400;
+  }
+
+  .sp-pop-sqm {
+    color: var(--on-invert-secondary);
+    font-size: 0.8rem;
+  }
+
+  .sp-pop-label {
+    margin-top: 0.55rem;
+    color: var(--on-invert-muted);
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .sp-pop-roads {
+    margin-top: 0.15rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .sp-pop-cta {
+    margin-top: 0.6rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-invert);
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sp-pop {
+      transition: none;
+    }
+
+    .sp-lift :global(.is-lifted) {
+      animation: none;
+      transform: scale(1.35);
+    }
+  }
+
+  /* Plan drawing */
+  .sp-ground {
+    fill: #f4efe2;
+  }
+
+  .sp-site {
+    fill: #fbf8f0;
+    stroke: #c9bfa8;
+    stroke-width: 2;
+    stroke-dasharray: 6 4;
+  }
+
+  .sp-buffer {
+    fill: #e9e1cc;
+  }
+
+  .sp-buffer-label {
+    fill: #8a8170;
+    letter-spacing: 0.12em;
+  }
+
+  .sp-road,
+  .sp-highway {
+    fill: #2b2d2b;
+  }
+
+  .sp-highway {
+    fill: #4a4d4a;
+  }
+
+  /* Road markings: dashed gold centre lines, flowing once the plan is in view */
+  .sp-dash {
+    fill: none;
+    stroke: #e9c46a;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-dasharray: 10 9;
+    opacity: 0.9;
+    pointer-events: none;
+  }
+
+  /* Labels sit on the road with a road-coloured halo that parts the dashes. */
+  .sp-road-label {
+    paint-order: stroke;
+    stroke: #2b2d2b;
+    stroke-width: 7px;
+    stroke-linejoin: round;
+    fill: #f4efe2;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    dominant-baseline: middle;
+  }
+
+  .sp-road-label-sm {
+    font-size: 10px;
+  }
+
+  .sp-park {
+    stroke: #5f8f4e;
+  }
+
+  .sp-social {
+    fill: #f2efe4;
+    stroke: #9db58a;
+    stroke-dasharray: 4 3;
+  }
+
+  .sp-utility {
+    fill: #dfe7ea;
+    stroke: #a9b8bd;
+  }
+
+  .sp-area-label {
+    fill: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    dominant-baseline: middle;
+  }
+
+  .sp-area-dark {
+    fill: #2f5b3b;
+  }
+
+  .sp-tiny {
+    fill: #4d5a5e;
+    font-size: 9px;
+    font-weight: 800;
+  }
+
+  .sp-neighbour {
+    fill: #2c3a6b;
+    font-family: var(--font-display);
+    font-size: 22px;
+  }
+
+  .sp-note {
+    fill: #8a8170;
+    font-size: 11px;
+  }
+
+  .sp-north-ring {
+    fill: #fff;
+    stroke: #2b2d2b;
+  }
+
+  .sp-north-arrow {
+    fill: #b0157e;
+  }
+
+  .sp-north-n {
+    fill: #2b2d2b;
+  }
+
+  /* Plots, by size band */
+  /* The brochure's pale green plots, a shade deeper per size band. */
+  .sp-band-std {
+    --plot: #eef2dc;
+  }
+
+  .sp-band-mid {
+    --plot: #dbe7bd;
+  }
+
+  .sp-band-large {
+    --plot: #c2d79a;
+  }
+
+  .sp-band-xl {
+    --plot: #a3c27a;
+  }
+
+  .sp-plot {
+    cursor: pointer;
+    outline: none;
+    transition: opacity 250ms ease;
+  }
+
+  .sp-plot-shape {
+    fill: var(--plot);
+    stroke: #8fa47a;
+    stroke-width: 1;
+    stroke-linejoin: round;
+    transition:
+      fill 200ms ease,
+      stroke-width 200ms ease;
+  }
+
+  .sp-plot-no {
+    fill: #1f3d2e;
+    font-size: 14px;
+    font-weight: 800;
+    pointer-events: none;
+  }
+
+  .sp-plot-size {
+    fill: #46624f;
+    font-size: 10.5px;
+    font-weight: 700;
+    pointer-events: none;
+  }
+
+  .sp-plot:focus-visible .sp-plot-shape {
+    stroke: #1f3d2e;
+    stroke-width: 3;
+  }
+
+  /* The lifted copy of the hovered plot */
+  .sp-lift {
+    pointer-events: none;
+  }
+
+  .sp-lift :global(.is-lifted) {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: sp-lift 220ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    filter: drop-shadow(0 6px 10px rgb(20 40 28 / 35%));
+  }
+
+  .sp-lift :global(.is-lifted .sp-plot-shape) {
+    fill: #1f3d2e;
+    stroke: #e9c46a;
+    stroke-width: 2.5;
+  }
+
+  .sp-lift :global(.is-lifted text) {
+    fill: #fff;
+  }
+
+  @keyframes sp-lift {
+    to {
+      transform: scale(1.35);
+    }
+  }
+
+  .sp-plot.is-selected .sp-plot-shape {
+    fill: #1f3d2e;
+    stroke: #e9c46a;
+    stroke-width: 3;
+  }
+
+  .sp-plot.is-selected text {
+    fill: #fff;
+  }
+
+  .sp-plot.is-dim {
+    opacity: 0.2;
+  }
+
+  /* While a plot is lifted, the rest of the plan steps back. */
+  .is-hovering .sp-plot:not(.is-selected, .is-lifted) {
+    opacity: 0.55;
+  }
+
+  .sp-lift :global(.is-lifted) {
+    opacity: 1;
+    transition: none;
+  }
+
+  .sp-plot.is-selected .sp-plot-shape {
+    animation: sp-pick 1.6s ease-in-out infinite;
+  }
+
+  @keyframes sp-pick {
+    50% {
+      stroke-width: 6;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* Entrance: the plots drop in block by block and the road markings start
+       to run. Only once the script is up, so the plan never hides without it. */
+    .is-enhanced .sp-plot {
+      transform-box: fill-box;
+      transform-origin: center;
+      transition:
+        opacity 450ms ease,
+        transform 550ms cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition-delay: calc(var(--i) * 9ms);
+    }
+
+    .is-enhanced:not(.is-in) .sp-plot {
+      opacity: 0;
+      transform: translateY(-14px) scale(0.85);
+    }
+
+    .is-in .sp-plot {
+      transition-delay: calc(var(--i) * 9ms);
+    }
+
+    /* After the entrance, hover and filter changes respond at once. */
+    .is-in.is-hovering .sp-plot,
+    .is-in[data-band] .sp-plot {
+      transition-delay: 0ms;
+    }
+
+    .is-enhanced .sp-dash {
+      stroke-dashoffset: 0;
+      opacity: 0;
+      transition: opacity 600ms ease 500ms;
+    }
+
+    .is-in .sp-dash {
+      opacity: 0.9;
+      animation: sp-flow 1.6s linear infinite;
+    }
+
+    .sp-lift :global(.is-lifted) {
+      animation:
+        sp-lift 220ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+        sp-glow 1.4s ease-in-out 220ms infinite;
+    }
+  }
+
+  @keyframes sp-flow {
+    to {
+      stroke-dashoffset: -38;
+    }
+  }
+
+  @keyframes sp-glow {
+    0%,
+    100% {
+      filter: drop-shadow(0 6px 10px rgb(20 40 28 / 35%));
+    }
+
+    50% {
+      filter: drop-shadow(0 0 14px rgb(233 196 106 / 85%));
+    }
+  }
+
+  /* Side panel */
+  .sp-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.15rem;
+    border-radius: var(--radius-shell);
+    background: var(--surface-invert);
+    color: var(--on-invert);
+    box-shadow: var(--site-shadow-md);
+  }
+
+  .sp-panel [hidden] {
+    display: none;
+  }
+
+  .sp-panel-kicker {
+    color: var(--accent);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .sp-panel-title {
+    margin-top: 0.5rem;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    line-height: 1.1;
+  }
+
+  .sp-panel-facts {
+    display: grid;
+    gap: 0.45rem;
+    margin-top: 0.8rem;
+    color: var(--on-invert-secondary);
+    font-size: 0.82rem;
+  }
+
+  .sp-panel-facts b {
+    color: var(--on-invert);
+  }
+
+  .sp-panel-note {
+    margin-top: 0.8rem;
+    color: var(--on-invert-secondary);
+    font-size: 0.8rem;
+  }
+
+  .sp-detail-no {
+    margin-top: 0.4rem;
+    font-family: var(--font-display);
+    font-size: 1.9rem;
+    line-height: 1;
+  }
+
+  .sp-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-top: 0.8rem;
+  }
+
+  .sp-detail-grid dt,
+  .sp-detail-label {
+    color: var(--on-invert-muted);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .sp-detail-grid dd {
+    margin-top: 0.2rem;
+    color: var(--accent);
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+  }
+
+  .sp-detail-label {
+    margin-top: 1.1rem;
+  }
+
+  .sp-detail-roads {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+  }
+
+  .sp-detail-roads :global(li) {
+    padding: 0.2rem 0.6rem;
+    border: 1px solid var(--border-invert-strong);
+    border-radius: var(--radius-full);
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+
+  .sp-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding: 0.55rem 0.95rem;
+    border-radius: var(--radius-full);
+    background: var(--accent);
+    color: var(--accent-foreground);
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  .sp-cta:hover {
+    background: var(--color-accent-hover);
+  }
+
+  .sp-disclaimer {
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-invert);
+    color: var(--on-invert-muted);
+    font-size: 0.7rem;
+    line-height: 1.45;
+  }
+
+  .sp-swipe {
+    display: none;
+  }
+
+  /* Phone bottom sheet */
+  .sp-sheet {
+    position: fixed;
+    right: 0.75rem;
+    bottom: calc(var(--mobile-contact-bar-height, 0px) + 0.75rem);
+    left: 0.75rem;
+    z-index: 40;
+    padding: 1.1rem 1.2rem 1.2rem;
+    border-radius: 1.4rem;
+    background: var(--surface-invert);
+    box-shadow: 0 -10px 40px -10px rgb(10 25 18 / 55%);
+    color: var(--on-invert);
+    transform: translateY(120%);
+    transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .sp-sheet[hidden] {
+    display: none;
+  }
+
+  .sp-sheet.is-open {
+    transform: none;
+  }
+
+  .sp-sheet-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    display: grid;
+    width: 2.5rem;
+    height: 2.5rem;
+    place-items: center;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 10%);
+  }
+
+  .sp-sheet-no {
+    margin-top: 0.3rem;
+    font-family: var(--font-display);
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .sp-sheet-size {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+    color: var(--on-invert-secondary);
+    font-size: 0.9rem;
+  }
+
+  .sp-sheet-size b {
+    color: var(--accent);
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 400;
+  }
+
+  .sp-sheet-roads {
+    margin-top: 0.4rem;
+    color: var(--on-invert-secondary);
+    font-size: 0.85rem;
+  }
+
+  .sp-sheet-cta {
+    width: 100%;
+    justify-content: center;
+    margin-top: 1rem;
+    padding: 0.85rem 1rem;
+    font-size: 1rem;
+  }
+
+  @media (max-width: 60rem) {
+    .sp {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    /* The sheet carries the selected plot on phones; the panel keeps the intro. */
+    .sp-panel [data-sp-detail] {
+      display: none;
+    }
+
+    .sp-panel [data-sp-empty][hidden] {
+      display: block;
+    }
+
+    .sp-zoom {
+      margin-left: auto;
+    }
+  }
+
+  @media (max-width: 42rem) {
+    .sp-hint {
+      display: none;
+    }
+
+    .sp {
+      margin-inline: -0.75rem;
+    }
+
+    .sp-stage {
+      border-radius: 1.4rem;
+    }
+
+    /* One swipeable row of size chips instead of three wrapped lines */
+    .sp-toolbar {
+      padding: 0.7rem 0.75rem;
+    }
+
+    .sp-filters {
+      flex-wrap: nowrap;
+      width: 100%;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .sp-filters::-webkit-scrollbar {
+      display: none;
+    }
+
+    .sp-chip {
+      flex: none;
+      padding: 0.5rem 0.85rem;
+      font-size: 0.85rem;
+    }
+
+    .sp-swipe {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      color: var(--color-foreground-muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .sp-zoom button {
+      width: 2.6rem;
+      height: 2.6rem;
+    }
+
+    /* The plan at a readable size, swiped sideways like a map */
+    .sp-frame {
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
+      touch-action: pan-x pan-y;
+    }
+
+    .sp-frame::-webkit-scrollbar {
+      display: none;
+    }
+
+    .sp-svg {
+      width: 900px;
+      max-width: none;
+    }
+
+    .sp-panel {
+      margin-inline: 0.75rem;
+    }
+
+    .sp-panel-title {
+      font-size: 1.4rem;
+    }
+
+    .sp-panel-facts {
+      grid-template-columns: 1fr 1fr;
+      font-size: 0.85rem;
+    }
+  }
+</style>

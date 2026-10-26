@@ -30,7 +30,7 @@ export const WHATSAPP_CTA_LABEL = 'Message on WhatsApp';
  * What the visitor reads once a lead is accepted. The binder appends the
  * delivery notes to it, so every lead surface speaks with one voice.
  */
-export const ENQUIRY_SUCCESS_MESSAGE = 'Thanks — your request is with the team.';
+export const ENQUIRY_SUCCESS_MESSAGE = 'Thanks, your request is with the team.';
 
 /** The published brochure; the fallback destination when the PDF email fails. */
 export const BROCHURE_DOWNLOAD_HREF = '/brochure/tranquill-city-final.pdf';

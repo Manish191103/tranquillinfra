@@ -1,0 +1,147 @@
+---
+/**
+ * ApprovalSeals
+ *
+ * The RERA registration and the HMDA layout approval shown with the logos the
+ * client's brochure prints on its cover (TS RERA and hmda, extracted from the
+ * brochure PDF), each on a white tile so the artwork keeps its own colours on
+ * any surface, with the label and number beside it.
+ *
+ * `tone` follows the surface: `invert` on the forest/photo sections, `light`
+ * on the paper background. `compact` drops the numbers for tight spots.
+ */
+import { Image } from 'astro:assets';
+import projectConfig from '~/config/project.config';
+import tsReraLogo from '~/assets/images/approvals/ts-rera.png';
+import hmdaLogo from '~/assets/images/approvals/hmda.png';
+
+interface Props {
+  tone?: 'invert' | 'light';
+  compact?: boolean;
+  class?: string;
+}
+
+const { tone = 'invert', compact = false, class: className } = Astro.props;
+
+const seals = [
+  {
+    key: 'rera',
+    logo: tsReraLogo,
+    alt: 'TS RERA, Telangana State Real Estate Regulatory Authority',
+    label: 'RERA registered',
+    number: projectConfig.approvals.rera.number,
+  },
+  {
+    key: 'hmda',
+    logo: hmdaLogo,
+    alt: 'HMDA, Hyderabad Metropolitan Development Authority',
+    label: 'HMDA approved layout',
+    number: projectConfig.approvals.hmda.number,
+  },
+];
+---
+
+<ul class:list={['seals', `seals-${tone}`, compact && 'seals-compact', className]}>
+  {
+    seals.map((seal) => (
+      <li class="seal" data-seal={seal.key}>
+        <span class="seal-tile">
+          <Image
+            class="seal-logo"
+            src={seal.logo}
+            alt={seal.alt}
+            height={compact ? 64 : 88}
+            densities={[1, 2]}
+            format="webp"
+            loading="lazy"
+          />
+        </span>
+        <span class="seal-text">
+          <span class="seal-label">{seal.label}</span>
+          {!compact && <span class="seal-number">{seal.number}</span>}
+        </span>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .seals {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.5rem;
+  }
+
+  .seal {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .seal-tile {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    padding: 0.45rem 0.7rem;
+    border-radius: 0.75rem;
+    background: #fff;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 12%);
+  }
+
+  .seals-compact .seal-tile {
+    padding: 0.35rem 0.55rem;
+  }
+
+  .seal-tile :global(.seal-logo) {
+    display: block;
+    width: auto;
+    max-width: none;
+    height: 2.5rem;
+  }
+
+  .seals-compact .seal-tile :global(.seal-logo) {
+    height: 1.8rem;
+  }
+
+  .seal-text {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    line-height: 1.25;
+  }
+
+  .seal-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .seal-number {
+    margin-top: 0.15rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .seals-invert {
+    color: var(--on-invert);
+  }
+
+  .seals-invert .seal-number {
+    color: var(--on-invert-secondary);
+  }
+
+  .seals-light {
+    color: var(--color-foreground);
+  }
+
+  .seals-light .seal-number {
+    color: var(--color-foreground-muted);
+  }
+
+  .seals-light .seal-tile {
+    box-shadow: var(--hairline);
+  }
+</style>

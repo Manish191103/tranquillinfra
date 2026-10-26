@@ -22,6 +22,7 @@ import ContactHero, { type ContactHeroAction } from '~/components/contact/Contac
 import ContactForm from '~/components/patterns/ContactForm.astro';
 import Button from '~/components/ui/form/Button/Button.astro';
 import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+import ProjectHighlights from '~/components/projects/ProjectHighlights.astro';
 import GoogleMap from '~/components/ui/data-display/GoogleMap/GoogleMap.astro';
 import siteConfig from '~/config/site.config';
 import { contactPlaces as buildContactPlaces, enquirySteps } from '~/config/contact.config';
@@ -77,8 +78,8 @@ heroActions.push({
 ---
 
 <PageLayout
-  title="Contact Tranquill Infra — Mamidipally, Rudraram & Patancheru Plots"
-  description="Call, WhatsApp or email the Tranquill Infra team about Tranquill City plots at Mamidipally, near Rudraram and Patancheru — office, hours and enquiry form."
+  title="Contact Tranquill Infra | Mamidipally, Rudraram & Patancheru Plots"
+  description="Call, WhatsApp or email the Tranquill Infra team about Tranquill City plots at Mamidipally, near Rudraram and Patancheru: office, hours and enquiry form."
   enquiryDialog={false}
 >
   <ContactHero
@@ -96,44 +97,50 @@ heroActions.push({
     <Breadcrumbs slot="breadcrumbs" items={breadcrumbs} tone="invert" />
   </ContactHero>
 
-  {/*
+  <ProjectHighlights variant="compact" id="contact-highlights" />
+
+  {
+    /*
     The form comes first, ahead of the NAP details and the maps. This page exists
     to take an enquiry, and with those blocks above it the form sat ~2,900px down
     — over three screens of phone before the first field (measured 2026-09). The
     directory information and the maps stay on the page for the visitor who wants
     them; they no longer sit between the visitor and the action.
-  */}
+  */
+  }
   <section
     id="contact-enquiry"
     class="section bg-surface-invert text-on-invert scroll-mt-24"
     aria-labelledby="contact-enquiry-title"
   >
-    <div class="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-14">
+    <div
+      class="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-14"
+    >
       <div>
         <p class="eyebrow eyebrow-on-invert">Make an enquiry</p>
-        <h2 id="contact-enquiry-title" class="display-md text-on-invert">
-          Tell us what you need
-        </h2>
+        <h2 id="contact-enquiry-title" class="display-md text-on-invert">Tell us what you need</h2>
         <p class="text-on-invert-secondary mt-4 max-w-[34rem]">
           Share your details and the Tranquill Infra team will get back to you. Ask about a specific
           numbered plot, a site visit, or the documents for the land you are comparing.
         </p>
 
         <ol class="mt-10 grid gap-8">
-          {enquirySteps.map((step, index) => (
-            <li class="reveal border-[var(--border-invert)] border-t pt-6">
-              <span
-                class="text-accent-ink font-mono text-[0.72rem] font-medium tracking-[0.16em] tabular-nums"
-                aria-hidden="true"
-              >
-                {String(index + 1).padStart(2, '0')}
-              </span>
-              <p class="display-xs text-on-invert mt-5">{step.title}</p>
-              <p class="text-on-invert-secondary mt-3 max-w-[34rem] text-sm text-pretty">
-                {step.body}
-              </p>
-            </li>
-          ))}
+          {
+            enquirySteps.map((step, index) => (
+              <li class="reveal border-t border-[var(--border-invert)] pt-6">
+                <span
+                  class="text-accent-ink font-mono text-[0.72rem] font-medium tracking-[0.16em] tabular-nums"
+                  aria-hidden="true"
+                >
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <p class="display-xs text-on-invert mt-5">{step.title}</p>
+                <p class="text-on-invert-secondary mt-3 max-w-[34rem] text-sm text-pretty">
+                  {step.body}
+                </p>
+              </li>
+            ))
+          }
         </ol>
       </div>
 
@@ -147,67 +154,71 @@ heroActions.push({
 
   <section
     id="contact-details"
-    class="border-border bg-background-secondary border-y scroll-mt-24"
+    class="border-border bg-background-secondary scroll-mt-24 border-y"
     aria-labelledby="contact-details-title"
   >
     <div class="section mx-auto max-w-6xl px-6">
-      <h2 id="contact-details-title" class="display-md">
-        Our contact details
-      </h2>
+      <h2 id="contact-details-title" class="display-md">Our contact details</h2>
       <p class="text-foreground-muted mt-4 max-w-[46rem] text-pretty">
-        Visit the office, call or message the team, or write to us — whichever is quickest for you.
+        Visit the office, call or message the team, or write to us, whichever is quickest for you.
       </p>
 
       <div class="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14">
         <dl class="grid content-start gap-8">
-          {officeLines.length > 0 && (
-            <div class="border-border border-t pt-5">
-              <dt class="text-foreground-muted text-[0.7rem] font-extrabold tracking-[0.13em] uppercase">
-                Office address
-              </dt>
-              <dd class="mt-2">
-                <address class="text-foreground not-italic">
-                  {officeLines.map((line, index) => (
-                    <>
-                      {line}
-                      {index < officeLines.length - 1 && <br />}
-                    </>
-                  ))}
-                </address>
-              </dd>
-            </div>
-          )}
+          {
+            officeLines.length > 0 && (
+              <div class="border-border border-t pt-5">
+                <dt class="text-foreground-muted text-[0.7rem] font-extrabold tracking-[0.13em] uppercase">
+                  Office address
+                </dt>
+                <dd class="mt-2">
+                  <address class="text-foreground not-italic">
+                    {officeLines.map((line, index) => (
+                      <>
+                        {line}
+                        {index < officeLines.length - 1 && <br />}
+                      </>
+                    ))}
+                  </address>
+                </dd>
+              </div>
+            )
+          }
 
-          {projectLines.length > 0 && (
-            <div class="border-border border-t pt-5">
-              <dt class="text-foreground-muted text-[0.7rem] font-extrabold tracking-[0.13em] uppercase">
-                Project site
-              </dt>
-              <dd class="mt-2">
-                <address class="text-foreground not-italic">
-                  {projectLines.map((line, index) => (
-                    <>
-                      {line}
-                      {index < projectLines.length - 1 && <br />}
-                    </>
-                  ))}
-                </address>
-              </dd>
-            </div>
-          )}
+          {
+            projectLines.length > 0 && (
+              <div class="border-border border-t pt-5">
+                <dt class="text-foreground-muted text-[0.7rem] font-extrabold tracking-[0.13em] uppercase">
+                  Project site
+                </dt>
+                <dd class="mt-2">
+                  <address class="text-foreground not-italic">
+                    {projectLines.map((line, index) => (
+                      <>
+                        {line}
+                        {index < projectLines.length - 1 && <br />}
+                      </>
+                    ))}
+                  </address>
+                </dd>
+              </div>
+            )
+          }
 
-          {hours.length > 0 && (
-            <div class="border-border border-t pt-5">
-              <dt class="text-foreground-muted text-[0.7rem] font-extrabold tracking-[0.13em] uppercase">
-                Office hours
-              </dt>
-              <dd class="text-foreground mt-2 grid gap-1">
-                {hours.map((line) => (
-                  <span>{line}</span>
-                ))}
-              </dd>
-            </div>
-          )}
+          {
+            hours.length > 0 && (
+              <div class="border-border border-t pt-5">
+                <dt class="text-foreground-muted text-[0.7rem] font-extrabold tracking-[0.13em] uppercase">
+                  Office hours
+                </dt>
+                <dd class="text-foreground mt-2 grid gap-1">
+                  {hours.map((line) => (
+                    <span>{line}</span>
+                  ))}
+                </dd>
+              </div>
+            )
+          }
         </dl>
 
         <div class="border-border bg-card self-start rounded-md border p-6 shadow-sm">
@@ -217,51 +228,55 @@ heroActions.push({
           </p>
 
           <ul class="mt-5 grid gap-1">
-            {telHref && (
-              <li>
-                <a
-                  href={telHref}
-                  data-track="phone"
-                  class="hover:bg-secondary group -mx-2 flex items-start gap-3 rounded-md p-2 transition-colors"
-                >
-                  <span class="border-border text-accent-ink flex h-10 w-10 shrink-0 items-center justify-center rounded-md border">
-                    <Icon name="phone" size="sm" />
-                  </span>
-                  <span class="min-w-0">
-                    <span class="text-foreground-muted block text-[0.7rem] font-extrabold tracking-[0.13em] uppercase">
-                      Call us
+            {
+              telHref && (
+                <li>
+                  <a
+                    href={telHref}
+                    data-track="phone"
+                    class="hover:bg-secondary group -mx-2 flex items-start gap-3 rounded-md p-2 transition-colors"
+                  >
+                    <span class="border-border text-accent-ink flex h-10 w-10 shrink-0 items-center justify-center rounded-md border">
+                      <Icon name="phone" size="sm" />
                     </span>
-                    <span class="display-xs group-hover:text-accent-ink block break-words">
-                      {siteConfig.phone}
+                    <span class="min-w-0">
+                      <span class="text-foreground-muted block text-[0.7rem] font-extrabold tracking-[0.13em] uppercase">
+                        Call us
+                      </span>
+                      <span class="display-xs group-hover:text-accent-ink block break-words">
+                        {siteConfig.phone}
+                      </span>
                     </span>
-                  </span>
-                </a>
-              </li>
-            )}
+                  </a>
+                </li>
+              )
+            }
 
-            {siteConfig.whatsapp && (
-              <li>
-                <a
-                  href={siteConfig.whatsapp}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-track="whatsapp"
-                  class="hover:bg-secondary group -mx-2 flex items-start gap-3 rounded-md p-2 transition-colors"
-                >
-                  <span class="border-border text-accent-ink flex h-10 w-10 shrink-0 items-center justify-center rounded-md border">
-                    <Icon name="brand-whatsapp" size="sm" />
-                  </span>
-                  <span class="min-w-0">
-                    <span class="text-foreground-muted block text-[0.7rem] font-extrabold tracking-[0.13em] uppercase">
-                      WhatsApp
+            {
+              siteConfig.whatsapp && (
+                <li>
+                  <a
+                    href={siteConfig.whatsapp}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-track="whatsapp"
+                    class="hover:bg-secondary group -mx-2 flex items-start gap-3 rounded-md p-2 transition-colors"
+                  >
+                    <span class="border-border text-accent-ink flex h-10 w-10 shrink-0 items-center justify-center rounded-md border">
+                      <Icon name="brand-whatsapp" size="sm" />
                     </span>
-                    <span class="display-xs group-hover:text-accent-ink block break-words">
-                      Message the team
+                    <span class="min-w-0">
+                      <span class="text-foreground-muted block text-[0.7rem] font-extrabold tracking-[0.13em] uppercase">
+                        WhatsApp
+                      </span>
+                      <span class="display-xs group-hover:text-accent-ink block break-words">
+                        Message the team
+                      </span>
                     </span>
-                  </span>
-                </a>
-              </li>
-            )}
+                  </a>
+                </li>
+              )
+            }
 
             <li>
               <a
@@ -269,11 +284,15 @@ heroActions.push({
                 data-track="email"
                 class="hover:bg-secondary group -mx-2 flex items-start gap-3 rounded-md p-2 transition-colors"
               >
-                <span class="border-border text-accent-ink flex h-10 w-10 shrink-0 items-center justify-center rounded-md border">
+                <span
+                  class="border-border text-accent-ink flex h-10 w-10 shrink-0 items-center justify-center rounded-md border"
+                >
                   <Icon name="mail" size="sm" />
                 </span>
                 <span class="min-w-0">
-                  <span class="text-foreground-muted block text-[0.7rem] font-extrabold tracking-[0.13em] uppercase">
+                  <span
+                    class="text-foreground-muted block text-[0.7rem] font-extrabold tracking-[0.13em] uppercase"
+                  >
                     Email
                   </span>
                   <span class="display-xs group-hover:text-accent-ink block break-words">
@@ -296,13 +315,11 @@ heroActions.push({
 
   <section id="contact-map" class="section scroll-mt-24" aria-labelledby="contact-map-title">
     <div class="mx-auto max-w-6xl px-6">
-      <h2 id="contact-map-title" class="display-md">
-        Find the office and the site
-      </h2>
+      <h2 id="contact-map-title" class="display-md">Find the office and the site</h2>
       <p class="text-foreground-muted mt-4 max-w-[46rem] text-pretty">
         The office is in Nandini Nagar, Miyapur, Hyderabad, and the Tranquill City project site is
-        at Mamidipally, near Rudraram and Patancheru. Call ahead and the team will guide you in. Before you call,
-        the
+        at Mamidipally, near Rudraram and Patancheru. Call ahead and the team will guide you in.
+        Before you call, the
         <a class="text-accent-ink font-bold hover:underline" href="/projects/tranquill-city/">
           Tranquill City project page
         </a>
@@ -316,52 +333,55 @@ heroActions.push({
         >
           project brochure
         </a>
-        is a concise overview you can read first — ask using the form above and
-        it is sent to you.
+        is a concise overview you can read first. Ask using the form above and it is sent to you.
       </p>
 
       <div class="mt-10 grid gap-10 lg:grid-cols-2 lg:gap-14">
-        {contactPlaces.map((place) => (
-          <div class="flex flex-col">
-            <h3 class="display-xs">{place.title}</h3>
-            <address class="text-foreground-muted mt-2 text-sm not-italic">
-              {place.lines.map((line, index) => (
-                <>
-                  {line}
-                  {index < place.lines.length - 1 && <br />}
-                </>
-              ))}
-            </address>
+        {
+          contactPlaces.map((place) => (
+            <div class="flex flex-col">
+              <h3 class="display-xs">{place.title}</h3>
+              <address class="text-foreground-muted mt-2 text-sm not-italic">
+                {place.lines.map((line, index) => (
+                  <>
+                    {line}
+                    {index < place.lines.length - 1 && <br />}
+                  </>
+                ))}
+              </address>
 
-            {hasMapKey && (
-              <GoogleMap
-                address={place.mapQuery}
-                size="lg"
-                ariaLabel={place.mapLabel}
-                placeholderTitle={place.title}
-                externalLinkText={place.directionsLabel}
-                class="mt-5"
-              />
-            )}
+              {hasMapKey && (
+                <GoogleMap
+                  address={place.mapQuery}
+                  size="lg"
+                  ariaLabel={place.mapLabel}
+                  placeholderTitle={place.title}
+                  externalLinkText={place.directionsLabel}
+                  class="mt-5"
+                />
+              )}
 
-            <div class="mt-5">
-              <Button
-                href={place.directionsUrl}
-                variant="secondary"
-                size="sm"
-                aria-label={place.directionsLabel}
-              >
-                Get directions
-              </Button>
+              <div class="mt-5">
+                <Button
+                  href={place.directionsUrl}
+                  variant="secondary"
+                  size="sm"
+                  aria-label={place.directionsLabel}
+                >
+                  Get directions
+                </Button>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        }
       </div>
     </div>
   </section>
 
-  {/* No entity node here on purpose: SEO.astro already ships the sitewide
+  {
+    /* No entity node here on purpose: SEO.astro already ships the sitewide
       RealEstateAgent, and this page used to emit a second byte-identical copy of
       the same @id in the same document. The office NAP this page prints is the
-      NAP that node carries. */}
+      NAP that node carries. */
+  }
 </PageLayout>

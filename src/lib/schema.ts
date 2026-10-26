@@ -632,7 +632,7 @@ export function createProjectSchema(project: {
         value:
           'Approved layout. No possession, handover or development-completion date is published on this site.',
         description:
-          'What this project has published today is an approved layout — HMDA layout permission and RERA registration, with the planned internal roads, parks and services shown on the reference plan. The gallery images are renders of the planned layout rather than photographs of completed construction. Ask the team to confirm the current site stage, the work completed and the handover position in writing before you commit.',
+          'What this project has published today is an approved layout (HMDA layout permission and RERA registration), with the planned internal roads, parks and services shown on the reference plan. The gallery images are renders of the planned layout rather than photographs of completed construction. Ask the team to confirm the current site stage, the work completed and the handover position in writing before you commit.',
       },
     ],
     // The advertised features, so the listing describes the product a buyer is

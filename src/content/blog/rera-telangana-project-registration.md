@@ -17,7 +17,7 @@ sources:
     url: https://rera.telangana.gov.in/
   - label: 'Telangana RERA public project search'
     url: https://rerait.telangana.gov.in/SearchList/Search
-  - label: 'Telangana Real Estate (Regulation and Development) Rules, 2017 — G.O.Ms.No.202, MA&UD, 31.07.2017'
+  - label: 'Telangana Real Estate (Regulation and Development) Rules, 2017: G.O.Ms.No.202, MA&UD, 31.07.2017'
     url: https://rerait.telangana.gov.in/PDF/Telangana%20State%20Real%20Estate%20_Regulation%20and%20Development_%20Rules-2017.pdf
   - label: 'Telangana RERA complaints portal'
     url: https://complaints-rera.telangana.gov.in/
@@ -88,7 +88,7 @@ Registration means three things, and no more.
 
 1. The project has been registered with the Telangana Real Estate Regulatory
    Authority.
-2. The promoter has filed the disclosures the Act and the Rules require — the
+2. The promoter has filed the disclosures the Act and the Rules require. The
    approved layout plan, the land title and the promoter details.
 3. Those filings are on the Authority's record.
 
@@ -151,7 +151,7 @@ lender will [finance the plot](/blog/plot-loans-telangana/).
 ## How to check the number yourself, honestly
 
 Here is the friction nobody advertises. The Telangana public project list is
-large — the Authority reported 11,261 registered projects as on 2026-10-01 —
+large, the Authority reported 11,261 registered projects as on 2026-10-01,
 but the search that reaches it is captcha-gated. It needs a "User Type"
 selection, then district, mandal and village dropdowns, and only then a captcha
 before any query runs. And there is **no permalink that resolves a single
@@ -189,7 +189,7 @@ shapes are seen in practice: a "P" prefix followed by eleven digits, an "A"
 prefix followed by eleven digits, and the "REA0" form followed by eight digits.
 The REA prefix is a real Telangana prefix, and it is visible on the Authority's
 own published defaulters list, which carries REA-prefixed project numbers for
-named projects and promoters — REA02200025418 and REA02400083841 were both
+named projects and promoters, REA02200025418 and REA02400083841 were both
 listed there when we read it on 1 October 2026. Whether the REA form denotes a
 distinct class of project is not something we can confirm from any published
 rule, so we do not assert it. Read the number exactly as the certificate prints
@@ -201,11 +201,11 @@ The Act requires the promoter to disclose the approved layout plan, the land
 title and the promoter details. In practice, request each as an original
 instrument or a certified copy:
 
-1. The approved layout plan — the drawing as sanctioned, with the plot numbering.
-2. The land title — the documents establishing the promoter's claim, which you
+1. The approved layout plan: the drawing as sanctioned, with the plot numbering.
+2. The land title: the documents establishing the promoter's claim, which you
    check against the 1B extract and the encumbrance certificate, not against the
    promoter.
-3. Promoter details — the entity, its address and its contact details.
+3. Promoter details: the entity, its address and its contact details.
 
 Cross-check each at its own source: the layout approval with the planning
 authority, the land records with the sub-registrar and the revenue office, and
@@ -244,7 +244,7 @@ what differs and where you obtained each one. A complaint with documents moves;
 an impression does not. Keep copies of everything you submit.
 
 Most problems are resolved by checking first rather than after. The [Tranquill
-City checklist](/blog/verify-plot-hyderabad/) exists for that — work through it,
+City checklist](/blog/verify-plot-hyderabad/) exists for that. Work through it,
 bring your lawyer, and ask the office that holds the record rather than the
 office that wants the sale.
 

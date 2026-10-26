@@ -1,7 +1,7 @@
 ---
 title: 'Tranquill City Villa Plots in Mamidipally, near Rudraram & Patancheru'
 displayTitle: Tranquill City
-description: Villa plots at Mamidipally near Rudraram, Patancheru, Hyderabad — 150–300 sq.yd. 70 of 82 plots saleable. HMDA-approved, RERA registered. Plots from ₹48 lakh.
+description: Villa plots at Mamidipally near Rudraram, Patancheru, Hyderabad, 150–300 sq.yd. 70 of 82 plots saleable. HMDA-approved, RERA registered. Plots from ₹48 lakh.
 projectType: Premium villa plots
 location: Mamidipally near Rudraram, Patancheru, Hyderabad
 intro: A semi-gated layout of premium villa plots at Mamidipally, near Rudraram and Patancheru. 70 of the 82 parcels are for sale; the price and the RERA and HMDA numbers are published on this page.
@@ -127,7 +127,7 @@ faq:
   intro: Clear answers for a useful conversation and an informed site visit.
   items:
     - question: What does the Rudraram location offer plot buyers?
-      answer: The western corridor — NH-65, the ORR, IIT Hyderabad, the Patancheru industrial belt and the education cluster around it. See the location section below for the landmarks.
+      answer: 'The western corridor: NH-65, the ORR, IIT Hyderabad, the Patancheru industrial belt and the education cluster around it. See the location section below for the landmarks.'
     - question: Are bank loans available?
       answer: Financing depends on the lender, your eligibility and the documents for the specific plot. The team shares the project documents; your lender confirms the terms.
     - question: What is the RERA number and how do I verify it?
@@ -135,9 +135,9 @@ faq:
     - question: What is the HMDA layout permission number?
       answer: 2103/HMDA/SWDL/2026. Verify it in HMDA's Layout Permission Report and match the village, mandal and district.
     - question: Which village is the layout in?
-      answer: Mamidipally village, Kandi mandal, Sangareddy district — near Rudraram and Patancheru.
+      answer: Mamidipally village, Kandi mandal, Sangareddy district, near Rudraram and Patancheru.
     - question: How many plots are for sale?
-      answer: 70 of the 82 parcels. Twelve are held under HMDA Mortgage conditions — a standard HMDA development requirement, released on completion of the layout conditions — and are not for sale. The team confirms which numbers are still open.
+      answer: 70 of the 82 parcels. Twelve are held under HMDA Mortgage conditions (a standard HMDA development requirement, released on completion of the layout conditions) and are not for sale. The team confirms which numbers are still open.
     - question: What sizes are the plots?
       answer: 125.42 to 250.84 sq.m (150 to 300 sq.yd). The reference plan shows each numbered plot and its dimensions; the team confirms the size, length, width and facing of any specific plot.
     - question: What does a plot cost?
@@ -145,11 +145,11 @@ faq:
     - question: How do I verify the project before I buy?
       answer: Take the approval numbers and the layout plan, and verify them with the planning authority and your own lawyer. The plot-verification guide has the practical checklist.
     - question: Can I bring my own lawyer to verify documents?
-      answer: Yes — we encourage it. Ask for the approval letter, the layout plan and the title documents.
+      answer: Yes. We encourage it. Ask for the approval letter, the layout plan and the title documents.
     - question: Can I build a house immediately?
       answer: >-
-        What is published today is an approved layout — HMDA 2103/HMDA/SWDL/2026,
-        RERA REA01100108192 — with the roads, parks and services shown on the
+        What is published today is an approved layout, HMDA 2103/HMDA/SWDL/2026,
+        RERA REA01100108192, with the roads, parks and services shown on the
         reference plan. No possession or handover date is published here; the
         gallery images are renders, not completed construction. Get the current
         site stage and your plot's position in writing before you commit.
@@ -161,7 +161,7 @@ testimonials:
   eyebrow: From the people who bought here
   title: Buyers, in their own words.
   intro: Clips recorded with buyers during their visits to Tranquill City.
-  note: Individual buyer accounts; experiences vary. Video clips only — no rating or transcript is published. Confirm current availability, pricing and project details with the team.
+  note: Individual buyer accounts; experiences vary. Video clips only. No rating or transcript is published. Confirm current availability, pricing and project details with the team.
   items:
     - id: tc-t01
       video:
@@ -200,8 +200,8 @@ updatedAt: 2026-10-14
 
 Tranquill City is a semi-gated layout of premium villa plots in Mamidipally village, Kandi mandal, Sangareddy district, near Rudraram and Patancheru, Hyderabad. Plots run from 125.42 to 250.84 sq.m (150–300 sq.yd), priced per plot from ₹48 lakh; the price of a specific plot depends on its size band and number.
 
-The layout holds 82 parcels; 70 are for sale and 12 are held under HMDA Mortgage conditions — a standard HMDA development requirement, released on completion of the layout conditions. The [reference plan](#project-plan) shows every numbered plot with its dimensions. The gallery images are renders of the planned layout, not photographs of completed construction, and no possession or handover date is published here.
+The layout holds 82 parcels; 70 are for sale and 12 are held under HMDA Mortgage conditions: a standard HMDA development requirement, released on completion of the layout conditions. The [reference plan](#project-plan) shows every numbered plot with its dimensions. The gallery images are renders of the planned layout, not photographs of completed construction, and no possession or handover date is published here.
 
-The approvals: HMDA layout permission 2103/HMDA/SWDL/2026 and RERA registration REA01100108192. Verify both on the official portals before you decide — the [plot verification guide](/blog/verify-plot-hyderabad/) is the document checklist, the [HMDA or DTCP explainer](/blog/hmda-or-dtcp-plot-approval-telangana/) covers how to check an approval number yourself, and [plots in the Rudraram–Patancheru corridor](/blog/rudraram-patancheru-corridor/) sets out the surrounding area. Registration charges and loans are covered in [plot registration in Telangana](/blog/plot-registration-telangana-costs/) and [plot loans in Telangana](/blog/plot-loans-telangana/).
+The approvals: HMDA layout permission 2103/HMDA/SWDL/2026 and RERA registration REA01100108192. Verify both on the official portals before you decide. The [plot verification guide](/blog/verify-plot-hyderabad/) is the document checklist, the [HMDA or DTCP explainer](/blog/hmda-or-dtcp-plot-approval-telangana/) covers how to check an approval number yourself, and [plots in the Rudraram–Patancheru corridor](/blog/rudraram-patancheru-corridor/) sets out the surrounding area. Registration charges and loans are covered in [plot registration in Telangana](/blog/plot-registration-telangana-costs/) and [plot loans in Telangana](/blog/plot-loans-telangana/).
 
-To see a specific plot, [book a site visit](/contact-us/) — the team shares the layout plan and the documents for the plot you are considering.
+To see a specific plot, [book a site visit](/contact-us/). The team shares the layout plan and the documents for the plot you are considering.

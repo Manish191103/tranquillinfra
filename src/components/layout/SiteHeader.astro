@@ -27,7 +27,7 @@ const enquiryCta = enquiryCtaTarget(Astro.url.pathname);
 // own destination, which is why the bar no longer rotates them.
 const announcements: AnnouncementMessage[] = [
   {
-    text: `Book a site visit at ${projectConfig.name} — pick the day that suits you.`,
+    text: `Book a site visit at ${projectConfig.name}. Pick the day that suits you.`,
     href: enquiryCta.href,
     dialog: enquiryCta.dialog,
     requestType: 'site_visit',
@@ -38,7 +38,11 @@ const announcements: AnnouncementMessage[] = [
     href: '/projects/tranquill-city/',
   },
   {
-    text: `HMDA-approved, RERA-registered — the approval numbers are on the project page.`,
+    text: `${projectConfig.siteArea.acre}-acre semi-gated layout · 40' & 33' CC roads · 2 parks · Near Rudraram, Mumbai Highway`,
+    href: '/projects/tranquill-city/#project-highlights',
+  },
+  {
+    text: `RERA ${projectConfig.approvals.rera.number} · HMDA ${projectConfig.approvals.hmda.number}`,
     href: '/projects/tranquill-city/#project-stats',
   },
   {
@@ -93,10 +97,8 @@ if (siteConfig.whatsapp) {
     requestType: 'site_visit',
   }}
   menuIntro={{ kicker: 'Tranquill Infra', note: 'Thoughtful places, built for living.' }}
-  menuContact={
-    phoneHref && siteConfig.phone
-      ? { label: PHONE_CTA_LABEL, value: siteConfig.phone, href: phoneHref, track: 'phone' }
-      : undefined
-  }
+  menuContact={phoneHref && siteConfig.phone
+    ? { label: PHONE_CTA_LABEL, value: siteConfig.phone, href: phoneHref, track: 'phone' }
+    : undefined}
   actions={actions}
 />

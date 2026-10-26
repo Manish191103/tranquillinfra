@@ -14,19 +14,19 @@ tags:
   - land tax
   - Telangana
 sources:
-  - label: 'Income Tax Department — Income-tax Act, 2025 (as amended by the Finance Act, 2026)'
+  - label: 'Income Tax Department: Income-tax Act, 2025 (as amended by the Finance Act, 2026)'
     url: https://www.incometaxindia.gov.in/documents/d/guest/income_tax_act_2025_as_amended_by_fa_act_2026-pdf
-  - label: 'Income Tax Department — Acts, Rules, Forms and Notifications'
+  - label: 'Income Tax Department: Acts, Rules, Forms and Notifications'
     url: https://www.incometaxindia.gov.in/
-  - label: 'Income Tax Department — Form 141, challan-cum-statement for deduction under section 393(1)'
+  - label: 'Income Tax Department: Form 141, challan-cum-statement for deduction under section 393(1)'
     url: https://incometaxindia.gov.in/documents/d/guest/fn-141
-  - label: 'India Code — the Income-tax Act, 2025'
+  - label: 'India Code: the Income-tax Act, 2025'
     url: https://www.indiacode.nic.in/
-  - label: 'MeeSeva — Telangana revenue and registration services'
+  - label: 'MeeSeva: Telangana revenue and registration services'
     url: https://meesva.telangana.gov.in/
-  - label: 'GHMC — Greater Hyderabad Municipal Corporation property tax'
+  - label: 'GHMC: Greater Hyderabad Municipal Corporation property tax'
     url: https://www.ghmc.gov.in/Propertytax.aspx
-  - label: 'HMDA — Hyderabad Metropolitan Development Authority'
+  - label: 'HMDA: Hyderabad Metropolitan Development Authority'
     url: https://hmda.telangana.gov.in/
   - label: 'Sangareddy District administration'
     url: https://sangareddy.telangana.gov.in/
@@ -230,4 +230,4 @@ gains and land tax has a much shorter conversation with a lawyer. Use the
 then take them to a lawyer of your choice with your own tax adviser. Nothing here is
 legal or tax advice. It is a map of which body charges what.
 
-Tranquill City — 82 parcels over 19,410 sq.m (4.8 acre) at Mamidipally, Kandi mandal, Sangareddy district, HMDA 2103/HMDA/SWDL/2026, RERA REA01100108192 — sits outside GHMC limits, so the local body there sets the land tax. Ask the team for the approval documentation and the stamped title records when you visit, or reach the team on +91 95503 62288 by phone or WhatsApp, Monday and Wednesday to Sunday, 9:00 AM to 6:00 PM (closed Tuesday). More buyer education is in the [Insights archive](/blog/).
+Tranquill City, 82 parcels over 19,410 sq.m (4.8 acre) at Mamidipally, Kandi mandal, Sangareddy district, with HMDA 2103/HMDA/SWDL/2026 and RERA REA01100108192, sits outside GHMC limits, so the local body there sets the land tax. Ask the team for the approval documentation and the stamped title records when you visit, or reach the team on +91 95503 62288 by phone or WhatsApp, Monday and Wednesday to Sunday, 9:00 AM to 6:00 PM (closed Tuesday). More buyer education is in the [Insights archive](/blog/).

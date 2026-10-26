@@ -25,6 +25,7 @@ import { Picture } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import { enquiryCtaTarget, SITE_VISIT_CTA_LABEL } from '~/lib/enquiry-cta';
 import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+import BuildVisual, { type BuildVisualSpec } from './BuildVisual.astro';
 import siteConfig from '~/config/site.config';
 
 export interface BuildFrame {
@@ -33,6 +34,8 @@ export interface BuildFrame {
   label: string;
   title: string;
   detail: string;
+  /** A figure shown in place of `detail`, which stays as screen-reader text */
+  visual?: BuildVisualSpec;
 }
 
 interface Props {
@@ -91,7 +94,8 @@ const pad = (value: number) => String(value).padStart(2, '0');
 >
   <div class="build-story-canvas">
     <div class="build-story-media" aria-hidden="true">
-      {/*
+      {
+        /*
       Five frames, each a `<Picture>` with the same treatment.
 
       `sizes` asks phones for two screens of width, for the reason ImageHero
@@ -109,22 +113,25 @@ const pad = (value: number) => String(value).padStart(2, '0');
       in their resting state — the wash hides most of what q25 costs, and 280KB
       across five frames is not a trade worth making for artifacts nobody sees.
       The mobile softness people actually noticed was `sizes`, not quality.
-    */}
-      {sequence.map((frame, index) => (
-        <Picture
-          class={`build-story-image${index === 0 ? ' is-visible' : ''}`}
-          data-build-image
-          data-stage={index + 1}
-          src={frame.image}
-          formats={['avif', 'webp']}
-          fallbackFormat="webp"
-          quality={25}
-          widths={[640, 960, 1280, 1672]}
-          sizes="(width < 60rem) 200vw, 100vw"
-          alt={frame.imageAlt}
-          loading="lazy"
-        />
-      ))}
+    */
+      }
+      {
+        sequence.map((frame, index) => (
+          <Picture
+            class={`build-story-image${index === 0 ? 'is-visible' : ''}`}
+            data-build-image
+            data-stage={index + 1}
+            src={frame.image}
+            formats={['avif', 'webp']}
+            fallbackFormat="webp"
+            quality={25}
+            widths={[640, 960, 1280, 1672]}
+            sizes="(width < 60rem) 200vw, 100vw"
+            alt={frame.imageAlt}
+            loading="lazy"
+          />
+        ))
+      }
     </div>
     <div class="build-story-shade" aria-hidden="true"></div>
 
@@ -139,17 +146,19 @@ const pad = (value: number) => String(value).padStart(2, '0');
     </div>
 
     <nav class="build-story-progress" aria-label={sequenceLabel}>
-      {sequence.map((frame, index) => (
-        <button
-          type="button"
-          class:list={['build-story-progress-button', index === 0 && 'is-active']}
-          data-build-jump={index + 1}
-          aria-label={`Show stage ${index + 1}: ${frame.label}`}
-          aria-current={index === 0 ? 'step' : undefined}
-        >
-          <span aria-hidden="true">{pad(index + 1)}</span>
-        </button>
-      ))}
+      {
+        sequence.map((frame, index) => (
+          <button
+            type="button"
+            class:list={['build-story-progress-button', index === 0 && 'is-active']}
+            data-build-jump={index + 1}
+            aria-label={`Show stage ${index + 1}: ${frame.label}`}
+            aria-current={index === 0 ? 'step' : undefined}
+          >
+            <span aria-hidden="true">{pad(index + 1)}</span>
+          </button>
+        ))
+      }
     </nav>
 
     <p class="build-story-caption" aria-hidden="true">
@@ -172,48 +181,57 @@ const pad = (value: number) => String(value).padStart(2, '0');
     </header>
 
     <div class="build-story-beats">
-      {sequence.map((frame, index) => (
-        <article
-          class:list={[
-            'build-beat',
-            index === 0 && 'is-active',
-            index === lastIndex && 'build-beat-final',
-          ]}
-          id={index === lastIndex ? 'build-final' : undefined}
-          data-build-beat
-          data-stage={index + 1}
-          data-label={frame.label}
-          aria-labelledby={`build-beat-title-${index + 1}`}
-        >
-          <div class="build-beat-content">
-            <div class="build-beat-meta">
-              <span class="build-beat-number">{pad(index + 1)}</span>
-              <span class="build-beat-label">{frame.label}</span>
-            </div>
-            <h3 id={`build-beat-title-${index + 1}`}>{frame.title}</h3>
-            <p>{frame.detail}</p>
-            {index === lastIndex && (
-              <div class="build-beat-actions">
-                <a
-                  class="build-beat-cta bg-accent text-surface-invert hover:bg-accent-hover"
-                  href={siteVisitHref}
-                  data-track="site_visit"
-                  data-dialog-trigger={siteVisitDialog}
-                  data-dialog-request-type={siteVisitDialog ? 'site_visit' : undefined}
-                >
-                  {SITE_VISIT_CTA_LABEL}
-                </a>
-                <a
-                  class="build-beat-cta border-border text-foreground hover:bg-foreground hover:text-background border"
-                  href={projectHref}
-                >
-                  Explore the project
-                </a>
+      {
+        sequence.map((frame, index) => (
+          <article
+            class:list={[
+              'build-beat',
+              index === 0 && 'is-active',
+              index === lastIndex && 'build-beat-final',
+            ]}
+            id={index === lastIndex ? 'build-final' : undefined}
+            data-build-beat
+            data-stage={index + 1}
+            data-label={frame.label}
+            aria-labelledby={`build-beat-title-${index + 1}`}
+          >
+            <div class="build-beat-content">
+              <div class="build-beat-meta">
+                <span class="build-beat-number">{pad(index + 1)}</span>
+                <span class="build-beat-label">{frame.label}</span>
               </div>
-            )}
-          </div>
-        </article>
-      ))}
+              <h3 id={`build-beat-title-${index + 1}`}>{frame.title}</h3>
+              {frame.visual ? (
+                <>
+                  <p class="sr-only">{frame.detail}</p>
+                  <BuildVisual spec={frame.visual} />
+                </>
+              ) : (
+                <p>{frame.detail}</p>
+              )}
+              {index === lastIndex && (
+                <div class="build-beat-actions">
+                  <a
+                    class="build-beat-cta bg-accent text-surface-invert hover:bg-accent-hover"
+                    href={siteVisitHref}
+                    data-track="site_visit"
+                    data-dialog-trigger={siteVisitDialog}
+                    data-dialog-request-type={siteVisitDialog ? 'site_visit' : undefined}
+                  >
+                    {SITE_VISIT_CTA_LABEL}
+                  </a>
+                  <a
+                    class="build-beat-cta border-border text-foreground hover:bg-foreground hover:text-background border"
+                    href={projectHref}
+                  >
+                    Explore the project
+                  </a>
+                </div>
+              )}
+            </div>
+          </article>
+        ))
+      }
     </div>
   </div>
 </section>
@@ -757,6 +775,10 @@ const pad = (value: number) => String(value).padStart(2, '0');
 
   .build-beat-final {
     scroll-margin-top: 0;
+  }
+
+  .build-beat h3 + p.sr-only + :global(.bv) {
+    margin-top: 0.25rem;
   }
 
   .build-beat-actions {

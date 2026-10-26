@@ -54,7 +54,7 @@ interface Props {
 const {
   id = 'enquiry-dialog',
   title = SITE_VISIT_CTA_LABEL,
-  description = 'Pick the day you want to see the layout — we confirm the slot by phone within business hours.',
+  description = 'Pick the day you want to see the layout. We confirm the slot by phone within business hours.',
   action = `https://formspree.io/f/${PUBLIC_FORMSPREE_FORM_ID}`,
   formType = 'Enquiry dialog',
   defaultRequestType = 'site_visit',
@@ -113,7 +113,7 @@ const telHref = siteConfig.phoneE164 ? `tel:${siteConfig.phoneE164}` : undefined
       label="I would like to"
       name="request_type"
       options={REQUEST_TYPE_OPTIONS}
-      hint="Pick the brochure instead and we will only send the PDF — no date needed."
+      hint="Pick the brochure instead and we will only send the PDF, no date needed."
     />
 
     <!-- The visit date is the promise the CTA makes, so it is required for a
@@ -140,7 +140,7 @@ const telHref = siteConfig.phoneE164 ? `tel:${siteConfig.phoneE164}` : undefined
         name="message"
         maxlength="5000"
         rows={4}
-        hint="Optional — plot size, budget, or a time that suits you."
+        hint="Optional: plot size, budget, or a time that suits you."
       />
     </div>
 

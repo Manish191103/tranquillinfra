@@ -1,0 +1,299 @@
+---
+/**
+ * LoanAndFit
+ *
+ * Two plates side by side: the brochure's "Bank loan available" line with the
+ * two approvals a lender checks, and who the project suits. Every fit point
+ * links to the guide that backs it, so the buyer guides stay one click away
+ * from the homepage without a library section of their own.
+ *
+ * The brochure names no lending partners, so neither does this: the copy
+ * says loans are available and the loan action books a site visit, where the
+ * team helps with current lenders and documents.
+ */
+import ApprovalSeals from '~/components/ui/primitives/ApprovalSeals.astro';
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+import projectConfig from '~/config/project.config';
+
+export interface FitPoint {
+  icon: string;
+  title: string;
+  body: string;
+  link: { href: string; label: string };
+}
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  fit: FitPoint[];
+  id?: string;
+}
+
+const { eyebrow, title, intro, fit, id = 'home-loan-fit' } = Astro.props;
+
+const loanPoints = [
+  'Plot loans on an approved layout',
+  'Plot and construction loans',
+  'Loan documents shared on request',
+];
+---
+
+<section id={id} class="section bg-background" aria-labelledby={`${id}-title`}>
+  <div class="mx-auto max-w-6xl px-6">
+    <header class="max-w-3xl">
+      <p class="eyebrow reveal">{eyebrow}</p>
+      <h2 id={`${id}-title`} class="display-md reveal-2 mt-6">{title}</h2>
+      <p class="text-foreground-muted reveal-3 mt-5 max-w-[52ch] text-lg text-pretty">{intro}</p>
+    </header>
+
+    <div class="lf-grid">
+      <article class="lf-loan invert-section" aria-labelledby={`${id}-loan`}>
+        <span class="lf-loan-tag">
+          <Icon name="building-bank" size="sm" />
+          Bank loan available
+        </span>
+        <h3 id={`${id}-loan`} class="lf-loan-title">Finance your plot with a bank loan.</h3>
+        <p class="lf-loan-body">
+          Tranquill City is RERA registered and an HMDA approved layout, the approvals a lender
+          checks before it funds a plot. Plots start from ₹{projectConfig.price.from / 100000} lakh. Book
+          a site visit and our team will help you with the loan: which banks are processing loans on the
+          project today, and the documents they need.
+        </p>
+        <ul class="lf-loan-points">
+          {
+            loanPoints.map((point) => (
+              <li>
+                <Icon name="check-circle" size="sm" />
+                {point}
+              </li>
+            ))
+          }
+        </ul>
+        <ApprovalSeals class="lf-seals" compact />
+        <div class="lf-loan-actions">
+          <a
+            class="lf-btn lf-btn-gold"
+            href="/contact-us/"
+            data-track="site_visit"
+            data-dialog-trigger="enquiry-dialog"
+            data-dialog-request-type="site_visit"
+          >
+            Book a site visit
+            <Icon name="arrow-up-right" size="sm" />
+          </a>
+          <a class="lf-btn lf-btn-ghost" href="/blog/plot-loans-telangana/">
+            Plot loans in Telangana
+            <Icon name="arrow-up-right" size="sm" />
+          </a>
+        </div>
+      </article>
+
+      <div class="lf-fit">
+        <h3 class="lf-fit-title">A good fit if you</h3>
+        <ul class="lf-fit-list">
+          {
+            fit.map((point) => (
+              <li class="lf-fit-item">
+                <span class="lf-fit-icon">
+                  <Icon name={point.icon} size="md" />
+                </span>
+                <div>
+                  <p class="lf-fit-item-title">{point.title}</p>
+                  <p class="lf-fit-item-body">{point.body}</p>
+                  <a class="lf-fit-link" href={point.link.href}>
+                    {point.link.label}
+                    <Icon name="arrow-up-right" size="xs" />
+                  </a>
+                </div>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .lf-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    margin-top: clamp(2.5rem, 5vw, 4rem);
+    align-items: start;
+  }
+
+  .lf-loan {
+    display: flex;
+    flex-direction: column;
+    padding: clamp(1.75rem, 3.4vw, 2.75rem);
+    border-radius: var(--radius-shell);
+    background:
+      radial-gradient(
+        120% 80% at 100% 0%,
+        color-mix(in oklch, var(--accent) 22%, transparent),
+        transparent 60%
+      ),
+      var(--surface-invert);
+    box-shadow: var(--site-shadow-md);
+    color: var(--on-invert);
+  }
+
+  .lf-loan-tag {
+    display: inline-flex;
+    align-self: flex-start;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: var(--radius-full);
+    background: var(--accent);
+    color: var(--accent-foreground);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .lf-loan-title {
+    margin-top: 1.4rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  .lf-loan-body {
+    margin-top: 1rem;
+    color: var(--on-invert-secondary);
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+
+  .lf-loan-points {
+    display: grid;
+    gap: 0.6rem;
+    margin-top: 1.5rem;
+  }
+
+  .lf-loan-points li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 600;
+  }
+
+  .lf-loan-points :global(svg) {
+    color: var(--accent);
+  }
+
+  .lf-loan :global(.lf-seals) {
+    margin-top: 1.75rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-invert);
+  }
+
+  .lf-loan-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.75rem;
+  }
+
+  .lf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.25rem;
+    border-radius: var(--radius-full);
+    font-size: 0.95rem;
+    font-weight: 700;
+    transition:
+      background-color var(--site-duration-fast) ease,
+      color var(--site-duration-fast) ease;
+  }
+
+  .lf-btn-gold {
+    background: var(--accent);
+    color: var(--accent-foreground);
+  }
+
+  .lf-btn-gold:hover {
+    background: var(--color-accent-hover);
+  }
+
+  .lf-btn-ghost {
+    border: 1px solid var(--border-invert-strong);
+    color: var(--on-invert);
+  }
+
+  .lf-btn-ghost:hover {
+    background: var(--on-invert);
+    color: var(--surface-invert);
+  }
+
+  .lf-fit-title {
+    color: var(--color-foreground-muted);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .lf-fit-list {
+    display: grid;
+    margin-top: 0.75rem;
+  }
+
+  .lf-fit-item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 1rem;
+    padding-block: 1.25rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .lf-fit-icon {
+    display: grid;
+    width: 2.9rem;
+    height: 2.9rem;
+    place-items: center;
+    border-radius: 0.9rem;
+    background: color-mix(in oklch, var(--color-accent) 18%, transparent);
+    color: var(--color-accent-ink);
+  }
+
+  .lf-fit-item-title {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    line-height: 1.2;
+  }
+
+  .lf-fit-item-body {
+    margin-top: 0.35rem;
+    color: var(--color-foreground-muted);
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+
+  .lf-fit-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-top: 0.5rem;
+    color: var(--color-accent-ink);
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  .lf-fit-link:hover {
+    color: var(--color-foreground);
+  }
+
+  @media (max-width: 60rem) {
+    .lf-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

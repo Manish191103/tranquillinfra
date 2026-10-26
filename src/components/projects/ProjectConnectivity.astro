@@ -1,0 +1,215 @@
+---
+/**
+ * ProjectConnectivity
+ *
+ * The brochure's corridor and "connected future" spreads, redrawn on the
+ * forest surface: the growth corridor as two chains of place names, a
+ * schematic location map traced from the brochure's location-map page, and
+ * the three landmark groups, each landmark linking to the corridor guide
+ * that covers it, so the section is also the site's internal link hub for
+ * the location.
+ *
+ * The map is schematic and says so: relative positions only, no scale and no
+ * distances, matching the site's rule against drive-time claims.
+ */
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+import LocationMap from './LocationMap.astro';
+import { connectivity, corridor } from '~/config/highlights.config';
+
+interface Props {
+  eyebrow?: string;
+  title?: string;
+  intro?: string;
+  id?: string;
+  directionsUrl?: string;
+}
+
+const {
+  eyebrow = 'A connected location',
+  title = 'Rudraram, on the Mumbai Highway growth corridor.',
+  intro = 'Tranquill City sits in Mamidipally village, Kandi mandal, off the Mumbai Highway (NH-65) between Patancheru and Sangareddy, beside IIT Hyderabad and inside the Outer and proposed Regional Ring Roads.',
+  id = 'project-connectivity',
+  directionsUrl = 'https://www.google.com/maps/dir/?api=1&destination=17.585611,78.148361',
+} = Astro.props;
+
+const headingId = `${id}-title`;
+---
+
+<section
+  id={id}
+  class="invert-section bg-background text-foreground section scroll-mt-24"
+  aria-labelledby={headingId}
+>
+  <div class="mx-auto max-w-6xl px-6">
+    <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16">
+      <div>
+        <p class="eyebrow eyebrow-on-invert">{eyebrow}</p>
+        <h2 id={headingId} class="display-md mt-6">{title}</h2>
+        <p class="text-foreground-muted mt-6 max-w-[46ch] text-lg text-pretty">{intro}</p>
+
+        <div class="mt-10 space-y-5">
+          <div>
+            <p class="chain-label">The city grew along this corridor</p>
+            <p class="chain">
+              {
+                corridor.established.map((place, index) => (
+                  <>
+                    {index > 0 && (
+                      <span class="chain-arrow" aria-label="then">
+                        →
+                      </span>
+                    )}
+                    <span class="chain-place">{place}</span>
+                  </>
+                ))
+              }
+            </p>
+          </div>
+          <div>
+            <p class="chain-label">The residential belt continues</p>
+            <p class="chain chain-next">
+              {
+                corridor.next.map((place, index) => (
+                  <>
+                    {index > 0 && (
+                      <span class="chain-arrow" aria-label="then">
+                        →
+                      </span>
+                    )}
+                    <span class:list={['chain-place', place === 'Rudraram' && 'chain-here']}>
+                      {place}
+                    </span>
+                  </>
+                ))
+              }
+            </p>
+          </div>
+        </div>
+
+        <a
+          class="text-foreground hover:text-accent-ink mt-10 inline-flex items-center gap-2 font-semibold underline underline-offset-4 transition-colors"
+          href="/blog/rudraram-patancheru-corridor/"
+        >
+          Read the Rudraram and Patancheru corridor guide
+          <Icon name="arrow-up-right" size="sm" />
+        </a>
+      </div>
+
+      <figure class="shell self-start">
+        <div class="shell-core overflow-hidden p-3 md:p-4">
+          <LocationMap id={`${id}-map`} />
+        </div>
+        <figcaption
+          class="text-foreground-muted flex flex-wrap items-center justify-between gap-3 px-3 pt-3 pb-1 text-xs"
+        >
+          <span>Location map redrawn from the project brochure.</span>
+          <a
+            class="text-accent-ink inline-flex items-center gap-1 font-semibold"
+            href={directionsUrl}
+          >
+            Directions in Google Maps <Icon name="arrow-up-right" size="xs" />
+          </a>
+        </figcaption>
+      </figure>
+    </div>
+
+    <div class="mt-16 grid gap-4 md:grid-cols-3">
+      {
+        connectivity.map((group) => (
+          <section class="shell">
+            <div class="shell-core h-full p-6">
+              <span class="group-icon" aria-hidden="true">
+                <Icon name={group.icon} size="md" />
+              </span>
+              <h3 class="mt-4 text-lg font-bold">{group.title}</h3>
+              <ul class="mt-4 space-y-2.5 text-sm">
+                {group.items.map((item) => (
+                  <li class="flex items-start gap-2.5">
+                    <Icon name={item.icon} size="sm" class="text-accent-ink mt-0.5 shrink-0" />
+                    {item.href ? (
+                      <a
+                        class="text-foreground-secondary hover:text-accent-ink underline decoration-[color-mix(in_oklch,currentColor_30%,transparent)] underline-offset-3 transition-colors"
+                        href={item.href}
+                      >
+                        {item.label}
+                      </a>
+                    ) : (
+                      <span class="text-foreground-secondary">{item.label}</span>
+                    )}
+                    {item.distanceKm && <span class="distance">~{item.distanceKm} km</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        ))
+      }
+    </div>
+    <p class="text-foreground-muted mt-6 text-sm">
+      Distances are straight-line from the site, not road distances or drive times. Site pin:
+      <span class="font-mono tabular-nums">17.585611° N, 78.148361° E</span>.
+    </p>
+  </div>
+</section>
+
+<style>
+  .chain-label {
+    color: var(--color-foreground-muted);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+  }
+
+  .chain {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+  }
+
+  .chain-place {
+    padding: 0.45rem 0.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    font-weight: 600;
+  }
+
+  .chain-arrow {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .chain-next .chain-place {
+    border-color: color-mix(in oklch, var(--accent) 55%, transparent);
+  }
+
+  .chain-next .chain-here {
+    border-color: var(--accent);
+    background-color: var(--accent);
+    color: var(--accent-foreground);
+  }
+
+  .distance {
+    flex: none;
+    margin-left: auto;
+    padding: 0.05rem 0.5rem;
+    border-radius: var(--radius-full);
+    background-color: color-mix(in oklch, var(--accent) 20%, transparent);
+    color: var(--color-accent-ink);
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .group-icon {
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    place-items: center;
+    border-radius: var(--radius-full);
+    background-color: var(--accent);
+    color: var(--accent-foreground);
+  }
+</style>

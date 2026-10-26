@@ -27,7 +27,7 @@ export const contact = {
   whatsapp:
     'https://wa.me/919550362288?text=' +
     encodeURIComponent(
-      'Hi Tranquill Infra, I would like to know more about Tranquill City — plot availability, pricing and the documents.'
+      'Hi Tranquill Infra, I would like to know more about Tranquill City: plot availability, pricing and the documents.'
     ),
   /** The brand's single social channel. */
   instagram: 'https://www.instagram.com/tranquill_infraprojects/',
@@ -78,7 +78,7 @@ export const contact = {
     lines: [
       'Tranquill Infra Projects LLP',
       'Flat No. 405, Jaya Bharathi Kalpana Apartments,',
-      'Nandini Nagar, Miyapur, Hyderabad — 500049',
+      'Nandini Nagar, Miyapur, Hyderabad 500049',
       'Telangana, India',
     ],
   },
