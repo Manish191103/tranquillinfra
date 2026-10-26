@@ -30,9 +30,43 @@ const { id, focus = 'all', class: className } = Astro.props;
 const logo = await getImage({ src: cityLogo, height: 160, format: 'png' });
 
 type Category = 'roads' | 'work' | 'learn' | 'place';
+type Kind =
+  | 'city'
+  | 'school'
+  | 'university'
+  | 'hospital'
+  | 'industry'
+  | 'office'
+  | 'bank'
+  | 'temple'
+  | 'food'
+  | 'bus'
+  | 'exit'
+  | 'sports'
+  | 'research';
+
+/** 24 × 24 line glyphs, drawn white inside each marker. */
+const glyphs: Record<Kind, string> = {
+  city: 'M3 21h18M5 21V8l6-3v16M11 21V10l8 3v8M8 10v.01M8 13v.01M8 16v.01M14 15v.01M14 18v.01M17 15v.01M17 18v.01',
+  school: 'M22 10 12 5 2 10l10 5 10-5zM6 12v5c3 3 9 3 12 0v-5M22 10v6',
+  university: 'M2 10 12 4l10 6zM4 21h16M6 10v8M10 10v8M14 10v8M18 10v8M3 21v-3h18v3',
+  hospital: 'M4 4h16v16H4zM12 8v8M8 12h8',
+  industry: 'M2 20h20V9l-6 4V9l-6 4V4H4v16zM7 16h2M12 16h2M17 16h2',
+  office: 'M3 7h18v13H3zM8 7V4h8v3M3 13h18M11 13v2h2v-2',
+  bank: 'M3 21h18M3 10h18M5 6l7-3l7 3M4 10v11m16-11v11M8 14v3m4-3v3m4-3v3',
+  temple: 'M12 2l3 5H9zM7 7h10l2 3H5zM6 10v11M18 10v11M4 21h16M10 21v-5h4v5',
+  food: 'M7 2v9M4 2v5a3 3 0 0 0 6 0V2M7 11v11M17 2c-2 2-3 5-3 8h3v12',
+  bus: 'M5 4h14v13H5zM5 11h14M8 21v-4M16 21v-4M8 14h.01M16 14h.01',
+  exit: 'M12 3v18M5 6h12l2 2-2 2H5zM19 13H7l-2 2 2 2h12z',
+  sports: 'M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3',
+  research: 'M5 21c0-9 5-15 15-16-1 10-7 15-15 16zM5 21l8-8',
+};
+
 type Pin = {
   x: number;
   y: number;
+  /** What the place is, which picks its marker icon */
+  kind: Kind;
   /** `|` breaks the label onto a second line */
   label: string;
   cat: Category;
@@ -44,48 +78,48 @@ type Pin = {
 // not to scale), nudged where a label would otherwise run over a road or
 // another label. Long names inside the ring roads break onto two lines.
 const pins: Pin[] = [
-  { x: 404, y: 173, label: 'Sadashivpet', side: 'left', cat: 'place' },
-  { x: 494, y: 173, label: 'Nandikandi', cat: 'place' },
-  { x: 494, y: 236, label: 'Peddapur', cat: 'place' },
-  { x: 320, y: 440, label: "Rao's School", side: 'below', cat: 'learn' },
-  { x: 490, y: 490, label: 'IIT Hyderabad', cat: 'learn' },
-  { x: 270, y: 640, label: 'Ordnance Factory', side: 'left', cat: 'work' },
-  { x: 720, y: 617, label: 'Ismailkhanpet', cat: 'place' },
-  { x: 500, y: 650, label: 'Parivar Dhaba', cat: 'place' },
-  { x: 500, y: 676, label: 'Ganesh Gadda Temple', cat: 'place' },
-  { x: 96, y: 767, label: 'Shankarpally', side: 'above', cat: 'place' },
-  { x: 178, y: 792, label: 'Aurobindo Pharma', side: 'below', cat: 'work' },
-  { x: 414, y: 729, label: 'GITAM|University', side: 'left', cat: 'learn' },
-  { x: 500, y: 744, label: 'Toshiba', cat: 'work' },
-  { x: 500, y: 789, label: 'Maheshwara Medical College', cat: 'learn' },
-  { x: 176, y: 860, label: 'Pashamylaram TSIIC SEZ', side: 'below', cat: 'work' },
-  { x: 370, y: 845, label: 'Isnapur', side: 'left', cat: 'work' },
-  { x: 678, y: 890, label: 'Medical Park', cat: 'work' },
-  { x: 150, y: 975, label: 'Gaudium School', side: 'above', cat: 'learn' },
-  { x: 416, y: 1004, label: 'Candidus|School', side: 'left', cat: 'learn' },
-  { x: 412, y: 1050, label: 'Patancheru|Bus Stand', side: 'left', cat: 'roads' },
-  { x: 412, y: 1098, label: 'ICRISAT', side: 'left', cat: 'work' },
-  { x: 400, y: 1140, label: 'BHEL', side: 'left', cat: 'work' },
-  { x: 499, y: 1050, label: 'Beeramguda', cat: 'place' },
-  { x: 504, y: 1103, label: 'Lingampally', cat: 'roads' },
-  { x: 88, y: 1101, label: 'Kollur Exit 2', side: 'below', cat: 'roads' },
-  { x: 565, y: 1182, label: 'Madinaguda', cat: 'roads' },
-  { x: 684, y: 1256, label: 'Miyapur', cat: 'roads' },
-  { x: 325, y: 1196, label: 'ISB', side: 'left', cat: 'learn' },
-  { x: 468, y: 1212, label: 'Gopi Chand|Academy', side: 'below', cat: 'learn' },
-  { x: 294, y: 1236, label: 'Microsoft Q City', side: 'left', cat: 'work' },
-  { x: 259, y: 1279, label: 'ICICI', side: 'left', cat: 'work' },
-  { x: 395, y: 1300, label: 'IDBI', cat: 'work' },
-  { x: 350, y: 1335, label: 'Infosys', cat: 'work' },
+  { kind: 'city', x: 404, y: 173, label: 'Sadashivpet', side: 'left', cat: 'place' },
+  { kind: 'city', x: 494, y: 173, label: 'Nandikandi', cat: 'place' },
+  { kind: 'city', x: 494, y: 236, label: 'Peddapur', cat: 'place' },
+  { kind: 'school', x: 320, y: 440, label: "Rao's School", side: 'below', cat: 'learn' },
+  { kind: 'university', x: 490, y: 490, label: 'IIT Hyderabad', cat: 'learn' },
+  { kind: 'industry', x: 270, y: 640, label: 'Ordnance Factory', side: 'left', cat: 'work' },
+  { kind: 'city', x: 720, y: 617, label: 'Ismailkhanpet', cat: 'place' },
+  { kind: 'food', x: 500, y: 650, label: 'Parivar Dhaba', cat: 'place' },
+  { kind: 'temple', x: 500, y: 676, label: 'Ganesh Gadda Temple', cat: 'place' },
+  { kind: 'city', x: 96, y: 767, label: 'Shankarpally', side: 'above', cat: 'place' },
+  { kind: 'industry', x: 178, y: 792, label: 'Aurobindo Pharma', side: 'below', cat: 'work' },
+  { kind: 'university', x: 414, y: 729, label: 'GITAM|University', side: 'left', cat: 'learn' },
+  { kind: 'industry', x: 500, y: 744, label: 'Toshiba', cat: 'work' },
+  { kind: 'hospital', x: 500, y: 789, label: 'Maheshwara Medical College', cat: 'learn' },
+  { kind: 'industry', x: 176, y: 860, label: 'Pashamylaram TSIIC SEZ', side: 'below', cat: 'work' },
+  { kind: 'city', x: 370, y: 845, label: 'Isnapur', side: 'left', cat: 'work' },
+  { kind: 'hospital', x: 678, y: 890, label: 'Medical Park', cat: 'work' },
+  { kind: 'school', x: 150, y: 975, label: 'Gaudium School', side: 'above', cat: 'learn' },
+  { kind: 'school', x: 416, y: 1004, label: 'Candidus|School', side: 'left', cat: 'learn' },
+  { kind: 'bus', x: 412, y: 1050, label: 'Patancheru|Bus Stand', side: 'left', cat: 'roads' },
+  { kind: 'research', x: 412, y: 1098, label: 'ICRISAT', side: 'left', cat: 'work' },
+  { kind: 'industry', x: 400, y: 1140, label: 'BHEL', side: 'left', cat: 'work' },
+  { kind: 'city', x: 499, y: 1050, label: 'Beeramguda', cat: 'place' },
+  { kind: 'city', x: 504, y: 1103, label: 'Lingampally', cat: 'roads' },
+  { kind: 'exit', x: 88, y: 1101, label: 'Kollur Exit 2', side: 'below', cat: 'roads' },
+  { kind: 'city', x: 565, y: 1182, label: 'Madinaguda', cat: 'roads' },
+  { kind: 'city', x: 684, y: 1256, label: 'Miyapur', cat: 'roads' },
+  { kind: 'university', x: 325, y: 1196, label: 'ISB', side: 'left', cat: 'learn' },
+  { kind: 'sports', x: 468, y: 1212, label: 'Gopi Chand|Academy', side: 'below', cat: 'learn' },
+  { kind: 'office', x: 294, y: 1236, label: 'Microsoft Q City', side: 'left', cat: 'work' },
+  { kind: 'bank', x: 259, y: 1279, label: 'ICICI', side: 'left', cat: 'work' },
+  { kind: 'bank', x: 395, y: 1300, label: 'IDBI', cat: 'work' },
+  { kind: 'office', x: 350, y: 1335, label: 'Infosys', cat: 'work' },
 ];
 
 const labelAt = (pin: Pin) => {
-  if (pin.side === 'below') return { x: pin.x, y: pin.y + 30, anchor: 'middle' };
-  if (pin.side === 'above') return { x: pin.x, y: pin.y - 16, anchor: 'middle' };
+  if (pin.side === 'below') return { x: pin.x, y: pin.y + 36, anchor: 'middle' };
+  if (pin.side === 'above') return { x: pin.x, y: pin.y - 22, anchor: 'middle' };
   // Two-line labels beside a dot are centred on it.
   const lift = (pin.label.split('|').length - 1) * 11;
-  if (pin.side === 'left') return { x: pin.x - 16, y: pin.y + 6 - lift, anchor: 'end' };
-  return { x: pin.x + 16, y: pin.y + 6 - lift, anchor: 'start' };
+  if (pin.side === 'left') return { x: pin.x - 22, y: pin.y + 6 - lift, anchor: 'end' };
+  return { x: pin.x + 22, y: pin.y + 6 - lift, anchor: 'start' };
 };
 
 // The highway and the two ring roads, shared by the road and its glow.
@@ -175,9 +209,28 @@ const orr = 'M190 1140 A262 225 0 0 1 714 1140';
       return (
         <g class="pin-g" data-cat={pin.cat}>
           {/* Invisible hit area, so the hover catches the label as well as the dot */}
-          <circle cx={pin.x} cy={pin.y} r="22" class="pin-hit" fill="transparent" />
-          <circle cx={pin.x} cy={pin.y} r="8" class="pin-ring" fill="none" />
-          <circle cx={pin.x} cy={pin.y} r="8" class="pin" />
+          <circle cx={pin.x} cy={pin.y} r="26" class="pin-hit" fill="transparent" />
+          <circle cx={pin.x} cy={pin.y} r="13" class="pin-ring" fill="none" />
+          <g class="pin-mark">
+            <circle cx={pin.x} cy={pin.y} r="13" class="pin" />
+            <svg
+              x={pin.x - 8}
+              y={pin.y - 8}
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              class="pin-glyph"
+            >
+              <path
+                d={glyphs[pin.kind]}
+                fill="none"
+                stroke="#fff"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </g>
           <text x={label.x} y={label.y} text-anchor={label.anchor} class="pin-label">
             {pin.label.split('|').map((line, i) => (
               <tspan x={label.x} dy={i === 0 ? 0 : 22}>
@@ -315,11 +368,28 @@ const orr = 'M190 1140 A262 225 0 0 1 714 1140';
 
   .pin {
     fill: #2f8a3b;
+    stroke: #f4efe2;
+    stroke-width: 2.5;
+    transition: fill 300ms ease;
+  }
+
+  .pin-mark {
     transform-box: fill-box;
     transform-origin: center;
-    transition:
-      transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1),
-      fill 300ms ease;
+    transition: transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .pin-glyph {
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .pin-glyph path {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
   /* A paper halo keeps a label readable where it crosses a road. */
@@ -351,7 +421,12 @@ const orr = 'M190 1140 A262 225 0 0 1 714 1140';
   [data-focus='work'] .pin-g[data-cat='work'] .pin,
   [data-focus='learn'] .pin-g[data-cat='learn'] .pin {
     fill: #c8932a;
-    transform: scale(1.8);
+  }
+
+  [data-focus='roads'] .pin-g[data-cat='roads'] .pin-mark,
+  [data-focus='work'] .pin-g[data-cat='work'] .pin-mark,
+  [data-focus='learn'] .pin-g[data-cat='learn'] .pin-mark {
+    transform: scale(1.3);
   }
 
   [data-focus='roads'] .pin-g[data-cat='roads'] .pin-label,
@@ -372,7 +447,10 @@ const orr = 'M190 1140 A262 225 0 0 1 714 1140';
 
     .pin-g:hover .pin {
       fill: #c8932a;
-      transform: scale(2.3);
+    }
+
+    .pin-g:hover .pin-mark {
+      transform: scale(1.6);
     }
 
     .pin-g:hover .pin-label {
@@ -439,6 +517,7 @@ const orr = 'M190 1140 A262 225 0 0 1 714 1140';
 
     .road-glow,
     .pin,
+    .pin-mark,
     .pin-g,
     .pin-label {
       transition: none;

@@ -26,7 +26,6 @@ import SitePlanExplorer from '~/components/projects/SitePlanExplorer.astro';
 import LoanAndFit, { type FitPoint } from '~/components/home/LoanAndFit.astro';
 import ProjectTestimonials from '~/components/projects/ProjectTestimonials.astro';
 
-import HomeCta from '~/components/home/HomeCta.astro';
 import { buildPosterPreload } from '~/components/ui/overlay/Carousel/posters';
 import type { BuildFrame } from '~/components/home/ScrollBuildStory.astro';
 import type { HeroFact } from '~/components/home/Hero.astro';
@@ -305,12 +304,4 @@ const fitPoints: FitPoint[] = [
     fit={fitPoints}
   />
 
-  <HomeCta
-    title="Visit Tranquill City at Mamidipally."
-    body="See the plots, the roads and the approvals on site. Call, WhatsApp or book a visit and our team will arrange it."
-    href="/contact-us/"
-    label="Book a site visit"
-    track="site_visit"
-    dialog="enquiry-dialog"
-  />
 </PageLayout>

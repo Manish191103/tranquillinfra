@@ -52,7 +52,7 @@ const icons = ['skyscraper', 'plant', 'home', 'trees', 'fence', 'map-pin', 'layo
           pastProjects.map((name, i) => (
             <li class="pp-badge">
               <span class="pp-emblem">
-                <Icon name={icons[i % icons.length]!} size="md" />
+                <Icon name={icons[i % icons.length]!} size="md" strokeWidth={2} />
               </span>
               <span class="pp-name">{name}</span>
             </li>
@@ -156,6 +156,11 @@ const icons = ['skyscraper', 'plant', 'home', 'trees', 'fence', 'map-pin', 'layo
       0 4px 14px -6px rgb(0 0 0 / 40%);
     backdrop-filter: blur(6px);
     color: #fff;
+  }
+
+  .pp-emblem :global(svg) {
+    color: #fff;
+    stroke: #fff;
   }
 
   .pp-paper .pp-emblem {

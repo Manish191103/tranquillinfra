@@ -738,6 +738,25 @@ const logo = await getImage({ src: cityLogo, height: 260, format: 'png' });
         });
       });
 
+      // Phones: the plan renders larger than the screen, so open it already
+      // zoomed in on the plot blocks, the 40' road along the top, rather than
+      // on the empty west corner.
+      const start = { left: 0, top: 0 };
+      const openOnPlots = () => {
+        if (frame.scrollWidth <= frame.clientWidth + 8) return;
+        const box = frame.getBoundingClientRect();
+        const centre = root.querySelector('[data-sp-plot="36"]')?.getBoundingClientRect();
+        const road = root.querySelector('[data-sp-plot="31"]')?.getBoundingClientRect();
+        if (!centre || !road) return;
+        start.left = Math.max(
+          0,
+          frame.scrollLeft + centre.left - box.left + centre.width / 2 - frame.clientWidth / 2
+        );
+        start.top = Math.max(0, frame.scrollTop + road.top - box.top - 44);
+        frame.scrollTo({ left: start.left, top: start.top });
+      };
+      openOnPlots();
+
       // Build the plan in when it scrolls into view; on a phone, nudge the
       // scrollable plan once so the swipe is discoverable.
       const io = new IntersectionObserver(
@@ -749,8 +768,14 @@ const logo = await getImage({ src: cityLogo, height: 260, format: 'png' });
                 frame.scrollWidth > frame.clientWidth + 8 &&
                 !window.matchMedia('(prefers-reduced-motion: reduce)').matches
               ) {
-                window.setTimeout(() => frame.scrollTo({ left: 90, behavior: 'smooth' }), 900);
-                window.setTimeout(() => frame.scrollTo({ left: 0, behavior: 'smooth' }), 1600);
+                window.setTimeout(
+                  () => frame.scrollTo({ left: start.left + 70, behavior: 'smooth' }),
+                  900
+                );
+                window.setTimeout(
+                  () => frame.scrollTo({ left: start.left, behavior: 'smooth' }),
+                  1600
+                );
               }
               io.disconnect();
             }
@@ -1005,7 +1030,7 @@ const logo = await getImage({ src: cityLogo, height: 260, format: 'png' });
   }
 
   .sp-sheet-media {
-    height: 8.5rem;
+    height: 6.5rem;
     margin-bottom: 0.85rem;
   }
 
@@ -1677,14 +1702,18 @@ const logo = await getImage({ src: cityLogo, height: 260, format: 'png' });
 
   .sp-sheet-close {
     position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
+    top: 1.5rem;
+    right: 1.6rem;
+    z-index: 1;
+    border: 1px solid rgb(255 255 255 / 30%);
+    color: #fff;
+    backdrop-filter: blur(8px);
     display: grid;
     width: 2.5rem;
     height: 2.5rem;
     place-items: center;
     border-radius: 999px;
-    background: rgb(255 255 255 / 10%);
+    background: rgb(0 0 0 / 45%);
   }
 
   .sp-sheet-no {
@@ -1792,9 +1821,11 @@ const logo = await getImage({ src: cityLogo, height: 260, format: 'png' });
       height: 2.6rem;
     }
 
-    /* The plan at a readable size, swiped sideways like a map */
+    /* The plan at a readable size (plot numbers about 13px), moved around
+       like a map inside a frame that leaves room for the page around it */
     .sp-frame {
-      overflow-x: auto;
+      max-height: min(64vh, 34rem);
+      overflow: auto;
       overscroll-behavior-x: contain;
       scrollbar-width: none;
       touch-action: pan-x pan-y;
@@ -1805,7 +1836,7 @@ const logo = await getImage({ src: cityLogo, height: 260, format: 'png' });
     }
 
     .sp-svg {
-      width: 900px;
+      width: 1150px;
       max-width: none;
     }
 

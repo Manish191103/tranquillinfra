@@ -141,7 +141,7 @@ const hours = siteConfig.hours ?? [];
   class="invert-section bg-background text-foreground border-t border-[var(--border-invert)]"
 >
   <div
-    class="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-16 md:flex-row md:items-end md:justify-between md:py-20"
+    class="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-16 md:py-20 lg:flex-row lg:items-end lg:justify-between"
   >
     <div class="max-w-xl">
       <CityLogo tone="light" height="3.75rem" class="mb-4" />
@@ -177,7 +177,7 @@ const hours = siteConfig.hours ?? [];
       </ul>
       <ApprovalSeals class="mt-6" />
     </div>
-    <div class="flex shrink-0 flex-col gap-3 sm:flex-row">
+    <div class="flex flex-col flex-wrap gap-3 sm:flex-row lg:shrink-0">
       {
         /*
         The gold plate is the band's own inversion of the primary CTA, applied
