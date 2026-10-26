@@ -171,211 +171,221 @@ const buttonId = `${menuId}-button`;
 >
   <div class={innerClasses}>
     {/* Logo */}
-    {!hideLogo &&
-      (hasLogoSlot ? (
-        <slot name="logo" />
-      ) : (
-        <a href="/" class="flex min-w-0 items-center gap-2">
-          <Logo size={size} loading="eager" />
-          {logoText && (
-            <span
-              class={cn(
-                'display-xs font-semibold',
-                isFloating ? 'hdr-logo-text' : isInvert ? 'text-on-invert' : 'text-brand-500'
-              )}
-            >
-              {logoText}
-            </span>
-          )}
-        </a>
-      ))}
+    {
+      !hideLogo &&
+        (hasLogoSlot ? (
+          <slot name="logo" />
+        ) : (
+          <a href="/" class="flex min-w-0 items-center gap-2">
+            <Logo size={size} loading="eager" />
+            {logoText && (
+              <span
+                class={cn(
+                  'display-xs font-semibold',
+                  isFloating ? 'hdr-logo-text' : isInvert ? 'text-on-invert' : 'text-brand-500'
+                )}
+              >
+                {logoText}
+              </span>
+            )}
+          </a>
+        ))
+    }
 
     {/* Desktop Navigation */}
-    {layout !== 'minimal' &&
-      (hasNavSlot ? (
-        <nav class="hidden items-center gap-1 nav:flex" aria-label="Main navigation">
-          <slot name="nav" />
-        </nav>
-      ) : (
-        <nav class="hidden items-center gap-1 nav:flex" aria-label="Main navigation">
-          {navItems.map(({ label, href }) => (
-            <a
-              href={href.startsWith('#') && !isLandingPage ? `/${href}` : href}
-              class={cn(
-                'nav-link relative rounded-full px-3 py-2 text-sm',
-                // Colour and weight only. `transition-all` was making the nav
-                // link animate its own layout box on every hover, which shows
-                // up as a faint reflow flicker in the header.
-                'transition-[color,opacity] duration-fast ease-quart',
-                isFloating && 'hdr-invert-text',
-                isFloating
-                  ? isActive(href)
-                    ? 'hdr-nav-active font-semibold'
-                    : 'font-medium opacity-80 hover:opacity-100'
-                  : isActive(href)
-                    ? 'nav-link-active text-foreground bg-secondary font-semibold'
-                    : 'nav-link-inactive text-foreground-muted hover:text-foreground hover:bg-secondary/70 font-medium'
-              )}
-              aria-current={isActive(href) ? 'page' : undefined}
-            >
-              {label}
-            </a>
-          ))}
-        </nav>
-      ))}
+    {
+      layout !== 'minimal' &&
+        (hasNavSlot ? (
+          <nav class="nav:flex hidden items-center gap-1" aria-label="Main navigation">
+            <slot name="nav" />
+          </nav>
+        ) : (
+          <nav class="nav:flex hidden items-center gap-1" aria-label="Main navigation">
+            {navItems.map(({ label, href }) => (
+              <a
+                href={href.startsWith('#') && !isLandingPage ? `/${href}` : href}
+                class={cn(
+                  'nav-link relative rounded-full px-3 py-2 text-sm',
+                  // Colour and weight only. `transition-all` was making the nav
+                  // link animate its own layout box on every hover, which shows
+                  // up as a faint reflow flicker in the header.
+                  'duration-fast ease-quart transition-[color,opacity]',
+                  isFloating && 'hdr-invert-text',
+                  isFloating
+                    ? isActive(href)
+                      ? 'hdr-nav-active font-semibold'
+                      : 'font-medium opacity-80 hover:opacity-100'
+                    : isActive(href)
+                      ? 'nav-link-active text-foreground bg-secondary font-semibold'
+                      : 'nav-link-inactive text-foreground-muted hover:text-foreground hover:bg-secondary/70 font-medium'
+                )}
+                aria-current={isActive(href) ? 'page' : undefined}
+              >
+                {label}
+              </a>
+            ))}
+          </nav>
+        ))
+    }
 
     {/* Actions Area */}
     <div class="flex items-center gap-2">
-      {hasActionsSlot ? (
-        <slot name="actions" />
-      ) : (
-        <>
-          {actions.length > 0 && (
-            <div
-              class={cn(
-                'flex items-center gap-2',
-                actions.every((action) => action.hideOnMobile) && 'hidden nav:flex'
-              )}
-              role="group"
-              aria-label="Quick contact"
-            >
-              {actions.map((action) => (
-                <Button
-                  variant={action.variant ?? 'ghost'}
-                  size="sm"
-                  icon={action.iconOnly}
-                  href={action.href}
-                  target={action.target}
-                  aria-label={action.label}
-                  data-track={action.track}
-                  class={cn(
-                    'rounded-sm',
-                    isFloating ? 'hdr-invert-text' : undefined,
-                    action.hideOnMobile && 'hidden nav:inline-flex'
-                  )}
-                >
-                  <Icon name={action.icon} size="sm" />
-                  {!action.iconOnly && action.label}
-                </Button>
-              ))}
-            </div>
-          )}
+      {
+        hasActionsSlot ? (
+          <slot name="actions" />
+        ) : (
+          <>
+            {actions.length > 0 && (
+              <div
+                class={cn(
+                  'flex items-center gap-2',
+                  actions.every((action) => action.hideOnMobile) && 'nav:flex hidden'
+                )}
+                role="group"
+                aria-label="Quick contact"
+              >
+                {actions.map((action) => (
+                  <Button
+                    variant={action.variant ?? 'ghost'}
+                    size="sm"
+                    icon={action.iconOnly}
+                    href={action.href}
+                    target={action.target}
+                    aria-label={action.label}
+                    data-track={action.track}
+                    class={cn(
+                      'rounded-sm',
+                      isFloating ? 'hdr-invert-text' : undefined,
+                      action.hideOnMobile && 'nav:inline-flex hidden'
+                    )}
+                  >
+                    <Icon name={action.icon} size="sm" />
+                    {!action.iconOnly && action.label}
+                  </Button>
+                ))}
+              </div>
+            )}
 
-          {showCta && (
-            <Button
-              size="sm"
-              href={ctaHref}
-              data-track={cta.track}
-              data-dialog-request-type={cta.requestType}
-              data-dialog-trigger={cta.dialog}
-              class={cn(
-                'rounded-sm',
-                'whitespace-nowrap',
-                isFloating ? 'hdr-invert-cta rounded-full' : undefined
-              )}
-            >
-              {cta.label}
-            </Button>
-          )}
-        </>
-      )}
+            {showCta && (
+              <Button
+                size="sm"
+                href={ctaHref}
+                data-track={cta.track}
+                data-dialog-request-type={cta.requestType}
+                data-dialog-trigger={cta.dialog}
+                class={cn(
+                  'rounded-sm',
+                  'whitespace-nowrap',
+                  isFloating ? 'hdr-invert-cta rounded-full' : undefined
+                )}
+              >
+                {cta.label}
+              </Button>
+            )}
+          </>
+        )
+      }
 
       {/* Mobile Menu Toggle */}
-      {showMobileMenu && layout !== 'minimal' && (
-        <button
-          type="button"
-          id={buttonId}
-          class={cn(
-            'inline-flex size-11 items-center justify-center rounded-md nav:hidden',
-            'transition-colors',
-            'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
-            isFloating
-              ? 'hdr-invert-text'
-              : 'text-foreground-muted hover:text-foreground hover:bg-secondary'
-          )}
-          aria-expanded="false"
-          aria-controls={menuId}
-          aria-label="Open navigation menu"
-        >
-          <span class="menu-icon">
-            <Icon name="menu" size="md" />
-          </span>
-          <span class="close-icon hidden">
-            <Icon name="x" size="md" />
-          </span>
-        </button>
-      )}
+      {
+        showMobileMenu && layout !== 'minimal' && (
+          <button
+            type="button"
+            id={buttonId}
+            class={cn(
+              'nav:hidden inline-flex size-11 items-center justify-center rounded-md',
+              'transition-colors',
+              'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
+              isFloating
+                ? 'hdr-invert-text'
+                : 'text-foreground-muted hover:text-foreground hover:bg-secondary'
+            )}
+            aria-expanded="false"
+            aria-controls={menuId}
+            aria-label="Open navigation menu"
+          >
+            <span class="menu-icon">
+              <Icon name="menu" size="md" />
+            </span>
+            <span class="close-icon hidden">
+              <Icon name="x" size="md" />
+            </span>
+          </button>
+        )
+      }
     </div>
   </div>
 
   {/* Mobile Menu — compact navigation only, anchored below the sticky header */}
-  {showMobileMenu && layout !== 'minimal' && (
-    <nav
-      id={menuId}
-      class={cn('mobile-panel', isFloating && 'mobile-panel-floating')}
-      data-mobile-menu-panel
-      data-open="false"
-      aria-label="Mobile navigation"
-      aria-hidden="true"
-      inert
-    >
-      <div class="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-[clamp(1.25rem,4vh,2.5rem)]">
-        {hasMobileMenuSlot ? (
-          <slot name="mobile-menu" />
-        ) : (
-          <>
-            {menuIntro && (
-              <div class="max-w-[22rem]">
-                <p class="text-accent-ink mb-2.5 text-xs font-extrabold tracking-[0.18em] uppercase">
-                  {menuIntro.kicker}
-                </p>
-                <p class="display-lg text-on-invert-secondary">{menuIntro.note}</p>
+  {
+    showMobileMenu && layout !== 'minimal' && (
+      <nav
+        id={menuId}
+        class={cn('mobile-panel', isFloating && 'mobile-panel-floating')}
+        data-mobile-menu-panel
+        data-open="false"
+        aria-label="Mobile navigation"
+        aria-hidden="true"
+        inert
+      >
+        <div class="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-[clamp(1.25rem,4vh,2.5rem)]">
+          {hasMobileMenuSlot ? (
+            <slot name="mobile-menu" />
+          ) : (
+            <>
+              {menuIntro && (
+                <div class="max-w-[22rem]">
+                  <p class="text-accent-ink mb-2.5 text-xs font-extrabold tracking-[0.18em] uppercase">
+                    {menuIntro.kicker}
+                  </p>
+                  <p class="display-lg text-on-invert-secondary">{menuIntro.note}</p>
+                </div>
+              )}
+
+              <div class="grid border-t border-[var(--border-invert)]">
+                {navItems.map(({ label, href }) => (
+                  <a
+                    href={href.startsWith('#') && !isLandingPage ? `/${href}` : href}
+                    class="mobile-panel-link"
+                    aria-current={isActive(href) ? 'page' : undefined}
+                  >
+                    {label}
+                    <Icon name="arrow-up-right" size="md" class="text-accent-ink shrink-0" />
+                  </a>
+                ))}
               </div>
-            )}
 
-            <div class="border-[var(--border-invert)] grid border-t">
-              {navItems.map(({ label, href }) => (
-                <a
-                  href={href.startsWith('#') && !isLandingPage ? `/${href}` : href}
-                  class="mobile-panel-link"
-                  aria-current={isActive(href) ? 'page' : undefined}
-                >
-                  {label}
-                  <Icon name="arrow-up-right" size="md" class="text-accent-ink shrink-0" />
-                </a>
-              ))}
-            </div>
+              <div class="mt-auto grid gap-4">
+                {menuContact && (
+                  <a
+                    href={menuContact.href}
+                    data-track={menuContact.track}
+                    class="text-on-invert-secondary hover:text-on-invert flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-xs"
+                  >
+                    <span>{menuContact.label}</span>
+                    <span class="text-on-invert font-bold">{menuContact.value}</span>
+                  </a>
+                )}
 
-            <div class="mt-auto grid gap-4">
-              {menuContact && (
-                <a
-                  href={menuContact.href}
-                  data-track={menuContact.track}
-                  class="text-on-invert-secondary hover:text-on-invert flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-xs"
-                >
-                  <span>{menuContact.label}</span>
-                  <span class="text-on-invert font-bold">{menuContact.value}</span>
-                </a>
-              )}
-
-              {showCta && (
-                <a
-                  href={ctaHref}
-                  data-track={cta.track}
-                  data-dialog-request-type={cta.requestType}
-                  data-dialog-trigger={cta.dialog}
-                  class="text-accent-foreground bg-accent hover:bg-accent-hover flex min-h-14 items-center justify-between gap-4 rounded-sm px-4 text-sm font-extrabold transition hover:-translate-y-0.5"
-                >
-                  {cta.label}
-                  <Icon name="arrow-up-right" size="sm" />
-                </a>
-              )}
-            </div>
-          </>
-        )}
-      </div>
-    </nav>
-  )}
+                {showCta && (
+                  <a
+                    href={ctaHref}
+                    data-track={cta.track}
+                    data-dialog-request-type={cta.requestType}
+                    data-dialog-trigger={cta.dialog}
+                    class="text-accent-foreground bg-accent hover:bg-accent-hover flex min-h-14 items-center justify-between gap-4 rounded-sm px-4 text-sm font-extrabold transition hover:-translate-y-0.5"
+                  >
+                    {cta.label}
+                    <Icon name="arrow-up-right" size="sm" />
+                  </a>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </nav>
+    )
+  }
 </header>
 
 <script>

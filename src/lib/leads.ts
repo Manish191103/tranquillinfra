@@ -552,7 +552,7 @@ export function bindLeadForm({
               ? 'Too many requests. Please try again in a minute, or call or WhatsApp us.'
               : kind === 'newsletter' && !lead.ok
                 ? lead.message
-                : `${lead.ok ? '' : lead.message} Your enquiry did not reach the sales desk — please call or WhatsApp us and we will pick it up straight away.`;
+                : `${lead.ok ? '' : lead.message} Your enquiry did not reach the sales desk. Please call or WhatsApp us and we will pick it up straight away.`;
         onFailure?.();
       }
     } finally {

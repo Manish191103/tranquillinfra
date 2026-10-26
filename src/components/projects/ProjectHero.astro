@@ -21,6 +21,7 @@
  * over `tranquill-city/walkway.webp` — the frame the homepage's project
  * spotlight also runs.
  */
+import CityLogo from '~/components/ui/primitives/CityLogo.astro';
 import ApprovalSeals from '~/components/ui/primitives/ApprovalSeals.astro';
 import type { ImageMetadata } from 'astro';
 import ImageHero from '~/components/layout/ImageHero.astro';
@@ -85,6 +86,7 @@ const quietAction =
 >
   <slot name="breadcrumbs" slot="breadcrumbs" />
 
+  <CityLogo tone="light" height="4.5rem" class="mb-4 !block w-fit" alt="" />
   <p class="eyebrow">{eyebrow}</p>
   <h1 id="project-hero-title" class="display-xl text-on-invert">
     {title}

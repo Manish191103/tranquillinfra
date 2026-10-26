@@ -30,27 +30,31 @@ const { eyebrow, title, intro, steps, guide } = Astro.props;
     </div>
 
     <div class="mt-16 grid gap-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)] lg:gap-14">
-      <ol class="space-y-12">
-        {steps.map((step) => (
-          <li class="border-border-invert reveal border-t pt-6">
-            <span
-              class="text-accent-ink font-mono text-[0.72rem] font-medium tracking-[0.16em] tabular-nums"
-              aria-hidden="true"
-            >
-              {step.number}
-            </span>
-            <h3 class="display-xs text-on-invert">{step.title}</h3>
-            <p class="text-on-invert-secondary mt-3 text-sm leading-relaxed">{step.body}</p>
-          </li>
-        ))}
+      <ol class="space-y-12" data-stagger>
+        {
+          steps.map((step) => (
+            <li class="border-border-invert reveal border-t pt-6">
+              <span
+                class="text-accent-ink font-mono text-[0.72rem] font-medium tracking-[0.16em] tabular-nums"
+                aria-hidden="true"
+              >
+                {step.number}
+              </span>
+              <h3 class="display-xs text-on-invert">{step.title}</h3>
+              <p class="text-on-invert-secondary mt-3 text-sm leading-relaxed">{step.body}</p>
+            </li>
+          ))
+        }
       </ol>
 
-      {/*
+      {
+        /*
         A paper plate on a forest field. Because the core is light, every
         descendant uses the LIGHT-surface foreground ramp — the previous
         `text-on-invert` here put paper-coloured body copy on a cream plate,
         which measured 1.1:1 and was effectively invisible.
-      */}
+      */
+      }
       <aside class="shell reveal-from-right">
         <div class="shell-core h-full p-6 md:p-8">
           <p class="eyebrow">{guide.eyebrow}</p>

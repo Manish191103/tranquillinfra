@@ -36,25 +36,27 @@ const { eyebrow, title, intro, note, groups } = Astro.props;
 >
   <SectionHeading eyebrow={eyebrow} title={title} intro={intro} id="project-amenities-title" />
 
-  <div class="mt-10 grid gap-10 md:grid-cols-3 md:gap-8">
-    {groups.map((group) => (
-      <section class="border-border border-t pt-6">
-        <h3 class="display-xs">{group.title}</h3>
-        <ul class="mt-5 space-y-4">
-          {group.items.map((item) => (
-            <li class="flex gap-3">
-              <span class="bg-secondary text-secondary-foreground mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
-                <Icon name={item.icon} size="sm" />
-              </span>
-              <span class="flex flex-col gap-0.5">
-                <strong class="text-foreground text-sm font-bold">{item.name}</strong>
-                <span class="text-foreground-muted text-sm">{item.description}</span>
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
-    ))}
+  <div class="mt-10 grid gap-10 md:grid-cols-3 md:gap-8" data-stagger>
+    {
+      groups.map((group) => (
+        <section class="border-border border-t pt-6">
+          <h3 class="display-xs">{group.title}</h3>
+          <ul class="mt-5 space-y-4">
+            {group.items.map((item) => (
+              <li class="flex gap-3">
+                <span class="bg-secondary text-secondary-foreground mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
+                  <Icon name={item.icon} size="sm" />
+                </span>
+                <span class="flex flex-col gap-0.5">
+                  <strong class="text-foreground text-sm font-bold">{item.name}</strong>
+                  <span class="text-foreground-muted text-sm">{item.description}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
   </div>
 
   <p class="text-foreground-subtle mt-10 max-w-[64rem] text-sm">{note}</p>

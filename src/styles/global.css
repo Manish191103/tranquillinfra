@@ -620,17 +620,75 @@
     white-space: nowrap;
   }
 
-  /* A leading rule inside the eyebrow, so it reads as a marked-up index
-     rather than a floating tag. Decorative, so it is hidden from AT. */
-  .eyebrow::before {
-    content: '';
-    inline-size: 0.875rem;
-    block-size: 1px;
-    background-color: currentColor;
-    opacity: 0.5;
+  /* A small gold diamond leads the label (it replaced a dash-like rule the
+     client read as an em dash), turning and glowing gently. A sheen sweeps
+     across the pill every few seconds. Both are decorative pseudo-elements. */
+  .eyebrow {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
   }
 
-  /* Eyebrow without the rule, for the rare case it sits tight against a
+  .eyebrow::before {
+    content: '';
+    flex: none;
+    inline-size: 0.42rem;
+    block-size: 0.42rem;
+    border-radius: 1px;
+    background-color: currentColor;
+    box-shadow: 0 0 0 0 currentColor;
+    transform: rotate(45deg);
+    animation: eyebrow-spark 2.8s ease-in-out infinite;
+  }
+
+  .eyebrow::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(
+      105deg,
+      transparent 35%,
+      color-mix(in oklch, currentColor 28%, transparent) 50%,
+      transparent 65%
+    );
+    transform: translateX(-110%);
+    animation: eyebrow-sheen 5s ease-in-out infinite 1s;
+    pointer-events: none;
+  }
+
+  @keyframes eyebrow-spark {
+    0%,
+    100% {
+      transform: rotate(45deg) scale(1);
+      box-shadow: 0 0 0 0 color-mix(in oklch, currentColor 0%, transparent);
+    }
+
+    50% {
+      transform: rotate(225deg) scale(1.25);
+      box-shadow: 0 0 10px 2px color-mix(in oklch, currentColor 55%, transparent);
+    }
+  }
+
+  @keyframes eyebrow-sheen {
+    0% {
+      transform: translateX(-110%);
+    }
+
+    40%,
+    100% {
+      transform: translateX(110%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .eyebrow::before,
+    .eyebrow::after {
+      animation: none;
+    }
+  }
+
+  /* Eyebrow without the mark, for the rare case it sits tight against a
      heading that already carries one. */
   .eyebrow-bare::before {
     display: none;
@@ -780,6 +838,41 @@
     }
     .reveal-5 {
       animation-delay: calc(var(--space-stagger) * 4);
+    }
+  }
+
+  /* Staggered groups (src/scripts/motion.ts): children rise in one after
+     another, slightly scaled, the first time the group comes into view. Only
+     hidden once the script has marked the page ready. */
+  @media (prefers-reduced-motion: no-preference) {
+    .motion-ready [data-stagger]:not(.is-settled) > * {
+      transition:
+        opacity 650ms var(--ease-out-quart),
+        transform 750ms cubic-bezier(0.22, 1, 0.36, 1),
+        filter 650ms ease;
+      transition-delay: calc(var(--stagger-i, 0) * 90ms);
+    }
+
+    .motion-ready [data-stagger]:not(.is-shown) > * {
+      opacity: 0;
+      transform: translateY(1.75rem) scale(0.97);
+      filter: blur(4px);
+    }
+  }
+
+  /* Card grids lift towards the pointer, with a gold edge. */
+  @media (hover: hover) {
+    [data-lift] > * {
+      transition:
+        transform 450ms cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 300ms ease;
+    }
+
+    [data-lift] > *:hover {
+      transform: translateY(-6px);
+      box-shadow:
+        0 22px 40px -22px rgb(20 40 28 / 45%),
+        0 0 0 1px color-mix(in oklch, var(--color-accent) 55%, transparent);
     }
   }
 

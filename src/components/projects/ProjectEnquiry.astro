@@ -29,7 +29,9 @@ const telHref = siteConfig.phoneE164 ? `tel:${siteConfig.phoneE164}` : undefined
   class="section bg-surface-invert text-on-invert scroll-mt-24"
   aria-labelledby="project-enquiry-title"
 >
-  <div class="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-14">
+  <div
+    class="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-14"
+  >
     <div>
       <p class="eyebrow eyebrow-on-invert">{eyebrow}</p>
       <h2 id="project-enquiry-title" class="display-md text-on-invert">
@@ -40,33 +42,37 @@ const telHref = siteConfig.phoneE164 ? `tel:${siteConfig.phoneE164}` : undefined
       <ul class="mt-8 space-y-4 text-sm">
         <li class="flex items-center gap-2">
           <Icon name="phone" size="sm" class="text-accent-ink" />
-          {telHref ? (
-            <a
-              class="hover:text-on-invert-secondary underline underline-offset-2"
-              href={telHref}
-              data-track="phone"
-            >
-              {PHONE_CTA_LABEL}
-              {siteConfig.phone && <span class="text-on-invert-muted">· {siteConfig.phone}</span>}
-            </a>
-          ) : (
-            <span>{siteConfig.phone}</span>
-          )}
+          {
+            telHref ? (
+              <a
+                class="hover:text-on-invert-secondary underline underline-offset-2"
+                href={telHref}
+                data-track="phone"
+              >
+                {PHONE_CTA_LABEL}
+                {siteConfig.phone && <span class="text-on-invert-muted">· {siteConfig.phone}</span>}
+              </a>
+            ) : (
+              <span>{siteConfig.phone}</span>
+            )
+          }
         </li>
-        {siteConfig.whatsapp && (
-          <li class="flex items-center gap-2">
-            <Icon name="brand-whatsapp" size="sm" class="text-accent-ink" />
-            <a
-              class="hover:text-on-invert-secondary underline underline-offset-2"
-              href={siteConfig.whatsapp}
-              target="_blank"
-              rel="noopener noreferrer"
-              data-track="whatsapp"
-            >
-              {WHATSAPP_CTA_LABEL}
-            </a>
-          </li>
-        )}
+        {
+          siteConfig.whatsapp && (
+            <li class="flex items-center gap-2">
+              <Icon name="brand-whatsapp" size="sm" class="text-accent-ink" />
+              <a
+                class="hover:text-on-invert-secondary underline underline-offset-2"
+                href={siteConfig.whatsapp}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-track="whatsapp"
+              >
+                {WHATSAPP_CTA_LABEL}
+              </a>
+            </li>
+          )
+        }
         <li class="flex items-center gap-2">
           <Icon name="mail" size="sm" class="text-accent-ink" />
           <a

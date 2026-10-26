@@ -120,14 +120,18 @@ const planFacts: Array<{ label: string; value: string; detail?: string }> = [
       </figcaption>
     </figure>
 
-    {/*
-     * A real table, not a styled list. Every row is a label/value pair a
-     * machine can read as one, which is the whole point: the bitmap above is
-     * the drawing, and this is what it is drawing.
-     */}
+    {
+      /*
+       * A real table, not a styled list. Every row is a label/value pair a
+       * machine can read as one, which is the whole point: the bitmap above is
+       * the drawing, and this is what it is drawing.
+       */
+    }
     <div class="mt-12 grid gap-10 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] md:gap-14">
-      {/* Scrolls rather than overflows: a 320px document table has no room to
-          reflow a published figure. */}
+      {
+        /* Scrolls rather than overflows: a 320px document table has no room to
+          reflow a published figure. */
+      }
       <div class="overflow-x-auto">
         <table class="w-full border-collapse text-left text-sm">
           <caption class="text-foreground-muted pb-4 text-left text-pretty">
@@ -151,24 +155,26 @@ const planFacts: Array<{ label: string; value: string; detail?: string }> = [
             </tr>
           </thead>
           <tbody>
-            {planFacts.map((fact) => (
-              <tr class="align-top">
-                <th
-                  scope="row"
-                  class="text-foreground border-border border-b py-4 pr-4 font-semibold text-pretty"
-                >
-                  {fact.label}
-                  {fact.detail && (
-                    <span class="text-foreground-subtle mt-1 block text-xs font-normal text-pretty">
-                      {fact.detail}
-                    </span>
-                  )}
-                </th>
-                <td class="text-foreground-secondary border-border border-b py-4 font-mono text-[0.8125rem] tabular-nums text-pretty">
-                  {fact.value}
-                </td>
-              </tr>
-            ))}
+            {
+              planFacts.map((fact) => (
+                <tr class="align-top">
+                  <th
+                    scope="row"
+                    class="text-foreground border-border border-b py-4 pr-4 font-semibold text-pretty"
+                  >
+                    {fact.label}
+                    {fact.detail && (
+                      <span class="text-foreground-subtle mt-1 block text-xs font-normal text-pretty">
+                        {fact.detail}
+                      </span>
+                    )}
+                  </th>
+                  <td class="text-foreground-secondary border-border border-b py-4 font-mono text-[0.8125rem] text-pretty tabular-nums">
+                    {fact.value}
+                  </td>
+                </tr>
+              ))
+            }
           </tbody>
         </table>
       </div>

@@ -108,32 +108,34 @@ const rowClasses = [
             </a>
           </header>
 
-          {posts.length > 0 ? (
-            <ul class="list-none">
-              {posts.map((post, index) => (
-                <li class="border-border-invert [&:not(:first-child)]:border-t">
-                  <a class={rowClasses} href={post.href}>
-                    <span class={rowNumberClasses} aria-hidden="true">
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
-                    <span class="grid gap-1.5">
-                      <span class={rowMetaClasses}>
-                        {post.category} ·{' '}
-                        {post.date.toLocaleDateString('en-IN', { dateStyle: 'medium' })}
+          {
+            posts.length > 0 ? (
+              <ul class="list-none">
+                {posts.map((post, index) => (
+                  <li class="border-border-invert [&:not(:first-child)]:border-t">
+                    <a class={rowClasses} href={post.href}>
+                      <span class={rowNumberClasses} aria-hidden="true">
+                        {String(index + 1).padStart(2, '0')}
                       </span>
-                      <strong class={rowTitleClasses}>{post.title}</strong>
-                      <span class={rowBodyClasses}>{post.description}</span>
-                    </span>
-                    <span class={rowArrowClasses} aria-hidden="true">
-                      <Icon name="arrow-up-right" size="xs" />
-                    </span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p class="text-on-invert-secondary mt-5 text-sm">{copy.postsEmpty}</p>
-          )}
+                      <span class="grid gap-1.5">
+                        <span class={rowMetaClasses}>
+                          {post.category} ·{' '}
+                          {post.date.toLocaleDateString('en-IN', { dateStyle: 'medium' })}
+                        </span>
+                        <strong class={rowTitleClasses}>{post.title}</strong>
+                        <span class={rowBodyClasses}>{post.description}</span>
+                      </span>
+                      <span class={rowArrowClasses} aria-hidden="true">
+                        <Icon name="arrow-up-right" size="xs" />
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p class="text-on-invert-secondary mt-5 text-sm">{copy.postsEmpty}</p>
+            )
+          }
         </div>
       </section>
 
@@ -146,26 +148,28 @@ const rowClasses = [
             <p class={panelNoteClasses}>{copy.questionsNote}</p>
           </header>
 
-          {questions.length > 0 ? (
-            <ul class="list-none">
-              {questions.map((entry, index) => (
-                <li class="border-border-invert [&:not(:first-child)]:border-t">
-                  <a class={rowClasses} href={entry.href}>
-                    <span class={rowNumberClasses} aria-hidden="true">{`Q${index + 1}`}</span>
-                    <span class="grid gap-1.5">
-                      <span class={rowMetaClasses}>From {entry.postTitle}</span>
-                      <strong class={rowTitleClasses}>{entry.question}</strong>
-                    </span>
-                    <span class={rowArrowClasses} aria-hidden="true">
-                      <Icon name="arrow-up-right" size="xs" />
-                    </span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p class="text-on-invert-secondary mt-5 text-sm">{copy.questionsEmpty}</p>
-          )}
+          {
+            questions.length > 0 ? (
+              <ul class="list-none">
+                {questions.map((entry, index) => (
+                  <li class="border-border-invert [&:not(:first-child)]:border-t">
+                    <a class={rowClasses} href={entry.href}>
+                      <span class={rowNumberClasses} aria-hidden="true">{`Q${index + 1}`}</span>
+                      <span class="grid gap-1.5">
+                        <span class={rowMetaClasses}>From {entry.postTitle}</span>
+                        <strong class={rowTitleClasses}>{entry.question}</strong>
+                      </span>
+                      <span class={rowArrowClasses} aria-hidden="true">
+                        <Icon name="arrow-up-right" size="xs" />
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p class="text-on-invert-secondary mt-5 text-sm">{copy.questionsEmpty}</p>
+            )
+          }
         </div>
       </section>
     </div>

@@ -49,37 +49,39 @@ const schema = createBreadcrumbSchema(schemaItems);
 
 <nav aria-label="Breadcrumb" class={cn(tones.nav, className)}>
   <ol class="flex flex-wrap items-center gap-2">
-    {items.map((item, index) => (
-      <li class="flex items-center gap-2">
-        {index > 0 && (
-          <svg
-            class={cn('h-4 w-4', tones.chevron)}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 5l7 7-7 7"
-            />
-          </svg>
-        )}
-        {item.href && index !== items.length - 1 ? (
-          <a href={item.href} class={cn(tones.link, 'transition-colors')}>
-            {item.label}
-          </a>
-        ) : (
-          <span
-            class={cn(tones.current, 'font-medium')}
-            aria-current={index === items.length - 1 ? 'page' : undefined}
-          >
-            {item.label}
-          </span>
-        )}
-      </li>
-    ))}
+    {
+      items.map((item, index) => (
+        <li class="flex items-center gap-2">
+          {index > 0 && (
+            <svg
+              class={cn('h-4 w-4', tones.chevron)}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          )}
+          {item.href && index !== items.length - 1 ? (
+            <a href={item.href} class={cn(tones.link, 'transition-colors')}>
+              {item.label}
+            </a>
+          ) : (
+            <span
+              class={cn(tones.current, 'font-medium')}
+              aria-current={index === items.length - 1 ? 'page' : undefined}
+            >
+              {item.label}
+            </span>
+          )}
+        </li>
+      ))
+    }
   </ol>
 </nav>

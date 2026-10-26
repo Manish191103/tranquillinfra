@@ -17,6 +17,7 @@
  * published" — and must stay that way, because FAQPage must never be used for
  * promotional copy.
  */
+import CityLogo from '~/components/ui/primitives/CityLogo.astro';
 import { render } from 'astro:content';
 import type { GetStaticPaths } from 'astro';
 import PageLayout from '~/layouts/PageLayout.astro';
@@ -97,15 +98,17 @@ const breadcrumbs = [
         {getReadingMinutes(post)} min read
         <span aria-hidden="true"> · </span>
         {post.data.author}
-        {post.data.updatedAt && (
-          <>
-            <span aria-hidden="true"> · </span>
-            Updated{' '}
-            <time datetime={post.data.updatedAt.toISOString().slice(0, 10)}>
-              {dateFormatter.format(post.data.updatedAt)}
-            </time>
-          </>
-        )}
+        {
+          post.data.updatedAt && (
+            <>
+              <span aria-hidden="true"> · </span>
+              Updated{' '}
+              <time datetime={post.data.updatedAt.toISOString().slice(0, 10)}>
+                {dateFormatter.format(post.data.updatedAt)}
+              </time>
+            </>
+          )
+        }
       </p>
     </header>
 
@@ -115,70 +118,77 @@ const breadcrumbs = [
       </Prose>
     </div>
 
-    {faq.length > 0 && (
-      <section class="mt-16" aria-labelledby="post-faq-title">
-        <h2 id="post-faq-title" class="display-sm">
-          Frequently asked questions
-        </h2>
-        <Accordion
-          class="mt-6"
-          items={faq.map((item) => ({ title: item.question, content: item.answer }))}
-        />
-      </section>
-    )}
+    {
+      faq.length > 0 && (
+        <section class="mt-16" aria-labelledby="post-faq-title">
+          <h2 id="post-faq-title" class="display-sm">
+            Frequently asked questions
+          </h2>
+          <Accordion
+            class="mt-6"
+            items={faq.map((item) => ({ title: item.question, content: item.answer }))}
+          />
+        </section>
+      )
+    }
 
-    {post.data.sources.length > 0 && (
-      <section class="mt-16" aria-labelledby="post-sources-title">
-        <h2 id="post-sources-title" class="display-sm">
-          Sources
-        </h2>
-        <ul class="mt-4 grid gap-2 text-sm">
-          {post.data.sources.map((source) => (
-            <li>
-              <a
-                class="text-foreground hover:text-accent-ink underline underline-offset-2 transition-colors"
-                href={source.url}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {source.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </section>
-    )}
+    {
+      post.data.sources.length > 0 && (
+        <section class="mt-16" aria-labelledby="post-sources-title">
+          <h2 id="post-sources-title" class="display-sm">
+            Sources
+          </h2>
+          <ul class="mt-4 grid gap-2 text-sm">
+            {post.data.sources.map((source) => (
+              <li>
+                <a
+                  class="text-foreground hover:text-accent-ink underline underline-offset-2 transition-colors"
+                  href={source.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {source.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
 
-    {related.length > 0 && (
-      <section class="mt-16" aria-labelledby="post-related-title">
-        <h2 id="post-related-title" class="display-sm">
-          More from Insights
-        </h2>
-        <ul class="mt-6 grid gap-6 sm:grid-cols-2">
-          {related.map((entry) => (
-            <li>
-              <article class="border-border bg-card flex h-full flex-col rounded-md border p-5 shadow-sm">
-                <p class="eyebrow">{entry.data.category}</p>
-                <h3 class="display-xs">
-                  <a class="hover:text-accent-ink transition-colors" href={`/blog/${entry.id}/`}>
-                    {entry.data.title}
-                  </a>
-                </h3>
-                <div class="border-border text-foreground-muted mt-auto flex items-center gap-2 border-t pt-3 text-sm">
-                  <time datetime={entry.data.publishedAt.toISOString().slice(0, 10)}>
-                    {dateFormatter.format(entry.data.publishedAt)}
-                  </time>
-                  <span aria-hidden="true">·</span>
-                  <span>{getReadingMinutes(entry)} min read</span>
-                </div>
-              </article>
-            </li>
-          ))}
-        </ul>
-      </section>
-    )}
+    {
+      related.length > 0 && (
+        <section class="mt-16" aria-labelledby="post-related-title">
+          <h2 id="post-related-title" class="display-sm">
+            More from Insights
+          </h2>
+          <ul class="mt-6 grid gap-6 sm:grid-cols-2">
+            {related.map((entry) => (
+              <li>
+                <article class="border-border bg-card flex h-full flex-col rounded-md border p-5 shadow-sm">
+                  <p class="eyebrow">{entry.data.category}</p>
+                  <h3 class="display-xs">
+                    <a class="hover:text-accent-ink transition-colors" href={`/blog/${entry.id}/`}>
+                      {entry.data.title}
+                    </a>
+                  </h3>
+                  <div class="border-border text-foreground-muted mt-auto flex items-center gap-2 border-t pt-3 text-sm">
+                    <time datetime={entry.data.publishedAt.toISOString().slice(0, 10)}>
+                      {dateFormatter.format(entry.data.publishedAt)}
+                    </time>
+                    <span aria-hidden="true">·</span>
+                    <span>{getReadingMinutes(entry)} min read</span>
+                  </div>
+                </article>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
 
     <aside class="border-border mt-16 border-t pt-8">
+      <CityLogo height="3.5rem" class="mb-4" />
       <h2 class="display-sm">Next step</h2>
       <p class="text-foreground-muted mt-3 max-w-[42rem]">
         See the Tranquill City project page for the layout, amenities and location context, or ask

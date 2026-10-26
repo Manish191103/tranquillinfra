@@ -36,28 +36,30 @@ const groupName = exclusive ? `accordion-${Math.random().toString(36).slice(2, 9
 ---
 
 <div class={cn('w-full', className)} data-accordion={exclusive ? 'exclusive' : undefined}>
-  {items.map((item) => (
-    <details
-      class={cn(accordionItemVariants({ variant }))}
-      open={item.defaultOpen}
-      name={groupName}
-    >
-      <summary
-        class={cn(
-          accordionTriggerVariants({ size }),
-          'cursor-pointer list-none [&::-webkit-details-marker]:hidden'
-        )}
+  {
+    items.map((item) => (
+      <details
+        class={cn(accordionItemVariants({ variant }))}
+        open={item.defaultOpen}
+        name={groupName}
       >
-        {item.title}
-        <Icon
-          name="chevron-down"
-          size="sm"
-          class="accordion-icon text-foreground-muted shrink-0 transition-transform duration-base ease-spring"
-        />
-      </summary>
-      <div class="text-foreground-muted pb-4 text-sm leading-relaxed">{item.content}</div>
-    </details>
-  ))}
+        <summary
+          class={cn(
+            accordionTriggerVariants({ size }),
+            'cursor-pointer list-none [&::-webkit-details-marker]:hidden'
+          )}
+        >
+          {item.title}
+          <Icon
+            name="chevron-down"
+            size="sm"
+            class="accordion-icon text-foreground-muted duration-base ease-spring shrink-0 transition-transform"
+          />
+        </summary>
+        <div class="text-foreground-muted pb-4 text-sm leading-relaxed">{item.content}</div>
+      </details>
+    ))
+  }
 </div>
 
 <style>

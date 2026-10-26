@@ -15,6 +15,7 @@
  * sentence was clipped at the fold on both desktop and mobile (measured
  * 2026-09-30). The hero carries the promise; the body carries the argument.
  */
+import CityLogo from '~/components/ui/primitives/CityLogo.astro';
 import type { ImageMetadata } from 'astro';
 import ImageHero from '~/components/layout/ImageHero.astro';
 
@@ -49,10 +50,17 @@ const { title, intro, eyebrow, hero, note } = Astro.props;
     <p>{intro}</p>
   </div>
 
-  <p class="text-on-invert mt-6 max-w-[36rem] text-sm">
-    <span class="eyebrow">{note.label}:</span>
-    <strong class="text-on-invert font-semibold">{note.title}</strong>: {note.body}
-  </p>
+  <a
+    href="/projects/tranquill-city/"
+    class="about-note text-on-invert mt-6 flex max-w-[36rem] items-center gap-4 text-sm"
+  >
+    <CityLogo tone="light" height="3.4rem" alt="" />
+    <span>
+      <span class="eyebrow">{note.label}</span>
+      <strong class="text-on-invert mt-2 block font-semibold">{note.title}</strong>
+      <span class="text-on-invert-secondary">{note.body}</span>
+    </span>
+  </a>
 </ImageHero>
 
 <style>

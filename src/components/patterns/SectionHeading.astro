@@ -31,25 +31,29 @@ const sizeStep = { sm: 'display-sm', md: 'display-md', lg: 'display-lg' }[size];
 ---
 
 <div class:list={['max-w-[46rem]', className]}>
-  {eyebrow && (
-    <p
-      class:list={['eyebrow', !noReveal && 'reveal']}
-      data-reveal={!noReveal ? 'eyebrow' : undefined}
-    >
-      {eyebrow}
-    </p>
-  )}
+  {
+    eyebrow && (
+      <p
+        class:list={['eyebrow', !noReveal && 'reveal']}
+        data-reveal={!noReveal ? 'eyebrow' : undefined}
+      >
+        {eyebrow}
+      </p>
+    )
+  }
   <h2 id={id} class:list={[sizeStep, !noReveal && eyebrow && 'reveal-2', 'mt-6']}>
     {title}
   </h2>
-  {intro && (
-    <p
-      class:list={[
-        'text-pretty text-foreground-muted mt-6 text-lg',
-        !noReveal && (eyebrow ? 'reveal-3' : 'reveal'),
-      ]}
-    >
-      {intro}
-    </p>
-  )}
+  {
+    intro && (
+      <p
+        class:list={[
+          'text-foreground-muted mt-6 text-lg text-pretty',
+          !noReveal && (eyebrow ? 'reveal-3' : 'reveal'),
+        ]}
+      >
+        {intro}
+      </p>
+    )
+  }
 </div>

@@ -10,7 +10,9 @@ import Icon from '~/components/ui/primitives/Icon/Icon.astro';
   noindex
   enquiryDialogAutoOpen={false}
 >
-  <section class="relative flex min-h-[calc(100svh-8rem)] items-center justify-center overflow-hidden pt-16">
+  <section
+    class="relative flex min-h-[calc(100svh-8rem)] items-center justify-center overflow-hidden pt-16"
+  >
     <div class="relative container px-6">
       <div class="mx-auto max-w-2xl text-center">
         <!--
@@ -52,11 +54,9 @@ import Icon from '~/components/ui/primitives/Icon/Icon.astro';
      * runs after this one, and the event must follow the `config`. Fires once —
      * a 404 is never reached by client-side routing.
      */
-    document.addEventListener(
-      'astro:page-load',
-      () => trackNotFound(window.location.pathname),
-      { once: true }
-    );
+    document.addEventListener('astro:page-load', () => trackNotFound(window.location.pathname), {
+      once: true,
+    });
   </script>
 </PageLayout>
 

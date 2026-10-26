@@ -81,113 +81,115 @@ const controlClasses = cn(
 );
 ---
 
-{messages.length > 0 && (
-  <>
-    {/* Runs while the parser is still above the bar, so the collapse is
+{
+  messages.length > 0 && (
+    <>
+      {/* Runs while the parser is still above the bar, so the collapse is
         decided before the first paint. The key is fixed in practice: one bar
         per page. */}
-    <script
-      is:inline
-      set:html={`try{if(sessionStorage.getItem(${JSON.stringify(storageKey)})==='true'){document.documentElement.dataset.announcementDismissed=''}}catch(e){}`}
-    ></script>
-    <aside
-      class:list={[
-        'invert-section bg-background text-foreground border-[var(--border-invert)] border-b',
-        className,
-      ]}
-      data-announcement-bar
-      data-interval={interval}
-      data-storage-key={storageKey}
-      aria-label="Current updates"
-      {...attrs}
-    >
-      {/*
+      <script
+        is:inline
+        set:html={`try{if(sessionStorage.getItem(${JSON.stringify(storageKey)})==='true'){document.documentElement.dataset.announcementDismissed=''}}catch(e){}`}
+      />
+      <aside
+        class:list={[
+          'invert-section bg-background text-foreground border-b border-[var(--border-invert)]',
+          className,
+        ]}
+        data-announcement-bar
+        data-interval={interval}
+        data-storage-key={storageKey}
+        aria-label="Current updates"
+        {...attrs}
+      >
+        {/*
         WCAG 2.2 target size (minimum): below `sm` the prev/next/pause controls
         are `max-sm:hidden`, so this link IS the whole top-of-page call to
         action on a phone — and it measured 298×16px, under the 24×24 floor by
         8px of height. `min-h-6` is exactly the minimum, so the row's 2.5rem
         still governs the bar's height and nothing moves.
       */}
-      <div class="mx-auto flex min-h-10 max-w-6xl items-center justify-between gap-3 px-6">
-        {/*
+        <div class="mx-auto flex min-h-10 max-w-6xl items-center justify-between gap-3 px-6">
+          {/*
           `aria-live="off"` until the visitor touches the controls (see
           `armLiveRegion` below). A polite live region that starts announcing a
           new message every 18 seconds before anyone has asked for it is still a
           region that interrupts; the moment a visitor presses next, or focuses
           the bar, it becomes the polite region it was meant to be.
         */}
-        <div class="grid min-w-0 flex-1 items-center" data-announcement-live aria-live="off">
-          {messages.map((message, index) => (
-            <a
-              href={message.href}
-              data-track={message.track}
-              data-dialog-trigger={message.dialog}
-              data-dialog-request-type={message.requestType}
-              data-announcement-message
-              class:list={[
-                'hover:text-accent-ink focus-visible:ring-ring min-h-6 flex min-w-0 items-center gap-2 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none',
-                index === 0 && 'is-active',
-              ]}
-            >
-              <span class="bg-accent size-1.5 shrink-0 rounded-full" aria-hidden="true" />
-              <span class="truncate">{message.text}</span>
-              <Icon name="arrow-up-right" size="xs" class="text-accent-ink shrink-0" />
-            </a>
-          ))}
-        </div>
+          <div class="grid min-w-0 flex-1 items-center" data-announcement-live aria-live="off">
+            {messages.map((message, index) => (
+              <a
+                href={message.href}
+                data-track={message.track}
+                data-dialog-trigger={message.dialog}
+                data-dialog-request-type={message.requestType}
+                data-announcement-message
+                class:list={[
+                  'hover:text-accent-ink focus-visible:ring-ring focus-visible:ring-offset-background flex min-h-6 min-w-0 items-center gap-2 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+                  index === 0 && 'is-active',
+                ]}
+              >
+                <span class="bg-accent size-1.5 shrink-0 rounded-full" aria-hidden="true" />
+                <span class="truncate">{message.text}</span>
+                <Icon name="arrow-up-right" size="xs" class="text-accent-ink shrink-0" />
+              </a>
+            ))}
+          </div>
 
-        <div
-          class="flex shrink-0 items-center gap-0.5"
-          role="group"
-          aria-label="Announcement controls"
-        >
-          {hasMultiple && (
-            <>
-              <button
-                type="button"
-                class={cn(controlClasses, 'max-sm:hidden')}
-                data-announcement-prev
-                aria-label="Previous announcement"
-              >
-                <Icon name="chevron-left" size="sm" />
-              </button>
-              <button
-                type="button"
-                class={cn(controlClasses, 'max-sm:hidden')}
-                data-announcement-pause
-                aria-label="Pause announcements"
-                aria-pressed="false"
-              >
-                <span data-announcement-pause-icon>
-                  <Icon name="pause" size="sm" />
-                </span>
-                <span data-announcement-play-icon hidden>
-                  <Icon name="play" size="sm" />
-                </span>
-              </button>
-              <button
-                type="button"
-                class={cn(controlClasses, 'max-sm:hidden')}
-                data-announcement-next
-                aria-label="Next announcement"
-              >
-                <Icon name="chevron-right" size="sm" />
-              </button>
-            </>
-          )}
-          <button
-            type="button"
-            class={controlClasses}
-            data-announcement-dismiss
-            aria-label="Close announcements"
+          <div
+            class="flex shrink-0 items-center gap-0.5"
+            role="group"
+            aria-label="Announcement controls"
           >
-            <Icon name="x" size="sm" />
-          </button>
+            {hasMultiple && (
+              <>
+                <button
+                  type="button"
+                  class={cn(controlClasses, 'max-sm:hidden')}
+                  data-announcement-prev
+                  aria-label="Previous announcement"
+                >
+                  <Icon name="chevron-left" size="sm" />
+                </button>
+                <button
+                  type="button"
+                  class={cn(controlClasses, 'max-sm:hidden')}
+                  data-announcement-pause
+                  aria-label="Pause announcements"
+                  aria-pressed="false"
+                >
+                  <span data-announcement-pause-icon>
+                    <Icon name="pause" size="sm" />
+                  </span>
+                  <span data-announcement-play-icon hidden>
+                    <Icon name="play" size="sm" />
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  class={cn(controlClasses, 'max-sm:hidden')}
+                  data-announcement-next
+                  aria-label="Next announcement"
+                >
+                  <Icon name="chevron-right" size="sm" />
+                </button>
+              </>
+            )}
+            <button
+              type="button"
+              class={controlClasses}
+              data-announcement-dismiss
+              aria-label="Close announcements"
+            >
+              <Icon name="x" size="sm" />
+            </button>
+          </div>
         </div>
-      </div>
-    </aside>
-  </>
-)}
+      </aside>
+    </>
+  )
+}
 
 <style is:global>
   /* Applied by the inline script before the bar is parsed. */

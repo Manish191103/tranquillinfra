@@ -128,222 +128,231 @@ const dialogPosters = await Promise.all(
       aria-label={isRail ? 'Buyer testimonials' : undefined}
       data-testimonial-rail
     >
-      {items.map((item, index) => {
-        const dialogId = dialogIds[index];
+      {
+        items.map((item, index) => {
+          const dialogId = dialogIds[index];
 
-        return (
-          <li
-            class:list={[
-              'testimonial-card group',
-              isRail ? 'w-[78%] shrink-0 snap-start sm:w-[48%] lg:w-[30%]' : 'w-full max-w-[22rem]',
-            ]}
-            data-testimonial-card
-            data-testimonial-name={item.name}
-          >
-            <figure class="relative">
-              {item.video ? (
-                <>
-                  <div class="testimonial-media border-border has-[a:focus-visible]:ring-ring has-[a:focus-visible]:ring-offset-2 relative isolate overflow-hidden rounded-md border has-[a:focus-visible]:ring-2">
-                    <Picture
-                      src={item.video.poster}
-                      alt={item.video.posterAlt}
-                      widths={posterWidths(item.video.poster.width)}
-                      sizes="(min-width: 1024px) 22rem, (min-width: 640px) 48vw, 78vw"
-                      fallbackFormat="webp"
-                      formats={['avif', 'webp']}
-                      class:list={[
-                        'w-full object-cover',
-                        item.video.orientation === 'portrait' ? 'aspect-[9/16]' : 'aspect-video',
-                      ]}
-                    />
-                    {/* Muted preview, played by ./testimonial-rail.ts; the poster stays
+          return (
+            <li
+              class:list={[
+                'testimonial-card group',
+                isRail
+                  ? 'w-[78%] shrink-0 snap-start sm:w-[48%] lg:w-[30%]'
+                  : 'w-full max-w-[22rem]',
+              ]}
+              data-testimonial-card
+              data-testimonial-name={item.name}
+            >
+              <figure class="relative">
+                {item.video ? (
+                  <>
+                    <div class="testimonial-media border-border has-[a:focus-visible]:ring-ring relative isolate overflow-hidden rounded-md border has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-offset-2">
+                      <Picture
+                        src={item.video.poster}
+                        alt={item.video.posterAlt}
+                        widths={posterWidths(item.video.poster.width)}
+                        sizes="(min-width: 1024px) 22rem, (min-width: 640px) 48vw, 78vw"
+                        fallbackFormat="webp"
+                        formats={['avif', 'webp']}
+                        class:list={[
+                          'w-full object-cover',
+                          item.video.orientation === 'portrait' ? 'aspect-[9/16]' : 'aspect-video',
+                        ]}
+                      />
+                      {/* Muted preview, played by ./testimonial-rail.ts; the poster stays
                       visible until the first frame is on screen. */}
-                    <video
-                      class="testimonial-video pointer-events-none absolute inset-0 size-full object-cover opacity-0"
-                      muted
-                      playsinline
-                      preload="none"
-                      data-testimonial-inline
-                      aria-hidden="true"
-                    >
-                      <source src={item.video.src} type="video/mp4" />
-                    </video>
-                    <span
-                      class="bg-foreground/15 group-hover:bg-foreground/25 absolute inset-0 transition-colors"
-                      aria-hidden="true"
-                    />
-                    {/* Overlay scrim: carries the name, context and quote on the poster. */}
-                    {(item.name || item.context || item.quote) && (
+                      <video
+                        class="testimonial-video pointer-events-none absolute inset-0 size-full object-cover opacity-0"
+                        muted
+                        playsinline
+                        preload="none"
+                        data-testimonial-inline
+                        aria-hidden="true"
+                      >
+                        <source src={item.video.src} type="video/mp4" />
+                      </video>
                       <span
-                        class="from-foreground/95 via-foreground/70 pointer-events-none absolute inset-x-0 bottom-0 h-[55%] bg-gradient-to-t to-transparent"
+                        class="bg-foreground/15 group-hover:bg-foreground/25 absolute inset-0 transition-colors"
                         aria-hidden="true"
                       />
+                      {/* Overlay scrim: carries the name, context and quote on the poster. */}
+                      {(item.name || item.context || item.quote) && (
+                        <span
+                          class="from-foreground/95 via-foreground/70 pointer-events-none absolute inset-x-0 bottom-0 h-[55%] bg-gradient-to-t to-transparent"
+                          aria-hidden="true"
+                        />
+                      )}
+                      <a
+                        href={item.video.src}
+                        class="absolute inset-0 rounded-md focus-visible:outline-none"
+                        data-testimonial-trigger={dialogId}
+                        aria-label={watchLabel(item, index)}
+                      />
+                      <span
+                        class="testimonial-badge bg-accent text-accent-foreground pointer-events-none absolute top-1/2 left-1/2 grid size-14 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full shadow-lg group-hover:scale-105"
+                        aria-hidden="true"
+                      >
+                        <Icon name="play" size="md" />
+                      </span>
+                      <span class="bg-foreground/85 text-background pointer-events-none absolute top-3 right-3 rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums">
+                        {item.video.duration}
+                      </span>
+                      <button
+                        type="button"
+                        class="testimonial-toggle bg-foreground/70 text-background hover:bg-foreground/85 focus-visible:ring-ring absolute top-3 left-3 grid size-9 cursor-pointer place-items-center rounded-full backdrop-blur-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                        data-testimonial-toggle
+                        aria-label="Play the video preview"
+                        aria-pressed="false"
+                      >
+                        <span data-icon="play">
+                          <Icon name="play" size="sm" />
+                        </span>
+                        <span data-icon="pause">
+                          <Icon name="pause" size="sm" />
+                        </span>
+                      </button>
+                    </div>
+                    {(item.name || item.context || item.quote) && (
+                      <figcaption class="pointer-events-none absolute inset-x-0 bottom-0 p-5">
+                        {item.name && <p class="display-xs text-background">{item.name}</p>}
+                        {item.context && (
+                          <p class="text-background/80 mt-0.5 text-sm">{item.context}</p>
+                        )}
+                        {item.quote && (
+                          <blockquote class="text-background/90 mt-2 line-clamp-3 text-sm text-pretty">
+                            {'“'}
+                            {item.quote}
+                            {'”'}
+                          </blockquote>
+                        )}
+                      </figcaption>
                     )}
-                    <a
-                      href={item.video.src}
-                      class="absolute inset-0 rounded-md focus-visible:outline-none"
-                      data-testimonial-trigger={dialogId}
-                      aria-label={watchLabel(item, index)}
-                    />
-                    <span
-                      class="testimonial-badge bg-accent text-accent-foreground pointer-events-none absolute top-1/2 left-1/2 grid size-14 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full shadow-lg group-hover:scale-105"
-                      aria-hidden="true"
-                    >
-                      <Icon name="play" size="md" />
-                    </span>
-                    <span class="bg-foreground/85 text-background pointer-events-none absolute top-3 right-3 rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums">
-                      {item.video.duration}
-                    </span>
-                    <button
-                      type="button"
-                      class="testimonial-toggle bg-foreground/70 text-background hover:bg-foreground/85 focus-visible:ring-ring focus-visible:ring-offset-2 absolute top-3 left-3 grid size-9 cursor-pointer place-items-center rounded-full backdrop-blur-sm focus-visible:ring-2 focus-visible:outline-none"
-                      data-testimonial-toggle
-                      aria-label="Play the video preview"
-                      aria-pressed="false"
-                    >
-                      <span data-icon="play">
-                        <Icon name="play" size="sm" />
-                      </span>
-                      <span data-icon="pause">
-                        <Icon name="pause" size="sm" />
-                      </span>
-                    </button>
-                  </div>
-                  {(item.name || item.context || item.quote) && (
-                    <figcaption class="pointer-events-none absolute inset-x-0 bottom-0 p-5">
-                      {item.name && <p class="display-xs text-background">{item.name}</p>}
-                      {item.context && (
-                        <p class="text-background/80 mt-0.5 text-sm">{item.context}</p>
-                      )}
-                      {item.quote && (
-                        <blockquote class="text-background/90 mt-2 line-clamp-3 text-sm text-pretty">
-                          {'“'}
-                          {item.quote}
-                          {'”'}
-                        </blockquote>
-                      )}
-                    </figcaption>
-                  )}
-                </>
-              ) : (
-                <>
-                  {item.photo && (
-                    <Picture
-                      src={item.photo.image}
-                      alt={item.photo.alt}
-                      widths={posterWidths(item.photo.image.width)}
-                      sizes="3.5rem"
-                      fallbackFormat="webp"
-                      formats={['avif', 'webp']}
-                      class="border-border size-14 rounded-full border object-cover"
-                    />
-                  )}
+                  </>
+                ) : (
+                  <>
+                    {item.photo && (
+                      <Picture
+                        src={item.photo.image}
+                        alt={item.photo.alt}
+                        widths={posterWidths(item.photo.image.width)}
+                        sizes="3.5rem"
+                        fallbackFormat="webp"
+                        formats={['avif', 'webp']}
+                        class="border-border size-14 rounded-full border object-cover"
+                      />
+                    )}
 
-                  {(item.name || item.context) && (
-                    <figcaption class="mt-4">
-                      {item.name && <p class="display-xs">{item.name}</p>}
-                      {item.context && <p class="text-foreground-subtle text-sm">{item.context}</p>}
-                    </figcaption>
-                  )}
+                    {(item.name || item.context) && (
+                      <figcaption class="mt-4">
+                        {item.name && <p class="display-xs">{item.name}</p>}
+                        {item.context && (
+                          <p class="text-foreground-subtle text-sm">{item.context}</p>
+                        )}
+                      </figcaption>
+                    )}
 
-                  {item.quote && (
-                    <blockquote class="text-foreground-secondary mt-3 text-sm text-pretty">
-                      {'“'}
-                      {item.quote}
-                      {'”'}
-                    </blockquote>
-                  )}
-                </>
-              )}
-            </figure>
-          </li>
-        );
-      })}
+                    {item.quote && (
+                      <blockquote class="text-foreground-secondary mt-3 text-sm text-pretty">
+                        {'“'}
+                        {item.quote}
+                        {'”'}
+                      </blockquote>
+                    )}
+                  </>
+                )}
+              </figure>
+            </li>
+          );
+        })
+      }
     </ul>
 
-    {isRail && (
-      <>
-        <div class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
-          <div class="flex items-center gap-2">
-            <button
-              type="button"
-              class="border-border bg-card text-foreground-secondary hover:border-accent hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring disabled:cursor-not-allowed grid size-10 cursor-pointer place-items-center rounded-full border transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:opacity-40"
-              data-testimonial-prev
-              aria-label="Show the previous testimonial"
-            >
-              <Icon name="chevron-left" size="sm" />
-            </button>
-            <button
-              type="button"
-              class="border-border bg-card text-foreground-secondary hover:border-accent hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring disabled:cursor-not-allowed grid size-10 cursor-pointer place-items-center rounded-full border transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:opacity-40"
-              data-testimonial-next
-              aria-label="Show the next testimonial"
-            >
-              <Icon name="chevron-right" size="sm" />
-            </button>
-          </div>
-
-          <div class="flex min-w-[7rem] flex-1 items-center gap-1.5">
-            {items.map((item, index) => (
+    {
+      isRail && (
+        <>
+          <div class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
+            <div class="flex items-center gap-2">
               <button
                 type="button"
-                class="testimonial-segment bg-foreground/25 hover:bg-accent focus-visible:ring-ring flex-1 cursor-pointer rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-                data-testimonial-segment={index}
-                aria-label={`Show ${item.name ? `${item.name}'s testimonial` : `testimonial ${index + 1}`} of ${items.length}`}
-              />
-            ))}
+                class="border-border bg-card text-foreground-secondary hover:border-accent hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring grid size-10 cursor-pointer place-items-center rounded-full border transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40"
+                data-testimonial-prev
+                aria-label="Show the previous testimonial"
+              >
+                <Icon name="chevron-left" size="sm" />
+              </button>
+              <button
+                type="button"
+                class="border-border bg-card text-foreground-secondary hover:border-accent hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring grid size-10 cursor-pointer place-items-center rounded-full border transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40"
+                data-testimonial-next
+                aria-label="Show the next testimonial"
+              >
+                <Icon name="chevron-right" size="sm" />
+              </button>
+            </div>
+
+            <div class="flex min-w-[7rem] flex-1 items-center gap-1.5">
+              {items.map((item, index) => (
+                <button
+                  type="button"
+                  class="testimonial-segment bg-foreground/25 hover:bg-accent focus-visible:ring-ring flex-1 cursor-pointer rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                  data-testimonial-segment={index}
+                  aria-label={`Show ${item.name ? `${item.name}'s testimonial` : `testimonial ${index + 1}`} of ${items.length}`}
+                />
+              ))}
+            </div>
+
+            <p
+              class="text-foreground-subtle text-xs font-semibold tabular-nums"
+              data-testimonial-counter
+            >
+              {pad(1)} / {pad(items.length)}
+            </p>
           </div>
 
-          <p
-            class="text-foreground-subtle text-xs font-semibold tabular-nums"
-            data-testimonial-counter
-          >
-            {pad(1)} / {pad(items.length)}
+          <p class="text-foreground-subtle mt-3 text-xs">
+            Scroll the row, use the arrows, or open a card to watch the full clip with sound.
           </p>
-        </div>
 
-        <p class="text-foreground-subtle mt-3 text-xs">
-          Scroll the row, use the arrows, or open a card to watch the full clip with sound.
-        </p>
-
-        <p class="sr-only" data-testimonial-status aria-live="polite">
-          {`Showing testimonial 1 of ${items.length}${items[0]?.name ? `: ${items[0].name}` : ''}`}
-        </p>
-      </>
-    )}
+          <p class="sr-only" data-testimonial-status aria-live="polite">
+            {`Showing testimonial 1 of ${items.length}${items[0]?.name ? `: ${items[0].name}` : ''}`}
+          </p>
+        </>
+      )
+    }
   </div>
 
   <p class="text-foreground-subtle mt-8 max-w-[54rem] text-sm">{note}</p>
 
-  {items.map((item, index) =>
-    item.video ? (
-      <Dialog
-        id={dialogIds[index]}
-        title={dialogTitle(item, index)}
-        size={item.video.orientation === 'portrait' ? 'sm' : 'lg'}
-      >
-        <div class="relative">
-          <video
-            class="mx-auto block max-h-[70vh] w-full rounded-md bg-black"
-            controls
-            playsinline
-            preload="none"
-            poster={dialogPosters[index]}
-            width={item.video.orientation === 'portrait' ? 720 : 1280}
-            height={item.video.orientation === 'portrait' ? 1280 : 720}
-            data-testimonial-video
-          >
-            <source src={item.video.src} type="video/mp4" />
-            {(item.video.captions ?? []).map((track, trackIndex) => (
-              <track
-                kind="captions"
-                src={track.src}
-                srclang={track.lang}
-                label={track.label}
-                default={trackIndex === 0}
-              />
-            ))}
-            {/*
+  {
+    items.map((item, index) =>
+      item.video ? (
+        <Dialog
+          id={dialogIds[index]}
+          title={dialogTitle(item, index)}
+          size={item.video.orientation === 'portrait' ? 'sm' : 'lg'}
+        >
+          <div class="relative">
+            <video
+              class="mx-auto block max-h-[70vh] w-full rounded-md bg-black"
+              controls
+              playsinline
+              preload="none"
+              poster={dialogPosters[index]}
+              width={item.video.orientation === 'portrait' ? 720 : 1280}
+              height={item.video.orientation === 'portrait' ? 1280 : 720}
+              data-testimonial-video
+            >
+              <source src={item.video.src} type="video/mp4" />
+              {(item.video.captions ?? []).map((track, trackIndex) => (
+                <track
+                  kind="captions"
+                  src={track.src}
+                  srclang={track.lang}
+                  label={track.label}
+                  default={trackIndex === 0}
+                />
+              ))}
+              {/*
               The fallback text is inside <video>, so it is only read by a
               browser that cannot play the clip — but it is still text in the
               document, and it used to promise a transcript unconditionally.
@@ -353,45 +362,46 @@ const dialogPosters = await Promise.all(
               something it could not deliver. Gated on the same field the
               transcript block below is gated on, so the two can never disagree.
             */}
-            Your browser cannot play this video.{' '}
-            <a href={item.video.src}>Open the clip in a new view</a>
-            {item.video.transcript ? ' or read the transcript below.' : '.'}
-          </video>
+              Your browser cannot play this video.{' '}
+              <a href={item.video.src}>Open the clip in a new view</a>
+              {item.video.transcript ? ' or read the transcript below.' : '.'}
+            </video>
 
-          {/* Player overlay: the same name/context the dialog heading carries, over the frames. */}
-          {(item.name || item.context) && (
-            <div
-              class="pointer-events-none absolute inset-x-4 bottom-14 flex justify-center"
-              aria-hidden="true"
-            >
-              <p class="bg-foreground/80 text-background max-w-full truncate rounded-full px-4 py-1.5 text-sm backdrop-blur-sm">
-                {dialogTitle(item, index)}
-              </p>
-            </div>
+            {/* Player overlay: the same name/context the dialog heading carries, over the frames. */}
+            {(item.name || item.context) && (
+              <div
+                class="pointer-events-none absolute inset-x-4 bottom-14 flex justify-center"
+                aria-hidden="true"
+              >
+                <p class="bg-foreground/80 text-background max-w-full truncate rounded-full px-4 py-1.5 text-sm backdrop-blur-sm">
+                  {dialogTitle(item, index)}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {item.quote && (
+            <blockquote class="text-foreground-secondary mt-4 text-sm text-pretty">
+              {'“'}
+              {item.quote}
+              {'”'}
+            </blockquote>
           )}
-        </div>
 
-        {item.quote && (
-          <blockquote class="text-foreground-secondary mt-4 text-sm text-pretty">
-            {'“'}
-            {item.quote}
-            {'”'}
-          </blockquote>
-        )}
-
-        {item.video.transcript && (
-          <details class="border-border mt-5 border-t pt-4">
-            <summary class="text-foreground-muted hover:text-foreground cursor-pointer text-sm font-semibold">
-              Read the transcript
-            </summary>
-            <p class="text-foreground-muted mt-3 text-sm whitespace-pre-line">
-              {item.video.transcript}
-            </p>
-          </details>
-        )}
-      </Dialog>
-    ) : null
-  )}
+          {item.video.transcript && (
+            <details class="border-border mt-5 border-t pt-4">
+              <summary class="text-foreground-muted hover:text-foreground cursor-pointer text-sm font-semibold">
+                Read the transcript
+              </summary>
+              <p class="text-foreground-muted mt-3 text-sm whitespace-pre-line">
+                {item.video.transcript}
+              </p>
+            </details>
+          )}
+        </Dialog>
+      ) : null
+    )
+  }
 </section>
 
 <script>

@@ -327,6 +327,80 @@ const site: Pt[] = [
   [highwayX(235), 235],
 ];
 
+const park1: Pt[] = [
+  [438, 276],
+  [lean(508, 276), 276],
+  [lean(508, 520), 520],
+  [490, 538],
+  [458, 498],
+  [442, 430],
+];
+
+const park2: Pt[] = [
+  [lean(855, 806), 806],
+  [lean(980, 806), 806],
+  [935, 882],
+  [870, bufferY(870)],
+  [lean(855, 806), bufferY(lean(855, 806))],
+];
+
+/** Even-odd test, for scattering trees inside a park outline. */
+function inside([x, y]: Pt, poly: Pt[]): boolean {
+  let hit = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, yi] = poly[i]!;
+    const [xj, yj] = poly[j]!;
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) hit = !hit;
+  }
+  return hit;
+}
+
+/** A small deterministic jitter, so the trees look planted rather than gridded. */
+const jitter = (n: number) => (Math.sin(n * 12.9898) * 43758.5453) % 1;
+
+export interface Tree {
+  x: number;
+  y: number;
+  /** Canopy radius */
+  r: number;
+}
+
+function grove(poly: Pt[], step: number, seed: number): Tree[] {
+  const xs = poly.map((p) => p[0]);
+  const ys = poly.map((p) => p[1]);
+  const trees: Tree[] = [];
+  let n = seed;
+  for (let y = Math.min(...ys) + step / 2; y < Math.max(...ys); y += step) {
+    for (let x = Math.min(...xs) + step / 2; x < Math.max(...xs); x += step) {
+      n += 1;
+      const pt: Pt = [x + jitter(n) * step * 0.3, y + jitter(n + 7) * step * 0.3];
+      // Keep the canopy clear of the edge.
+      const r = 6 + Math.abs(jitter(n + 3)) * 3;
+      const clear = [
+        [pt[0] - r, pt[1]],
+        [pt[0] + r, pt[1]],
+        [pt[0], pt[1] - r],
+        [pt[0], pt[1] + r],
+      ].every((q) => inside(q as Pt, poly));
+      if (clear) trees.push({ x: pt[0], y: pt[1], r });
+    }
+  }
+  return trees;
+}
+
+/** A planted line along the 2 m buffer, between its two edges. */
+function bufferRow(): Tree[] {
+  const trees: Tree[] = [];
+  for (let x = 470; x <= 905; x += 26) {
+    const y = (bufferY(x) + along(bufferOuter, x, 0)) / 2 + 4;
+    trees.push({ x: x - 4, y, r: 5 });
+  }
+  return trees;
+}
+
+/** Decorative trees: the two parks and the buffer planting. */
+export const trees: Tree[] = [...grove(park1, 22, 1), ...grove(park2, 22, 40), ...bufferRow()];
+
 /** Centre line of an internal road, north to south, for the dashed road markings. */
 const centre = (x0: number, x1: number, bottom: number | 'buffer'): string => {
   const mid = (x0 + x1) / 2;
@@ -367,24 +441,11 @@ export const planShapes = {
     { points: road(980, 1030, 800), label: [lean(1005, 520), 520] as Pt },
   ],
   park1: {
-    points: fmt([
-      [438, 276],
-      [lean(508, 276), 276],
-      [lean(508, 520), 520],
-      [490, 538],
-      [458, 498],
-      [442, 430],
-    ]),
+    points: fmt(park1),
     label: [lean(474, 400), 400] as Pt,
   },
   park2: {
-    points: fmt([
-      [lean(855, 806), 806],
-      [lean(980, 806), 806],
-      [935, 882],
-      [870, bufferY(870)],
-      [lean(855, 806), bufferY(lean(855, 806))],
-    ]),
+    points: fmt(park2),
     label: [890, 832] as Pt,
   },
   social: {
@@ -424,7 +485,7 @@ export const planShapes = {
     ]),
     label: [1012, 766] as Pt,
   },
-  neighbours: [1245, 560] as Pt,
+  neighbours: [1246, 452] as Pt,
 } as const;
 
 export type SizeBand = { id: string; label: string; test: (sqyd: number) => boolean };

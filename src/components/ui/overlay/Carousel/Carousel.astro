@@ -74,62 +74,64 @@ const deferredPosters = await Promise.all(
   aria-label={regionLabel}
 >
   <div class="carousel-media">
-    {slides.map((slide, index) => (
-      <div
-        class:list={['carousel-slide', index === 0 && 'is-active']}
-        data-carousel-slide
-        data-clip-id={slide.id}
-        data-clip-title={slide.title}
-        data-clip-caption={slide.caption}
-        id={`carousel-slide-${slide.id}`}
-        role="tabpanel"
-        aria-labelledby={`carousel-tab-${slide.id}`}
-        aria-hidden={index === 0 ? undefined : 'true'}
-        inert={index === 0 ? undefined : true}
-      >
-        {slide.src || slide.mobileSrc ? (
-          <video
-            class="carousel-video"
-            data-carousel-video
-            poster={index === 0 ? slide.poster.src : undefined}
-            data-poster={index === 0 ? undefined : slide.poster.src}
-            muted
-            playsinline
-            loop
-            preload={index === 0 ? 'metadata' : 'none'}
-            aria-label={slide.alt}
-          >
-            {slide.mobileSrc && (
-              <source src={slide.mobileSrc} media="(max-width: 42rem)" type="video/mp4" />
-            )}
-            {slide.src && <source src={slide.src} type="video/mp4" />}
-          </video>
-        ) : index === 0 ? (
-          <Picture
-            {...leadingPosterPictureProps}
-            class="carousel-poster"
-            src={slide.poster}
-            priority
-            alt={slide.alt}
-            draggable={false}
-          />
-        ) : (
-          <img
-            class="carousel-poster"
-            data-carousel-poster={deferredPosters[index].src}
-            data-carousel-poster-srcset={deferredPosters[index].srcset}
-            data-carousel-poster-sizes={posterSizes}
-            alt={slide.alt}
-            width={deferredPosters[index].width}
-            height={deferredPosters[index].height}
-            loading="lazy"
-            decoding="async"
-            draggable={false}
-          />
-        )}
-        <div class="carousel-slide-shade" aria-hidden="true" />
-      </div>
-    ))}
+    {
+      slides.map((slide, index) => (
+        <div
+          class:list={['carousel-slide', index === 0 && 'is-active']}
+          data-carousel-slide
+          data-clip-id={slide.id}
+          data-clip-title={slide.title}
+          data-clip-caption={slide.caption}
+          id={`carousel-slide-${slide.id}`}
+          role="tabpanel"
+          aria-labelledby={`carousel-tab-${slide.id}`}
+          aria-hidden={index === 0 ? undefined : 'true'}
+          inert={index === 0 ? undefined : true}
+        >
+          {slide.src || slide.mobileSrc ? (
+            <video
+              class="carousel-video"
+              data-carousel-video
+              poster={index === 0 ? slide.poster.src : undefined}
+              data-poster={index === 0 ? undefined : slide.poster.src}
+              muted
+              playsinline
+              loop
+              preload={index === 0 ? 'metadata' : 'none'}
+              aria-label={slide.alt}
+            >
+              {slide.mobileSrc && (
+                <source src={slide.mobileSrc} media="(max-width: 42rem)" type="video/mp4" />
+              )}
+              {slide.src && <source src={slide.src} type="video/mp4" />}
+            </video>
+          ) : index === 0 ? (
+            <Picture
+              {...leadingPosterPictureProps}
+              class="carousel-poster"
+              src={slide.poster}
+              priority
+              alt={slide.alt}
+              draggable={false}
+            />
+          ) : (
+            <img
+              class="carousel-poster"
+              data-carousel-poster={deferredPosters[index].src}
+              data-carousel-poster-srcset={deferredPosters[index].srcset}
+              data-carousel-poster-sizes={posterSizes}
+              alt={slide.alt}
+              width={deferredPosters[index].width}
+              height={deferredPosters[index].height}
+              loading="lazy"
+              decoding="async"
+              draggable={false}
+            />
+          )}
+          <div class="carousel-slide-shade" aria-hidden="true" />
+        </div>
+      ))
+    }
 
     <div class="carousel-media-topline" aria-hidden="true">
       <span>{projectLabel}</span>
@@ -145,89 +147,95 @@ const deferredPosters = await Promise.all(
         <span data-carousel-caption>{slides[0].caption}</span>
       </div>
       <div class="carousel-media-controls">
-        {hasMultiple && (
-          <>
-            <button
-              type="button"
-              class="carousel-round-button"
-              data-carousel-prev
-              aria-label="Previous view"
-            >
-              <svg
-                aria-hidden="true"
-                width="18"
-                height="18"
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.75"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+        {
+          hasMultiple && (
+            <>
+              <button
+                type="button"
+                class="carousel-round-button"
+                data-carousel-prev
+                aria-label="Previous view"
               >
-                <path d="M10 3 5 8l5 5" />
-              </svg>
-            </button>
-            <button
-              type="button"
-              class="carousel-round-button"
-              data-carousel-next
-              aria-label="Next view"
-            >
-              <svg
-                aria-hidden="true"
-                width="18"
-                height="18"
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.75"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+                <svg
+                  aria-hidden="true"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.75"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M10 3 5 8l5 5" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="carousel-round-button"
+                data-carousel-next
+                aria-label="Next view"
               >
-                <path d="M6 3l5 5-5 5" />
-              </svg>
-            </button>
-          </>
-        )}
-        {hasVideo && (
-          <>
+                <svg
+                  aria-hidden="true"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.75"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M6 3l5 5-5 5" />
+                </svg>
+              </button>
+            </>
+          )
+        }
+        {
+          hasVideo && (
+            <>
+              <button
+                type="button"
+                class="carousel-round-button"
+                data-carousel-play
+                aria-label="Pause cinematic video"
+                aria-pressed="true"
+              >
+                <span data-play-icon aria-hidden="true">
+                  Ⅱ
+                </span>
+              </button>
+              <button
+                type="button"
+                class="carousel-round-button"
+                data-carousel-sound
+                aria-label="Turn sound on"
+                aria-pressed="false"
+              >
+                <span data-sound-icon aria-hidden="true">
+                  ♪
+                </span>
+              </button>
+            </>
+          )
+        }
+        {
+          hasMultiple && autoplayInterval !== false && (
             <button
               type="button"
               class="carousel-round-button"
-              data-carousel-play
-              aria-label="Pause cinematic video"
+              data-carousel-rotation
+              aria-label="Pause rotation"
               aria-pressed="true"
             >
-              <span data-play-icon aria-hidden="true">
-                Ⅱ
+              <span data-rotation-icon aria-hidden="true">
+                ❚❚
               </span>
             </button>
-            <button
-              type="button"
-              class="carousel-round-button"
-              data-carousel-sound
-              aria-label="Turn sound on"
-              aria-pressed="false"
-            >
-              <span data-sound-icon aria-hidden="true">
-                ♪
-              </span>
-            </button>
-          </>
-        )}
-        {hasMultiple && autoplayInterval !== false && (
-          <button
-            type="button"
-            class="carousel-round-button"
-            data-carousel-rotation
-            aria-label="Pause rotation"
-            aria-pressed="true"
-          >
-            <span data-rotation-icon aria-hidden="true">
-              ❚❚
-            </span>
-          </button>
-        )}
+          )
+        }
       </div>
     </div>
 
@@ -238,19 +246,21 @@ const deferredPosters = await Promise.all(
         aria-label="Choose a cinematic view"
         data-carousel-dots
       >
-        {slides.map((slide, index) => (
-          <button
-            type="button"
-            class:list={['carousel-dot', index === 0 && 'is-active']}
-            data-carousel-dot={index}
-            id={`carousel-tab-${slide.id}`}
-            role="tab"
-            aria-label={`Show ${slide.title}`}
-            aria-selected={index === 0 ? 'true' : 'false'}
-            aria-controls={`carousel-slide-${slide.id}`}
-            tabindex={index === 0 ? 0 : -1}
-          />
-        ))}
+        {
+          slides.map((slide, index) => (
+            <button
+              type="button"
+              class:list={['carousel-dot', index === 0 && 'is-active']}
+              data-carousel-dot={index}
+              id={`carousel-tab-${slide.id}`}
+              role="tab"
+              aria-label={`Show ${slide.title}`}
+              aria-selected={index === 0 ? 'true' : 'false'}
+              aria-controls={`carousel-slide-${slide.id}`}
+              tabindex={index === 0 ? 0 : -1}
+            />
+          ))
+        }
       </div>
     </div>
   </div>

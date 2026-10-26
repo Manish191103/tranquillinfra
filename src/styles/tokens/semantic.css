@@ -79,8 +79,8 @@
     Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
     'Segoe UI Symbol', 'Noto Color Emoji';
   --site-font-display:
-    var(--font-fraunces), 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, 'Times New Roman',
-    serif;
+    var(--font-fraunces), 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia,
+    'Times New Roman', serif;
   --site-font-mono:
     var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     'Liberation Mono', 'Courier New', monospace;

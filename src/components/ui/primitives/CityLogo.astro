@@ -1,0 +1,67 @@
+---
+/**
+ * CityLogo
+ *
+ * The Tranquill City project logo (emblem and wordmark), taken from the
+ * brochure cover. The client asked for it wherever the project is named as a
+ * title or label (2026-10-27); running prose keeps the plain name.
+ *
+ * `tone="light"` renders it in paper white for dark sections and image heroes.
+ * `variant="mark"` crops to the emblem alone, for tight spots beside a label.
+ */
+import { Image } from 'astro:assets';
+import logo from '~/assets/brand/tranquill-city-logo.png';
+
+interface Props {
+  /** Rendered height in CSS units */
+  height?: string;
+  tone?: 'brand' | 'light';
+  variant?: 'full' | 'mark';
+  class?: string;
+  /** Empty when the name is spelled out beside the logo */
+  alt?: string;
+}
+
+const {
+  height = '3.5rem',
+  tone = 'brand',
+  variant = 'full',
+  class: className,
+  alt = 'Tranquill City',
+} = Astro.props;
+---
+
+<span
+  class:list={['city-logo', `city-logo-${tone}`, `city-logo-${variant}`, className]}
+  style={`--h:${height}`}
+>
+  <Image src={logo} alt={alt} height={240} densities={[1, 2]} loading="lazy" decoding="async" />
+</span>
+
+<style>
+  .city-logo {
+    display: inline-block;
+    flex: none;
+    height: var(--h);
+    line-height: 0;
+  }
+
+  .city-logo img {
+    width: auto;
+    height: 100%;
+  }
+
+  /* The emblem is the top 64% of the artwork; the wordmark sits below it. */
+  .city-logo-mark {
+    overflow: hidden;
+    aspect-ratio: 283 / 200;
+  }
+
+  .city-logo-mark img {
+    height: calc(var(--h) / 0.64);
+  }
+
+  .city-logo-light img {
+    filter: brightness(0) invert(0.97) sepia(0.12);
+  }
+</style>

@@ -25,18 +25,20 @@ const { eyebrow, title, items } = Astro.props;
       </h2>
     </div>
 
-    <ul class="mt-10 grid gap-8 md:grid-cols-2 md:gap-10">
-      {items.map((item) => (
-        <li class="border-border-invert flex gap-4 border-t pt-6">
-          <span class="bg-surface-invert-secondary text-accent-ink flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
-            <Icon name={item.icon} size="md" />
-          </span>
-          <div>
-            <h3 class="display-xs text-on-invert">{item.title}</h3>
-            <p class="text-on-invert-secondary mt-2 text-sm leading-relaxed">{item.body}</p>
-          </div>
-        </li>
-      ))}
+    <ul class="mt-10 grid gap-8 md:grid-cols-2 md:gap-10" data-stagger>
+      {
+        items.map((item) => (
+          <li class="border-border-invert flex gap-4 border-t pt-6">
+            <span class="bg-surface-invert-secondary text-accent-ink flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
+              <Icon name={item.icon} size="md" />
+            </span>
+            <div>
+              <h3 class="display-xs text-on-invert">{item.title}</h3>
+              <p class="text-on-invert-secondary mt-2 text-sm leading-relaxed">{item.body}</p>
+            </div>
+          </li>
+        ))
+      }
     </ul>
   </div>
 </section>

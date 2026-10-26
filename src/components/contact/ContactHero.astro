@@ -79,22 +79,24 @@ const actionClasses: Record<NonNullable<ContactHeroAction['variant']>, string> =
   <p class="text-on-invert-secondary mt-5 max-w-[36rem] text-lg text-pretty">{intro}</p>
   <p class="text-on-invert mt-4 max-w-[36rem] text-sm text-pretty">{note}</p>
 
-  {actions.length > 0 && (
-    <ul class="mt-8 flex flex-wrap items-center gap-3">
-      {actions.map((action) => (
-        <li>
-          <Button
-            href={action.href}
-            variant={actionVariants[action.variant ?? 'quiet']}
-            size="lg"
-            data-track={action.track}
-            class={actionClasses[action.variant ?? 'quiet']}
-          >
-            <Icon name={action.icon} size="sm" />
-            {action.label}
-          </Button>
-        </li>
-      ))}
-    </ul>
-  )}
+  {
+    actions.length > 0 && (
+      <ul class="mt-8 flex flex-wrap items-center gap-3">
+        {actions.map((action) => (
+          <li>
+            <Button
+              href={action.href}
+              variant={actionVariants[action.variant ?? 'quiet']}
+              size="lg"
+              data-track={action.track}
+              class={actionClasses[action.variant ?? 'quiet']}
+            >
+              <Icon name={action.icon} size="sm" />
+              {action.label}
+            </Button>
+          </li>
+        ))}
+      </ul>
+    )
+  }
 </ImageHero>

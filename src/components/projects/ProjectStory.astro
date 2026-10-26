@@ -2,45 +2,32 @@
 /**
  * ProjectStory
  *
- * The opening prose beside the renders of the planned layout. Two columns at
- * desktop — the disclosure-heavy body copy on a fixed reading measure, the
- * renders stacked in the second column — and one column below that, where the
- * order is simply copy then pictures.
+ * "A place with space to grow", made visual (2026-10-27: the client found the
+ * section all text). Three parts, top to bottom:
  *
- * Why the gallery is a stack and not a rail: this entry publishes two images,
- * and a horizontal scroll-snap rail needs a third card before it has any
- * affordance to offer. With two, `w-[58%]` per card plus the gap is 116% of
- * the column, so the rail was permanently scrolled, the second card was sliced
- * by the column edge with the scrollbar hidden, and the grid row was as tall as
- * the prose beside it — which stretched every card into a plate with ~770px of
- * empty tray under a 242px image. A rail is the right pattern for six
- * testimonial clips (see ProjectTestimonials) and the wrong one for two
- * renders; a stack is correct for any count from one up, and only starts to
- * want a rail past about four.
+ * 1. The 3D view: the illustrative aerial render of the layout, as a proper
+ *    player. The hero only shows it as a blurred background loop; here it is
+ *    the subject, playing muted while on screen with a play/pause control.
+ * 2. From open land to homes: the five build-sequence renders of the same
+ *    outline, stepping on their own with a progress bar, or by tapping a stage.
+ * 3. The detail: the entry's disclosure prose, folded into a drawer so it is
+ *    one tap away rather than the first thing the visitor has to read, with the
+ *    two gallery renders beside it.
  *
- * The body copy renders through the shared <Prose> rather than a second,
- * component-local set of paragraph rules. Those local rules styled `p` but not
- * `a`, so with the global `a { color: inherit; text-decoration: none }` every
- * one of this section's nine inline links — the reference plan, the plot
- * verification guide, the HMDA explainer, the site visit — read as ordinary
- * body text. <Prose> is what makes a link look like a link, and it is already
- * the wrapper for every other Markdown body on the site.
- *
- * The disclosure note sits with the images it is about. It states that the
- * gallery renders are not photographs of completed construction, which is a
- * claim about these pictures; parked after the section it arrived ~1000px
- * below them, on the far side of the whole prose column.
- *
- * Cards after the first are inset toward the column edge rather than sharing
- * one left edge and one width. Two cards stacked flush reads as a component
- * that ran out of content; the stagger is the only asymmetry in the section
- * and it costs one class.
+ * Every picture here is a render, and the note under the media says so.
  */
-import { Picture } from 'astro:assets';
+import { Picture, getImage } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import type { AstroComponentFactory } from 'astro/runtime/server/index.js';
 import Prose from '~/components/patterns/Prose.astro';
 import SectionHeading from '~/components/patterns/SectionHeading.astro';
+import Icon from '~/components/ui/primitives/Icon/Icon.astro';
+import heroPoster from '~/assets/images/projects/tranquill-city/project-hero-poster.webp';
+import stage1 from '~/assets/images/projects/tranquill-city/build-sequence/01-ground.webp';
+import stage2 from '~/assets/images/projects/tranquill-city/build-sequence/02-trace.webp';
+import stage3 from '~/assets/images/projects/tranquill-city/build-sequence/03-connect.webp';
+import stage4 from '~/assets/images/projects/tranquill-city/build-sequence/04-grow.webp';
+import stage5 from '~/assets/images/projects/tranquill-city/build-sequence/05-belong.webp';
 
 interface Props {
   eyebrow: string;
@@ -49,69 +36,501 @@ interface Props {
   note: string;
   images: Array<{ image: ImageMetadata; alt: string; caption: string }>;
   Content: AstroComponentFactory;
+  video?: { src: string; mobileSrc?: string };
 }
 
-const { eyebrow, title, intro, note, images, Content } = Astro.props;
+const { eyebrow, title, intro, note, images, Content, video } = Astro.props;
 
-/*
- * The container is capped at 72rem with 1.5rem gutters and split in two, so the
- * gallery column never paints wider than ~524px however wide the viewport gets.
- * Stating that in px rather than in vw stops a 4K screen from pulling the 1280
- * candidate for a 524px slot.
- */
-const IMAGE_SIZES = '(min-width: 1024px) 524px, (min-width: 640px) 90vw, 92vw';
+const poster = await getImage({ src: heroPoster, width: 1280, format: 'webp' });
+
+const stages = [
+  { image: stage1, label: 'Open land', detail: 'The 4.8 acre site before development.' },
+  { image: stage2, label: 'Plots marked', detail: '82 plots traced on the approved layout.' },
+  { image: stage3, label: 'Roads in', detail: "40' and 33' CC roads connect every plot." },
+  { image: stage4, label: 'Green spaces', detail: 'Two parks and avenue plantation.' },
+  { image: stage5, label: 'Homes', detail: 'Villas built to each owner’s own plan.' },
+];
+
+const SIZES = '(min-width: 1152px) 1104px, 94vw';
 ---
 
-<section class="section mx-auto max-w-6xl px-6" aria-labelledby="project-story-title">
+<section class="section story mx-auto max-w-6xl px-6" aria-labelledby="project-story-title">
   <SectionHeading eyebrow={eyebrow} title={title} intro={intro} id="project-story-title" />
 
-  {/*
-    `items-start` is load-bearing, not a nicety: without it the row takes the
-    prose column's height and the cards below stretch into it, which is where
-    the dead tray space came from.
-
-    Equal columns, not 0.8/1.2. The copy is five paragraphs of disclosure prose
-    — it is the substance of the section, not a caption for the pictures — and
-    at 0.8fr it measured 419px, about 52 characters a line. Half the container
-    is ~524px, roughly 65 characters, which is the width this body copy is
-    meant to be read at.
-  */}
-  <div class="mt-10 grid items-start gap-10 lg:mt-14 lg:grid-cols-2 lg:gap-14">
-    <Prose class="project-story max-w-[34rem]">
-      <Content />
-    </Prose>
-
-    <div data-story-gallery class="flex flex-col gap-8 lg:gap-10">
-      {images.map((item, index) => (
-        <figure
-          class:list={['shell lift', index > 0 ? 'reveal-2 lg:ml-auto lg:w-[88%]' : 'reveal']}
+  {
+    video && (
+      <figure class="story-video reveal" data-story-video>
+        <video
+          muted
+          loop
+          playsinline
+          preload="none"
+          poster={poster.src}
+          aria-label="Illustrative 3D aerial render of the Tranquill City layout"
         >
-          <div class="shell-core overflow-hidden">
-            {/*
-             * 3:2, not 16:9. Both sources are 16:9, so this crops about a sixth
-             * of the width off the sides — which is what brings the stacked
-             * column up to roughly the height of the prose beside it. 4:3
-             * would balance the columns better still and cost too much: the
-             * aerial carries its landmark pins across the top of the frame,
-             * and a 4:3 crop of a 16:9 image cuts the outer two.
-             */}
-            <Picture
-              src={item.image}
-              alt={item.alt}
-              widths={[480, 640, 960, 1280]}
-              sizes={IMAGE_SIZES}
-              fallbackFormat="webp"
-              formats={['avif', 'webp']}
-              class="aspect-[3/2] w-full object-cover"
-            />
-          </div>
-          <figcaption class="text-foreground-subtle mt-3 px-1 text-sm text-pretty">
-            {item.caption}
-          </figcaption>
-        </figure>
-      ))}
+          {video.mobileSrc && (
+            <source src={video.mobileSrc} type="video/mp4" media="(max-width: 42rem)" />
+          )}
+          <source src={video.src} type="video/mp4" />
+        </video>
+        <figcaption class="story-video-bar">
+          <span class="story-chip">
+            <Icon name="layers" size="xs" /> 3D view · illustrative render
+          </span>
+          <button type="button" class="story-play" data-story-play aria-label="Pause the 3D view">
+            <span data-icon-pause>
+              <Icon name="pause" size="sm" />
+            </span>
+            <span data-icon-play hidden>
+              <Icon name="play" size="sm" />
+            </span>
+          </button>
+        </figcaption>
+      </figure>
+    )
+  }
 
-      <p class="text-foreground-subtle reveal-3 max-w-[34rem] text-sm text-pretty">{note}</p>
+  <div class="stages reveal-2" data-stages>
+    <div class="stages-frame">
+      {
+        stages.map((stage, i) => (
+          <Picture
+            src={stage.image}
+            alt={`Illustrative render, stage ${i + 1} of 5: ${stage.label.toLowerCase()}`}
+            widths={[640, 960, 1280]}
+            sizes={SIZES}
+            formats={['avif', 'webp']}
+            fallbackFormat="webp"
+            loading="lazy"
+            class:list={['stage-img', i === 0 && 'is-on']}
+            data-stage-img={i}
+          />
+        ))
+      }
+      <p class="stages-caption" aria-live="polite">
+        <b data-stage-label>{stages[0]!.label}</b>
+        <span data-stage-detail>{stages[0]!.detail}</span>
+      </p>
     </div>
+    <ol class="stages-steps" role="list">
+      {
+        stages.map((stage, i) => (
+          <li>
+            <button
+              type="button"
+              class:list={['stage-btn', i === 0 && 'is-on']}
+              data-stage-btn={i}
+              data-label={stage.label}
+              data-detail={stage.detail}
+              aria-pressed={i === 0 ? 'true' : 'false'}
+            >
+              <span class="stage-no">{String(i + 1).padStart(2, '0')}</span>
+              <span class="stage-name">{stage.label}</span>
+              <span class="stage-bar">
+                <i />
+              </span>
+            </button>
+          </li>
+        ))
+      }
+    </ol>
   </div>
+
+  <p class="text-foreground-subtle mt-4 text-sm text-pretty">{note}</p>
+
+  <details class="story-detail reveal-3">
+    <summary>
+      <span>Read the detail</span>
+      <Icon name="chevron-down" size="sm" />
+    </summary>
+    <div class="story-detail-body">
+      <Prose class="project-story max-w-[34rem]">
+        <Content />
+      </Prose>
+      <div class="story-thumbs" data-stagger>
+        {
+          images.map((item) => (
+            <figure>
+              <Picture
+                src={item.image}
+                alt={item.alt}
+                widths={[480, 640]}
+                sizes="(min-width: 1024px) 26rem, 90vw"
+                formats={['avif', 'webp']}
+                fallbackFormat="webp"
+                loading="lazy"
+                class="aspect-[3/2] w-full rounded-2xl object-cover"
+              />
+              <figcaption class="text-foreground-subtle mt-2 text-sm">{item.caption}</figcaption>
+            </figure>
+          ))
+        }
+      </div>
+    </div>
+  </details>
 </section>
+
+<script>
+  function mountStory(): void {
+    // 3D view: plays muted only while on screen; the button pauses it for good.
+    document.querySelectorAll<HTMLElement>('[data-story-video]').forEach((root) => {
+      if (root.dataset.init) return;
+      root.dataset.init = '1';
+      const video = root.querySelector('video');
+      const button = root.querySelector<HTMLButtonElement>('[data-story-play]');
+      if (!video || !button) return;
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let userPaused = reduce;
+      const sync = () => {
+        const paused = video.paused;
+        button.querySelector<HTMLElement>('[data-icon-pause]')!.hidden = paused;
+        button.querySelector<HTMLElement>('[data-icon-play]')!.hidden = !paused;
+        button.setAttribute('aria-label', paused ? 'Play the 3D view' : 'Pause the 3D view');
+      };
+      video.addEventListener('play', sync);
+      video.addEventListener('pause', sync);
+      button.addEventListener('click', () => {
+        if (video.paused) {
+          userPaused = false;
+          void video.play().catch(() => {});
+        } else {
+          userPaused = true;
+          video.pause();
+        }
+      });
+      new IntersectionObserver(
+        ([entry]) => {
+          if (entry?.isIntersecting && !userPaused) void video.play().catch(() => {});
+          else if (!entry?.isIntersecting) video.pause();
+        },
+        { threshold: 0.35 }
+      ).observe(root);
+      sync();
+    });
+
+    // Stages: advance every few seconds while in view; a tap jumps and holds.
+    document.querySelectorAll<HTMLElement>('[data-stages]').forEach((root) => {
+      if (root.dataset.init) return;
+      root.dataset.init = '1';
+      const imgs = [...root.querySelectorAll<HTMLElement>('[data-stage-img]')];
+      const btns = [...root.querySelectorAll<HTMLButtonElement>('[data-stage-btn]')];
+      const label = root.querySelector('[data-stage-label]');
+      const detail = root.querySelector('[data-stage-detail]');
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let current = 0;
+      let timer = 0;
+      let held = reduce;
+      const show = (i: number) => {
+        current = i;
+        imgs.forEach((img, n) => img.classList.toggle('is-on', n === i));
+        btns.forEach((btn, n) => {
+          btn.classList.toggle('is-on', n === i);
+          btn.classList.toggle('is-done', n < i);
+          btn.setAttribute('aria-pressed', String(n === i));
+        });
+        if (label) label.textContent = btns[i]!.dataset.label ?? '';
+        if (detail) detail.textContent = btns[i]!.dataset.detail ?? '';
+      };
+      const run = () => {
+        window.clearInterval(timer);
+        if (held) return;
+        root.classList.add('is-playing');
+        timer = window.setInterval(() => show((current + 1) % imgs.length), 3200);
+      };
+      btns.forEach((btn, i) =>
+        btn.addEventListener('click', () => {
+          held = true;
+          root.classList.remove('is-playing');
+          window.clearInterval(timer);
+          show(i);
+        })
+      );
+      new IntersectionObserver(
+        ([entry]) => {
+          if (entry?.isIntersecting) run();
+          else {
+            window.clearInterval(timer);
+            root.classList.remove('is-playing');
+          }
+        },
+        { threshold: 0.4 }
+      ).observe(root);
+    });
+  }
+
+  mountStory();
+  document.addEventListener('astro:page-load', mountStory);
+</script>
+
+<style>
+  /* 3D view */
+  .story-video {
+    position: relative;
+    overflow: hidden;
+    margin-top: clamp(2rem, 4vw, 3rem);
+    border-radius: var(--radius-shell);
+    background: #111;
+    box-shadow: var(--site-shadow-lg);
+  }
+
+  .story-video video {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+
+  .story-video-bar {
+    position: absolute;
+    inset: auto 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.1rem;
+    background: linear-gradient(transparent, rgb(0 0 0 / 55%));
+  }
+
+  .story-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    background: rgb(0 0 0 / 45%);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  .story-play {
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--color-accent);
+    color: var(--color-accent-foreground);
+    transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .story-play:hover {
+    transform: scale(1.1);
+  }
+
+  .story-play [hidden] {
+    display: none;
+  }
+
+  /* Stages */
+  .stages {
+    margin-top: clamp(1.5rem, 3vw, 2rem);
+  }
+
+  .stages-frame {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-shell);
+    aspect-ratio: 16 / 9;
+    background: #2a2a24;
+    box-shadow: var(--site-shadow-md);
+  }
+
+  .stages-frame :global(.stage-img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transform: scale(1.06);
+    transition:
+      opacity 900ms ease,
+      transform 3600ms ease-out;
+  }
+
+  .stages-frame :global(.stage-img.is-on) {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .stages-caption {
+    position: absolute;
+    left: 1rem;
+    bottom: 1rem;
+    display: grid;
+    gap: 0.15rem;
+    max-width: calc(100% - 2rem);
+    padding: 0.7rem 1rem;
+    border-radius: 1rem;
+    background: rgb(15 30 22 / 72%);
+    backdrop-filter: blur(10px);
+    color: #fff;
+  }
+
+  .stages-caption b {
+    color: var(--color-accent);
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 400;
+  }
+
+  .stages-caption span {
+    font-size: 0.85rem;
+    opacity: 0.85;
+  }
+
+  .stages-steps {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .stage-btn {
+    display: grid;
+    width: 100%;
+    gap: 0.25rem;
+    padding: 0.6rem 0.2rem 0.4rem;
+    text-align: left;
+    color: var(--color-foreground-muted);
+    transition: color 250ms ease;
+  }
+
+  .stage-btn:hover,
+  .stage-btn.is-on {
+    color: var(--color-foreground);
+  }
+
+  .stage-no {
+    color: var(--color-accent-ink);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+  }
+
+  .stage-name {
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  .stage-bar {
+    position: relative;
+    overflow: hidden;
+    height: 3px;
+    margin-top: 0.3rem;
+    border-radius: 3px;
+    background: var(--color-border);
+  }
+
+  .stage-bar i {
+    position: absolute;
+    inset: 0;
+    background: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  .stage-btn.is-done .stage-bar i {
+    transform: scaleX(1);
+  }
+
+  .stage-btn.is-on .stage-bar i {
+    transform: scaleX(1);
+  }
+
+  .is-playing .stage-btn.is-on .stage-bar i {
+    animation: stage-fill 3200ms linear;
+  }
+
+  @keyframes stage-fill {
+    from {
+      transform: scaleX(0);
+    }
+
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  /* Detail drawer */
+  .story-detail {
+    margin-top: clamp(1.75rem, 4vw, 2.5rem);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .story-detail summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-block: 1.1rem;
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    list-style: none;
+  }
+
+  .story-detail summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .story-detail summary :global(svg) {
+    transition: transform 300ms ease;
+  }
+
+  .story-detail[open] summary :global(svg) {
+    transform: rotate(180deg);
+  }
+
+  .story-detail-body {
+    display: grid;
+    gap: 2rem;
+    padding-bottom: 1rem;
+  }
+
+  .story-thumbs {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  @media (min-width: 64rem) {
+    .story-detail-body {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr);
+      gap: 3.5rem;
+    }
+  }
+
+  @media (max-width: 42rem) {
+    .story-video video {
+      aspect-ratio: 4 / 5;
+    }
+
+    .stages-frame {
+      aspect-ratio: 4 / 3;
+    }
+
+    .stage-name {
+      font-size: 0.72rem;
+    }
+
+    .stages-steps {
+      gap: 0.3rem;
+    }
+
+    .stages-caption b {
+      font-size: 1.1rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stages-frame :global(.stage-img) {
+      transition: opacity 200ms ease;
+      transform: none;
+    }
+
+    .is-playing .stage-btn.is-on .stage-bar i {
+      animation: none;
+    }
+  }
+</style>

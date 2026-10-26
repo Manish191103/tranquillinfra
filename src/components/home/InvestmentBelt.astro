@@ -30,28 +30,32 @@ const { eyebrow, title, intro, stat, pillars } = Astro.props;
       <p class="text-foreground-muted reveal-3 mt-6 max-w-[52ch] text-lg text-pretty">{intro}</p>
     </header>
 
-    {/*
-     * The stat and the pillars share one shell. Wrapping them together rather
-     * than styling each separately is what makes the band read as a single
-     * machined plate: the pillars sit inside the same bezel as the prose above
-     * them instead of floating as loose chips on a page-coloured field.
-     */}
+    {
+      /*
+       * The stat and the pillars share one shell. Wrapping them together rather
+       * than styling each separately is what makes the band read as a single
+       * machined plate: the pillars sit inside the same bezel as the prose above
+       * them instead of floating as loose chips on a page-coloured field.
+       */
+    }
     <div class="home-investment-body shell reveal-4">
       <div class="shell-core">
         {stat && <p class="investment-stat" set:html={stat} />}
 
-        {pillars.length > 0 && (
-          <ul class="investment-pillars" aria-label="Our commitments">
-            {pillars.map((pillar) => (
-              /*
-               * Each pillar is a well inside the plate — a slightly darker
-               * concave depression, not a bordered chip. The inset shadow is
-               * what sells it as pressed into the surface rather than stuck on.
-               */
-              <li class="investment-pillar">{pillar}</li>
-            ))}
-          </ul>
-        )}
+        {
+          pillars.length > 0 && (
+            <ul class="investment-pillars" aria-label="Our commitments">
+              {pillars.map((pillar) => (
+                /*
+                 * Each pillar is a well inside the plate — a slightly darker
+                 * concave depression, not a bordered chip. The inset shadow is
+                 * what sells it as pressed into the surface rather than stuck on.
+                 */
+                <li class="investment-pillar">{pillar}</li>
+              ))}
+            </ul>
+          )
+        }
       </div>
     </div>
   </div>

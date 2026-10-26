@@ -23,13 +23,15 @@ const textareaStyles = cn(
 ---
 
 <div class={cn('space-y-1.5', className)}>
-  {label && (
-    /* Explicit, not inherited — see the note in Input.astro: the control paints
+  {
+    label && (
+      /* Explicit, not inherited — see the note in Input.astro: the control paints
        the light-surface ramp, so the label has to as well. */
-    <label for={textareaId} class="text-foreground text-sm leading-none font-medium">
-      {label}
-    </label>
-  )}
+      <label for={textareaId} class="text-foreground text-sm leading-none font-medium">
+        {label}
+      </label>
+    )
+  }
 
   <textarea
     id={textareaId}
@@ -37,18 +39,21 @@ const textareaStyles = cn(
     rows={rows}
     aria-invalid={error ? 'true' : undefined}
     aria-describedby={error ? `${textareaId}-error` : hint ? `${textareaId}-hint` : undefined}
-    {...attrs}
-  ></textarea>
+    {...attrs}></textarea>
 
-  {error && (
-    <p id={`${textareaId}-error`} class="text-destructive text-sm">
-      {error}
-    </p>
-  )}
+  {
+    error && (
+      <p id={`${textareaId}-error`} class="text-destructive text-sm">
+        {error}
+      </p>
+    )
+  }
 
-  {hint && !error && (
-    <p id={`${textareaId}-hint`} class="text-muted-foreground text-sm">
-      {hint}
-    </p>
-  )}
+  {
+    hint && !error && (
+      <p id={`${textareaId}-hint`} class="text-muted-foreground text-sm">
+        {hint}
+      </p>
+    )
+  }
 </div>

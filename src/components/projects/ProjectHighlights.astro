@@ -11,6 +11,7 @@
  * `variant="compact"` renders only the figures, as a band with a link to the
  * project page — for pages whose subject is not the project.
  */
+import CityLogo from '~/components/ui/primitives/CityLogo.astro';
 import Icon from '~/components/ui/primitives/Icon/Icon.astro';
 import SectionHeading from '~/components/patterns/SectionHeading.astro';
 import {
@@ -57,7 +58,8 @@ const headingId = `${id}-title`;
     >
       <div class="mx-auto max-w-6xl px-6 py-10 md:py-12">
         <div class="flex flex-wrap items-end justify-between gap-4">
-          <h2 id={headingId} class="display-xs">
+          <h2 id={headingId} class="display-xs inline-flex items-center gap-3">
+            <CityLogo variant="mark" height="2rem" alt="" />
             Tranquill City highlights
           </h2>
           <a
@@ -69,12 +71,12 @@ const headingId = `${id}-title`;
             <Icon name="arrow-up-right" size="xs" />
           </a>
         </div>
-        <dl class="figure-grid figure-grid-compact mt-6">
+        <dl class="figure-grid figure-grid-compact mt-6" data-stagger>
           {highlightFigures.map((figure) => (
             <div class="figure">
               <dt class="figure-label">{figure.label}</dt>
               <dd class="figure-value">
-                {figure.value}
+                <span data-count>{figure.value}</span>
                 {figure.unit && <span class="figure-unit">{figure.unit}</span>}
               </dd>
             </div>
@@ -88,13 +90,13 @@ const headingId = `${id}-title`;
         <SectionHeading eyebrow={eyebrow} title={title} intro={intro} id={headingId} />
 
         {showFigures && (
-          <dl class="figure-grid mt-12">
+          <dl class="figure-grid mt-12" data-stagger data-lift>
             {highlightFigures.map((figure, index) => (
               <div class:list={['figure figure-card', index === 0 && 'figure-card-lead']}>
                 <dt class="figure-label">{figure.label}</dt>
                 <dd>
                   <span class="figure-value">
-                    {figure.value}
+                    <span data-count>{figure.value}</span>
                     {figure.unit && <span class="figure-unit">{figure.unit}</span>}
                   </span>
                   <span class="figure-detail">{figure.detail}</span>
@@ -147,7 +149,7 @@ const headingId = `${id}-title`;
         {showFeatures && (
           <div class="mt-16">
             <h3 class="display-sm">Layout features</h3>
-            <ul class="feature-grid mt-8">
+            <ul class="feature-grid mt-8" data-stagger>
               {layoutFeatures.map((feature) => (
                 <li class="feature">
                   <span class="feature-icon" aria-hidden="true">

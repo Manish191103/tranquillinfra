@@ -43,47 +43,51 @@ const { eyebrow, title, intro, steps } = Astro.props;
       <p class="text-foreground-muted reveal-3 mt-6 max-w-[46ch] text-lg text-pretty">{intro}</p>
     </header>
 
-    {/*
-     * Asymmetric bento: one large plate spanning two rows on the left, two
-     * stacked plates on the right. The asymmetry is doing real work — it
-     * ranks the three steps by prominence without an "featured" flag, and it
-     * gives every card a width at least half the container so a display heading
-     * never breaks into a three-line stack.
-     */}
+    {
+      /*
+       * Asymmetric bento: one large plate spanning two rows on the left, two
+       * stacked plates on the right. The asymmetry is doing real work — it
+       * ranks the three steps by prominence without an "featured" flag, and it
+       * gives every card a width at least half the container so a display heading
+       * never breaks into a three-line stack.
+       */
+    }
     <div class="steps-grid">
-      {steps.map((step, index) => (
-        <article class:list={['shell', 'step-card', index === 0 && 'step-card-lead']}>
-          <div class="shell-core step-core">
-            <span
-              class:list={['step-number', index === 0 && 'step-number-mark']}
-              aria-hidden="true"
-            >
-              {String(index + 1).padStart(2, '0')}
-            </span>
-            <h3 class="display-sm">{step.title}</h3>
-            <p class="text-foreground-muted mt-4 max-w-[46ch] text-pretty">{step.body}</p>
-            {step.link && (
-              /*
-               * `mt-auto` pins the link to the bottom of the plate. Without it
-               * the tall lead card ends in a pool of empty paper, because the
-               * grid makes all three plates the height of the tallest content.
-               */
-              <a
-                class="cta cta-ghost link-arrow text-foreground hover:text-accent-ink focus-visible:text-accent-ink mt-auto pt-8"
-                href={step.link.href}
-                data-track={step.link.track}
-                data-dialog-trigger={step.link.dialog}
-                data-dialog-request-type={step.link.dialog ? step.link.requestType : undefined}
+      {
+        steps.map((step, index) => (
+          <article class:list={['shell', 'step-card', index === 0 && 'step-card-lead']}>
+            <div class="shell-core step-core">
+              <span
+                class:list={['step-number', index === 0 && 'step-number-mark']}
+                aria-hidden="true"
               >
-                <span class="cta-label">{step.link.label}</span>
-                <span class="cta-icon" aria-hidden="true">
-                  <Icon name="arrow-up-right" size="sm" class="link-arrow-icon" />
-                </span>
-              </a>
-            )}
-          </div>
-        </article>
-      ))}
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <h3 class="display-sm">{step.title}</h3>
+              <p class="text-foreground-muted mt-4 max-w-[46ch] text-pretty">{step.body}</p>
+              {step.link && (
+                /*
+                 * `mt-auto` pins the link to the bottom of the plate. Without it
+                 * the tall lead card ends in a pool of empty paper, because the
+                 * grid makes all three plates the height of the tallest content.
+                 */
+                <a
+                  class="cta cta-ghost link-arrow text-foreground hover:text-accent-ink focus-visible:text-accent-ink mt-auto pt-8"
+                  href={step.link.href}
+                  data-track={step.link.track}
+                  data-dialog-trigger={step.link.dialog}
+                  data-dialog-request-type={step.link.dialog ? step.link.requestType : undefined}
+                >
+                  <span class="cta-label">{step.link.label}</span>
+                  <span class="cta-icon" aria-hidden="true">
+                    <Icon name="arrow-up-right" size="sm" class="link-arrow-icon" />
+                  </span>
+                </a>
+              )}
+            </div>
+          </article>
+        ))
+      }
     </div>
   </div>
 </section>

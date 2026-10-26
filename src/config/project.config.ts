@@ -255,7 +255,10 @@ const hmda: ProjectFactRow = {
 export function projectProofPoints(): ProjectFactRow[] {
   return [
     { label: 'Plot sizes', value: projectConfig.plotSizes },
-    { label: 'Plots available', value: `${projectConfig.availability.saleable} of ${projectConfig.availability.total}` },
+    {
+      label: 'Plots available',
+      value: `${projectConfig.availability.saleable} of ${projectConfig.availability.total}`,
+    },
     { label: 'Entry price', value: projectConfig.price.display },
     { label: 'Project type', value: projectConfig.projectType },
   ];

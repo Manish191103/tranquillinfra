@@ -40,13 +40,15 @@ const selectStyles = cn(
 ---
 
 <div class={cn('space-y-1.5', className)}>
-  {label && (
-    /* Explicit, not inherited — see the note in Input.astro: the control paints
+  {
+    label && (
+      /* Explicit, not inherited — see the note in Input.astro: the control paints
        the light-surface ramp, so the label has to as well. */
-    <label for={selectId} class="text-foreground text-sm leading-none font-medium">
-      {label}
-    </label>
-  )}
+      <label for={selectId} class="text-foreground text-sm leading-none font-medium">
+        {label}
+      </label>
+    )
+  }
 
   <div class="relative">
     <select
@@ -56,16 +58,20 @@ const selectStyles = cn(
       aria-describedby={error ? `${selectId}-error` : hint ? `${selectId}-hint` : undefined}
       {...attrs}
     >
-      {placeholder && (
-        <option value="" disabled selected>
-          {placeholder}
-        </option>
-      )}
-      {options.map((option) => (
-        <option value={option.value} disabled={option.disabled}>
-          {option.label}
-        </option>
-      ))}
+      {
+        placeholder && (
+          <option value="" disabled selected>
+            {placeholder}
+          </option>
+        )
+      }
+      {
+        options.map((option) => (
+          <option value={option.value} disabled={option.disabled}>
+            {option.label}
+          </option>
+        ))
+      }
     </select>
 
     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
@@ -79,21 +85,24 @@ const selectStyles = cn(
         <path
           fill-rule="evenodd"
           d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-          clip-rule="evenodd"
-        ></path>
+          clip-rule="evenodd"></path>
       </svg>
     </div>
   </div>
 
-  {error && (
-    <p id={`${selectId}-error`} class="text-destructive text-sm">
-      {error}
-    </p>
-  )}
+  {
+    error && (
+      <p id={`${selectId}-error`} class="text-destructive text-sm">
+        {error}
+      </p>
+    )
+  }
 
-  {hint && !error && (
-    <p id={`${selectId}-hint`} class="text-muted-foreground text-sm">
-      {hint}
-    </p>
-  )}
+  {
+    hint && !error && (
+      <p id={`${selectId}-hint`} class="text-muted-foreground text-sm">
+        {hint}
+      </p>
+    )
+  }
 </div>

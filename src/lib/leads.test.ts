@@ -29,9 +29,9 @@ describe('enquiry subject', () => {
   });
 
   it('carries the visit date in the site-visit subject, formatted in UTC', () => {
-    expect(enquirySubject({ name: 'Asha', requestType: 'site_visit', visitDate: '2026-03-07' })).toBe(
-      'Site visit request: Asha — visiting Sat, 7 Mar, 2026'
-    );
+    expect(
+      enquirySubject({ name: 'Asha', requestType: 'site_visit', visitDate: '2026-03-07' })
+    ).toBe('Site visit request: Asha — visiting Sat, 7 Mar, 2026');
   });
 });
 

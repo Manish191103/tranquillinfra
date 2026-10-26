@@ -11,6 +11,7 @@
  * reads as the same object family as the hero's — the visitor should recognise
  * it without reading it.
  */
+import CityLogo from '~/components/ui/primitives/CityLogo.astro';
 import Button from '~/components/ui/form/Button/Button.astro';
 import { SITE_VISIT_CTA_LABEL, type EnquiryRequestType } from '~/lib/enquiry-cta';
 
@@ -47,14 +48,19 @@ const {
 
 <div class="home-cta mx-auto max-w-6xl px-6 py-[var(--space-section-xl)]">
   <aside class="invert-section shell">
-    <div class="shell-core flex flex-col items-start gap-8 p-6 sm:p-10 lg:flex-row lg:items-center lg:justify-between lg:gap-16 lg:p-14">
+    <div
+      class="shell-core flex flex-col items-start gap-8 p-6 sm:p-10 lg:flex-row lg:items-center lg:justify-between lg:gap-16 lg:p-14"
+    >
       <div class="reveal">
+        <CityLogo tone="light" height="4rem" class="mb-5" />
         <h2 class="display-lg text-on-invert max-w-[18ch]">{title}</h2>
-        {body && (
-          <p class="text-on-invert-secondary reveal-2 mt-6 max-w-[34rem] text-lg text-pretty">
-            {body}
-          </p>
-        )}
+        {
+          body && (
+            <p class="text-on-invert-secondary reveal-2 mt-6 max-w-[34rem] text-lg text-pretty">
+              {body}
+            </p>
+          )
+        }
       </div>
       <Button
         href={href}

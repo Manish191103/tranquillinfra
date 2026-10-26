@@ -70,7 +70,7 @@ const { stats, label = 'Tranquill City at a glance', id = 'project-stats' } = As
                   <Icon name="external-link" size="sm" />
                 </a>
               ) : (
-                stat.value
+                <span data-count>{stat.value}</span>
               )}
             </dd>
           </div>

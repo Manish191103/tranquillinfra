@@ -15,6 +15,9 @@
  * Under a pointer each place opens up: the dot grows and turns gold, a ring
  * ripples out from it, the label scales up, and the other pins recede.
  */
+import { getImage } from 'astro:assets';
+import cityLogo from '~/assets/brand/tranquill-city-logo.png';
+
 interface Props {
   id: string;
   focus?: 'all' | 'site' | 'roads' | 'work' | 'learn';
@@ -22,6 +25,9 @@ interface Props {
 }
 
 const { id, focus = 'all', class: className } = Astro.props;
+
+// The Tranquill City emblem on the site tag.
+const logo = await getImage({ src: cityLogo, height: 160, format: 'png' });
 
 type Category = 'roads' | 'work' | 'learn' | 'place';
 type Pin = {
@@ -186,9 +192,13 @@ const orr = 'M190 1140 A262 225 0 0 1 714 1140';
 
   {/* The site */}
   <g class="site">
-    <rect x="516" y="548" width="196" height="46" rx="10" class="site-halo"></rect>
-    <rect x="516" y="548" width="196" height="46" rx="10" class="site-tag"></rect>
-    <text x="614" y="579" text-anchor="middle" class="site-text">TRANQUILL CITY</text>
+    <rect x="500" y="546" width="262" height="50" rx="12" class="site-halo"></rect>
+    <rect x="500" y="546" width="262" height="50" rx="12" class="site-tag"></rect>
+    {/* Emblem only: the artwork's top 64%, cropped by the nested viewport */}
+    <svg x="506" y="549" width="62" height="44" viewBox="0 0 283 200">
+      <image href={logo.src} width="283" height="313" class="site-logo" />
+    </svg>
+    <text x="666" y="579" text-anchor="middle" class="site-text">TRANQUILL CITY</text>
   </g>
   <text x="30" y="1345" class="note">Schematic · not to scale</text>
 </svg>
@@ -397,6 +407,10 @@ const orr = 'M190 1140 A262 225 0 0 1 714 1140';
 
   .site-tag {
     fill: #b0157e;
+  }
+
+  .site-logo {
+    filter: brightness(0) invert(1);
   }
 
   .site-text {

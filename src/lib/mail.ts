@@ -502,7 +502,7 @@ async function sendBrochureEmail({
 <p style="margin:0 0 16px;">${escapeHtml(greeting)}</p>
 <p style="margin:0 0 8px;">
   Thank you for your interest in <b>Tranquill City, Mamidipally</b>. The latest project
-  brochure is ready — every plot, price and approval document inside.
+  brochure is ready, with every plot, price and approval document inside.
 </p>
 ${emailHeroButton({ href: brochureUrl, label: 'Download the brochure' })}
 ${emailFacts([
@@ -526,7 +526,7 @@ ${emailActionRow([
 ${emailSignature()}`;
 
   const html = emailShell({
-    preheader: `Your brochure is ready — plots from ₹48 lakh, with the approval documents inside.`,
+    preheader: `Your brochure is ready: plots from ₹48 lakh, with the approval documents inside.`,
     body,
     footnote: `You received this email because a brochure was requested on <a href="${escapeHtml(
       emailUrl('/')
@@ -635,8 +635,8 @@ ${emailSignature()}`;
 
   const html = emailShell({
     preheader: siteVisit
-      ? 'We have your site-visit request — a team member will call you to confirm.'
-      : 'We have your enquiry — call, WhatsApp or book a site visit in one tap.',
+      ? 'We have your site-visit request. A team member will call you to confirm.'
+      : 'We have your enquiry. Call, WhatsApp or book a site visit in one tap.',
     body,
     footnote: `You received this email because you submitted an enquiry on <a href="${escapeHtml(
       emailUrl('/')
@@ -646,8 +646,8 @@ ${emailSignature()}`;
   await sendEmail({
     to,
     subject: siteVisit
-      ? 'We received your site visit request — Tranquill Infra'
-      : 'We received your enquiry — Tranquill Infra',
+      ? 'We received your site visit request | Tranquill Infra'
+      : 'We received your enquiry | Tranquill Infra',
     text,
     html,
     replyTo: CONTACT_TO_EMAIL || contact.email,

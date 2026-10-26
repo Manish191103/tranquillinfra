@@ -101,7 +101,9 @@ describe('lead destinations', () => {
     ).toHaveLength(1);
     // But a different kind with the same id is its own lead.
     expect(
-      gtag.mock.calls.filter(([command, name]) => command === 'event' && name === 'newsletter_signup')
+      gtag.mock.calls.filter(
+        ([command, name]) => command === 'event' && name === 'newsletter_signup'
+      )
     ).toHaveLength(1);
     // One Meta event per fired lead.
     expect(metaTrack).toHaveBeenCalledTimes(2);

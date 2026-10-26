@@ -127,26 +127,30 @@ const telHref = siteConfig.phoneE164 ? `tel:${siteConfig.phoneE164}` : undefined
   >
     <p class="font-semibold">Need help with your request? Reach the sales desk directly:</p>
     <ul class="space-y-1">
-      {telHref && siteConfig.phone && (
-        <li>
-          <a href={telHref} data-track="phone" class="underline underline-offset-2">
-            {PHONE_CTA_LABEL}: {siteConfig.phone}
-          </a>
-        </li>
-      )}
-      {siteConfig.whatsapp && (
-        <li>
-          <a
-            href={siteConfig.whatsapp}
-            data-track="whatsapp"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="underline underline-offset-2"
-          >
-            {WHATSAPP_CTA_LABEL}
-          </a>
-        </li>
-      )}
+      {
+        telHref && siteConfig.phone && (
+          <li>
+            <a href={telHref} data-track="phone" class="underline underline-offset-2">
+              {PHONE_CTA_LABEL}: {siteConfig.phone}
+            </a>
+          </li>
+        )
+      }
+      {
+        siteConfig.whatsapp && (
+          <li>
+            <a
+              href={siteConfig.whatsapp}
+              data-track="whatsapp"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="underline underline-offset-2"
+            >
+              {WHATSAPP_CTA_LABEL}
+            </a>
+          </li>
+        )
+      }
     </ul>
   </div>
 

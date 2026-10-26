@@ -40,10 +40,11 @@ const sizes = {
 >
   <!-- Backdrop -->
   <div
-    class="bg-foreground/50 fixed inset-0 opacity-0 backdrop-blur-sm transition-opacity duration-base ease-quint"
+    class="bg-foreground/50 duration-base ease-quint fixed inset-0 opacity-0 backdrop-blur-sm transition-opacity"
     data-dialog-backdrop
     aria-hidden="true"
-  ></div>
+  >
+  </div>
 
   <!-- Dialog Panel. The scroll container centers with `my-auto` on the panel,
        not `items-center` on the container: an item taller than the viewport
@@ -76,40 +77,42 @@ const sizes = {
       </button>
 
       <!-- Header -->
-      {(title || description) && (
-        <div class="p-6 pb-0">
-          {title && (
-            /*
-             * A real `<h2>`, not `<p role="heading" aria-level="2">`.
-             *
-             * The role version was invisible to the document outline and
-             * present in the accessibility outline — a heading that exists only
-             * for assistive technology, which is a worse guarantee than a real
-             * heading because nothing downstream (the outline, the reading
-             * order, a text extractor) can see it. On the project page it also
-             * put four identical "Buyer testimonial" headings into a document
-             * that has 15 real ones.
-             *
-             * `sr-only` keeps it out of the visual composition: the dialog is
-             * visually titled by its own content (the player's name plate, the
-             * form's own fieldset), so rendering a second title line would
-             * duplicate it. The element is still focusable-order-correct and
-             * still names the dialog through `aria-labelledby`.
-             *
-             * The size and weight are restated because `sr-only` clips rather
-             * than removes, so the type is what a real h2 would have been.
-             */
-            <h2 id={`${id}-title`} class="text-foreground sr-only text-lg font-semibold">
-              {title}
-            </h2>
-          )}
-          {description && (
-            <p id={`${id}-description`} class="text-foreground-muted mt-1 text-sm">
-              {description}
-            </p>
-          )}
-        </div>
-      )}
+      {
+        (title || description) && (
+          <div class="p-6 pb-0">
+            {title && (
+              /*
+               * A real `<h2>`, not `<p role="heading" aria-level="2">`.
+               *
+               * The role version was invisible to the document outline and
+               * present in the accessibility outline — a heading that exists only
+               * for assistive technology, which is a worse guarantee than a real
+               * heading because nothing downstream (the outline, the reading
+               * order, a text extractor) can see it. On the project page it also
+               * put four identical "Buyer testimonial" headings into a document
+               * that has 15 real ones.
+               *
+               * `sr-only` keeps it out of the visual composition: the dialog is
+               * visually titled by its own content (the player's name plate, the
+               * form's own fieldset), so rendering a second title line would
+               * duplicate it. The element is still focusable-order-correct and
+               * still names the dialog through `aria-labelledby`.
+               *
+               * The size and weight are restated because `sr-only` clips rather
+               * than removes, so the type is what a real h2 would have been.
+               */
+              <h2 id={`${id}-title`} class="text-foreground sr-only text-lg font-semibold">
+                {title}
+              </h2>
+            )}
+            {description && (
+              <p id={`${id}-description`} class="text-foreground-muted mt-1 text-sm">
+                {description}
+              </p>
+            )}
+          </div>
+        )
+      }
 
       <!-- Content -->
       <div class="p-6">

@@ -20,6 +20,7 @@ import PageLayout from '~/layouts/PageLayout.astro';
 import Hero from '~/components/home/Hero.astro';
 import ScrollBuildStory from '~/components/home/ScrollBuildStory.astro';
 import LocationStory from '~/components/home/LocationStory.astro';
+import PastProjects from '~/components/home/PastProjects.astro';
 import ProjectHighlights from '~/components/projects/ProjectHighlights.astro';
 import SitePlanExplorer from '~/components/projects/SitePlanExplorer.astro';
 import LoanAndFit, { type FitPoint } from '~/components/home/LoanAndFit.astro';
@@ -257,6 +258,8 @@ const fitPoints: FitPoint[] = [
       },
     ]}
   />
+
+  <PastProjects />
 
   <ScrollBuildStory
     sequence={buildSequence}

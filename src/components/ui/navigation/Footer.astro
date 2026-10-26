@@ -138,49 +138,221 @@ function getSocialIcon(platform: string): string {
 
 <footer class={footerClasses} {...attrs}>
   <div class="mx-auto max-w-6xl px-6">
-    {layout === 'simple' && (
-      <div class="flex flex-col items-center justify-between gap-[var(--space-stack-lg)] md:flex-row">
-        {/* Logo & Tagline */}
-        {!hideLogo && (
-          <div class="flex flex-col items-center gap-2 md:items-start">
-            {hasLogoSlot ? (
+    {
+      layout === 'simple' && (
+        <div class="flex flex-col items-center justify-between gap-[var(--space-stack-lg)] md:flex-row">
+          {/* Logo & Tagline */}
+          {!hideLogo && (
+            <div class="flex flex-col items-center gap-2 md:items-start">
+              {hasLogoSlot ? (
+                <slot name="logo" />
+              ) : (
+                <a href="/" class="flex items-center gap-2">
+                  <Logo size="lg" variant={background === 'invert' ? 'dark' : 'light'} />
+                </a>
+              )}
+              {(hasTaglineSlot || tagline) && (
+                <p class="text-foreground-muted text-sm">
+                  {hasTaglineSlot ? <slot name="tagline" /> : tagline}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Navigation Links */}
+          <nav class="text-foreground-muted flex flex-wrap justify-center gap-[var(--space-inline-lg)] text-sm font-medium md:gap-[var(--space-stack-lg)]">
+            {navItems.map((item) => (
+              <a
+                href={item.href}
+                data-track={item.track}
+                class="hover:text-foreground transition-colors"
+                target={item.external || item.href.startsWith('http') ? '_blank' : undefined}
+                rel={
+                  item.external || item.href.startsWith('http') ? 'noopener noreferrer' : undefined
+                }
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+
+          {/* Social Links */}
+          {showSocial &&
+            socialLinks.length > 0 &&
+            (hasSocialSlot ? (
+              <slot name="social" />
+            ) : (
+              <div class="flex items-center gap-[var(--space-stack-md)]">
+                {socialLinks.map((social) => (
+                  <a
+                    href={social.href}
+                    class="text-foreground-muted hover:text-foreground transition-colors"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={social.label || `Follow us on ${social.platform}`}
+                  >
+                    <Icon name={getSocialIcon(social.platform)} size="md" />
+                  </a>
+                ))}
+              </div>
+            ))}
+        </div>
+      )
+    }
+
+    {
+      layout === 'columns' && (
+        <>
+          <div class={footerColumnGridVariants({ columns })}>
+            {/* Logo Column */}
+            {!hideLogo && (
+              <div class="space-y-[var(--space-stack-md)]">
+                {hasLogoSlot ? (
+                  <slot name="logo" />
+                ) : (
+                  <a href="/" class="flex items-center gap-2">
+                    <Logo size="lg" variant={background === 'invert' ? 'dark' : 'light'} />
+                  </a>
+                )}
+                {(hasTaglineSlot || tagline) && (
+                  <p class="text-foreground-muted max-w-xs text-sm">
+                    {hasTaglineSlot ? <slot name="tagline" /> : tagline}
+                  </p>
+                )}
+                {/* Social Links in columns layout */}
+                {showSocial && socialLinks.length > 0 && (
+                  <div class="flex items-center gap-[var(--space-stack-md)] pt-2">
+                    {socialLinks.map((social) => (
+                      <a
+                        href={social.href}
+                        class="text-foreground-muted hover:text-foreground transition-colors"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={social.label || `Follow us on ${social.platform}`}
+                      >
+                        <Icon name={getSocialIcon(social.platform)} size="md" />
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Link Groups */}
+            {hasColumnsSlot ? (
+              <slot name="columns" />
+            ) : (
+              linkGroups.map((group) => (
+                <div class="space-y-[var(--space-stack-md)]">
+                  <p class="text-foreground text-sm font-semibold">{group.title}</p>
+                  <ul class="space-y-2">
+                    {group.links.map((link) => (
+                      <li>
+                        <a
+                          href={link.href}
+                          data-track={link.track}
+                          data-dialog-trigger={link.dialog}
+                          data-dialog-request-type={link.requestType}
+                          class="text-foreground-muted hover:text-foreground text-sm transition-colors"
+                          target={
+                            link.external || link.href.startsWith('http') ? '_blank' : undefined
+                          }
+                          rel={
+                            link.external || link.href.startsWith('http')
+                              ? 'noopener noreferrer'
+                              : undefined
+                          }
+                        >
+                          {link.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))
+            )}
+
+            {/* Extra column(s) - e.g. contact details */}
+            {hasExtraColumnsSlot && <slot name="extra-columns" />}
+          </div>
+
+          {/* Bottom section */}
+          {(showCopyright || legalLinks.length > 0) && (
+            <div class="border-border mt-[var(--space-section-header)] flex flex-col items-center justify-between gap-[var(--space-stack-md)] border-t pt-[var(--space-stack-lg)] md:flex-row">
+              {hasBottomSlot ? (
+                <slot name="bottom" />
+              ) : (
+                <>
+                  {showCopyright && (
+                    <p class="text-foreground-muted text-sm">{processedCopyright}</p>
+                  )}
+                  {legalLinks.length > 0 && (
+                    <div class="flex items-center gap-[var(--space-inline-lg)]">
+                      {legalLinks.map((link) => (
+                        <a
+                          href={link.href}
+                          class="text-foreground-muted hover:text-foreground text-sm transition-colors"
+                        >
+                          {link.label}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+        </>
+      )
+    }
+
+    {
+      layout === 'minimal' && (
+        <div class="text-center">
+          {showCopyright && <p class="text-foreground-muted text-sm">{processedCopyright}</p>}
+        </div>
+      )
+    }
+
+    {
+      layout === 'stacked' && (
+        <div class="flex flex-col items-center gap-[var(--space-stack-lg)] text-center">
+          {/* Logo */}
+          {!hideLogo &&
+            (hasLogoSlot ? (
               <slot name="logo" />
             ) : (
               <a href="/" class="flex items-center gap-2">
                 <Logo size="lg" variant={background === 'invert' ? 'dark' : 'light'} />
               </a>
-            )}
-            {(hasTaglineSlot || tagline) && (
-              <p class="text-foreground-muted text-sm">
-                {hasTaglineSlot ? <slot name="tagline" /> : tagline}
-              </p>
-            )}
-          </div>
-        )}
+            ))}
 
-        {/* Navigation Links */}
-        <nav class="text-foreground-muted flex flex-wrap justify-center gap-[var(--space-inline-lg)] text-sm font-medium md:gap-[var(--space-stack-lg)]">
-          {navItems.map((item) => (
-            <a
-              href={item.href}
-              data-track={item.track}
-              class="hover:text-foreground transition-colors"
-              target={item.external || item.href.startsWith('http') ? '_blank' : undefined}
-              rel={
-                item.external || item.href.startsWith('http') ? 'noopener noreferrer' : undefined
-              }
-            >
-              {item.label}
-            </a>
-          ))}
-        </nav>
+          {/* Tagline */}
+          {(hasTaglineSlot || tagline) && (
+            <p class="text-foreground-muted max-w-md text-sm">
+              {hasTaglineSlot ? <slot name="tagline" /> : tagline}
+            </p>
+          )}
 
-        {/* Social Links */}
-        {showSocial &&
-          socialLinks.length > 0 &&
-          (hasSocialSlot ? (
-            <slot name="social" />
-          ) : (
+          {/* Navigation Links */}
+          <nav class="text-foreground-muted flex flex-wrap justify-center gap-[var(--space-inline-lg)] text-sm font-medium">
+            {navItems.map((item) => (
+              <a
+                href={item.href}
+                data-track={item.track}
+                class="hover:text-foreground transition-colors"
+                target={item.external || item.href.startsWith('http') ? '_blank' : undefined}
+                rel={
+                  item.external || item.href.startsWith('http') ? 'noopener noreferrer' : undefined
+                }
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+
+          {/* Social Links */}
+          {showSocial && socialLinks.length > 0 && (
             <div class="flex items-center gap-[var(--space-stack-md)]">
               {socialLinks.map((social) => (
                 <a
@@ -194,191 +366,29 @@ function getSocialIcon(platform: string): string {
                 </a>
               ))}
             </div>
-          ))}
-      </div>
-    )}
+          )}
 
-    {layout === 'columns' && (
-      <>
-        <div class={footerColumnGridVariants({ columns })}>
-          {/* Logo Column */}
-          {!hideLogo && (
-            <div class="space-y-[var(--space-stack-md)]">
-              {hasLogoSlot ? (
-                <slot name="logo" />
-              ) : (
-                <a href="/" class="flex items-center gap-2">
-                  <Logo size="lg" variant={background === 'invert' ? 'dark' : 'light'} />
-                </a>
-              )}
-              {(hasTaglineSlot || tagline) && (
-                <p class="text-foreground-muted max-w-xs text-sm">
-                  {hasTaglineSlot ? <slot name="tagline" /> : tagline}
-                </p>
-              )}
-              {/* Social Links in columns layout */}
-              {showSocial && socialLinks.length > 0 && (
-                <div class="flex items-center gap-[var(--space-stack-md)] pt-2">
-                  {socialLinks.map((social) => (
+          {/* Copyright & Legal */}
+          {(showCopyright || legalLinks.length > 0) && (
+            <div class="border-border flex w-full flex-col items-center gap-[var(--space-stack-md)] border-t pt-[var(--space-stack-lg)]">
+              {showCopyright && <p class="text-foreground-muted text-sm">{processedCopyright}</p>}
+              {legalLinks.length > 0 && (
+                <div class="flex items-center gap-[var(--space-inline-lg)]">
+                  {legalLinks.map((link) => (
                     <a
-                      href={social.href}
-                      class="text-foreground-muted hover:text-foreground transition-colors"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={social.label || `Follow us on ${social.platform}`}
+                      href={link.href}
+                      class="text-foreground-muted hover:text-foreground text-sm transition-colors"
                     >
-                      <Icon name={getSocialIcon(social.platform)} size="md" />
+                      {link.label}
                     </a>
                   ))}
                 </div>
               )}
             </div>
           )}
-
-          {/* Link Groups */}
-          {hasColumnsSlot ? (
-            <slot name="columns" />
-          ) : (
-            linkGroups.map((group) => (
-              <div class="space-y-[var(--space-stack-md)]">
-                <p class="text-foreground text-sm font-semibold">{group.title}</p>
-                <ul class="space-y-2">
-                  {group.links.map((link) => (
-                    <li>
-                      <a
-                        href={link.href}
-                        data-track={link.track}
-                        data-dialog-trigger={link.dialog}
-                        data-dialog-request-type={link.requestType}
-                        class="text-foreground-muted hover:text-foreground text-sm transition-colors"
-                        target={
-                          link.external || link.href.startsWith('http') ? '_blank' : undefined
-                        }
-                        rel={
-                          link.external || link.href.startsWith('http')
-                            ? 'noopener noreferrer'
-                            : undefined
-                        }
-                      >
-                        {link.label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))
-          )}
-
-          {/* Extra column(s) - e.g. contact details */}
-          {hasExtraColumnsSlot && <slot name="extra-columns" />}
         </div>
-
-        {/* Bottom section */}
-        {(showCopyright || legalLinks.length > 0) && (
-          <div class="border-border mt-[var(--space-section-header)] flex flex-col items-center justify-between gap-[var(--space-stack-md)] border-t pt-[var(--space-stack-lg)] md:flex-row">
-            {hasBottomSlot ? (
-              <slot name="bottom" />
-            ) : (
-              <>
-                {showCopyright && <p class="text-foreground-muted text-sm">{processedCopyright}</p>}
-                {legalLinks.length > 0 && (
-                  <div class="flex items-center gap-[var(--space-inline-lg)]">
-                    {legalLinks.map((link) => (
-                      <a
-                        href={link.href}
-                        class="text-foreground-muted hover:text-foreground text-sm transition-colors"
-                      >
-                        {link.label}
-                      </a>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        )}
-      </>
-    )}
-
-    {layout === 'minimal' && (
-      <div class="text-center">
-        {showCopyright && <p class="text-foreground-muted text-sm">{processedCopyright}</p>}
-      </div>
-    )}
-
-    {layout === 'stacked' && (
-      <div class="flex flex-col items-center gap-[var(--space-stack-lg)] text-center">
-        {/* Logo */}
-        {!hideLogo &&
-          (hasLogoSlot ? (
-            <slot name="logo" />
-          ) : (
-            <a href="/" class="flex items-center gap-2">
-              <Logo size="lg" variant={background === 'invert' ? 'dark' : 'light'} />
-            </a>
-          ))}
-
-        {/* Tagline */}
-        {(hasTaglineSlot || tagline) && (
-          <p class="text-foreground-muted max-w-md text-sm">
-            {hasTaglineSlot ? <slot name="tagline" /> : tagline}
-          </p>
-        )}
-
-        {/* Navigation Links */}
-        <nav class="text-foreground-muted flex flex-wrap justify-center gap-[var(--space-inline-lg)] text-sm font-medium">
-          {navItems.map((item) => (
-            <a
-              href={item.href}
-              data-track={item.track}
-              class="hover:text-foreground transition-colors"
-              target={item.external || item.href.startsWith('http') ? '_blank' : undefined}
-              rel={
-                item.external || item.href.startsWith('http') ? 'noopener noreferrer' : undefined
-              }
-            >
-              {item.label}
-            </a>
-          ))}
-        </nav>
-
-        {/* Social Links */}
-        {showSocial && socialLinks.length > 0 && (
-          <div class="flex items-center gap-[var(--space-stack-md)]">
-            {socialLinks.map((social) => (
-              <a
-                href={social.href}
-                class="text-foreground-muted hover:text-foreground transition-colors"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={social.label || `Follow us on ${social.platform}`}
-              >
-                <Icon name={getSocialIcon(social.platform)} size="md" />
-              </a>
-            ))}
-          </div>
-        )}
-
-        {/* Copyright & Legal */}
-        {(showCopyright || legalLinks.length > 0) && (
-          <div class="border-border flex w-full flex-col items-center gap-[var(--space-stack-md)] border-t pt-[var(--space-stack-lg)]">
-            {showCopyright && <p class="text-foreground-muted text-sm">{processedCopyright}</p>}
-            {legalLinks.length > 0 && (
-              <div class="flex items-center gap-[var(--space-inline-lg)]">
-                {legalLinks.map((link) => (
-                  <a
-                    href={link.href}
-                    class="text-foreground-muted hover:text-foreground text-sm transition-colors"
-                  >
-                    {link.label}
-                  </a>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    )}
+      )
+    }
   </div>
 
   {/* Default slot for additional content */}

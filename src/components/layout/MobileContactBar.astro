@@ -57,43 +57,47 @@ const { actions, class: className, ...attrs } = Astro.props;
     // The only other element on the page allowed a backdrop filter, because it
     // is fixed. The hairline replaces the 1px top border so the bar reads as a
     // machined edge rather than a drawn line.
-    'bg-background/95 fixed inset-x-0 bottom-0 z-30 backdrop-blur-xl nav:hidden shadow-[0_-1px_0_var(--color-border)]',
+    'bg-background/95 nav:hidden fixed inset-x-0 bottom-0 z-30 shadow-[0_-1px_0_var(--color-border)] backdrop-blur-xl',
     className,
   ]}
   aria-label="Quick contact actions"
   data-mobile-contact-bar
   {...attrs}
 >
-  <div class="mx-auto flex max-w-6xl items-center gap-2 px-3 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
-    {actions.map((action) =>
-      action.primary ? (
-        <a
-          href={action.href}
-          data-track={action.track}
-          data-dialog-trigger={action.dialog}
-          data-dialog-request-type={action.requestType}
-          class="bg-accent text-accent-foreground hover:bg-accent-hover flex h-11 min-w-0 flex-1 items-center justify-center rounded-full px-5 text-sm font-semibold transition-[background-color,transform] duration-base ease-quint active:scale-[0.97] active:duration-instant [box-shadow:inset_0_1px_1px_rgb(255_255_255/0.35),inset_0_0_0_1px_rgb(16_62_51/0.12)]"
-        >
-          {action.label}
-        </a>
-      ) : (
-        <a
-          href={action.href}
-          data-track={action.track}
-          data-dialog-trigger={action.dialog}
-          data-dialog-request-type={action.requestType}
-          aria-label={action.label}
-          class:list={[
-            'flex size-11 shrink-0 items-center justify-center rounded-full transition-[background-color,color,transform] duration-base ease-quint active:scale-[0.94] active:duration-instant',
-            action.variant === 'whatsapp'
-              ? 'bg-whatsapp text-white hover:bg-whatsapp-hover'
-              : 'text-foreground-secondary hover:bg-secondary hover:text-foreground [box-shadow:inset_0_0_0_1px_var(--color-border)]',
-          ]}
-        >
-          <Icon name={action.icon} size="sm" />
-        </a>
+  <div
+    class="mx-auto flex max-w-6xl items-center gap-2 px-3 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]"
+  >
+    {
+      actions.map((action) =>
+        action.primary ? (
+          <a
+            href={action.href}
+            data-track={action.track}
+            data-dialog-trigger={action.dialog}
+            data-dialog-request-type={action.requestType}
+            class="bg-accent text-accent-foreground hover:bg-accent-hover duration-base ease-quint active:duration-instant flex h-11 min-w-0 flex-1 items-center justify-center rounded-full px-5 text-sm font-semibold [box-shadow:inset_0_1px_1px_rgb(255_255_255/0.35),inset_0_0_0_1px_rgb(16_62_51/0.12)] transition-[background-color,transform] active:scale-[0.97]"
+          >
+            {action.label}
+          </a>
+        ) : (
+          <a
+            href={action.href}
+            data-track={action.track}
+            data-dialog-trigger={action.dialog}
+            data-dialog-request-type={action.requestType}
+            aria-label={action.label}
+            class:list={[
+              'duration-base ease-quint active:duration-instant flex size-11 shrink-0 items-center justify-center rounded-full transition-[background-color,color,transform] active:scale-[0.94]',
+              action.variant === 'whatsapp'
+                ? 'bg-whatsapp hover:bg-whatsapp-hover text-white'
+                : 'text-foreground-secondary hover:bg-secondary hover:text-foreground [box-shadow:inset_0_0_0_1px_var(--color-border)]',
+            ]}
+          >
+            <Icon name={action.icon} size="sm" />
+          </a>
+        )
       )
-    )}
+    }
   </div>
 </nav>
 

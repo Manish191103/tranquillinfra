@@ -45,8 +45,16 @@ interface Props {
   lcpPreload?: ImagePreload;
 }
 
-const { title, description, image, imageAlt, article, noindex = false, nofollow = false, lcpPreload } =
-  Astro.props;
+const {
+  title,
+  description,
+  image,
+  imageAlt,
+  article,
+  noindex = false,
+  nofollow = false,
+  lcpPreload,
+} = Astro.props;
 
 // The site's own structured data. The company entity is not here: it is
 // carried by the single sitewide `RealEstateAgent` node in `SEO.astro`, a
@@ -137,6 +145,9 @@ const schemas: Array<WithContext<WebSite>> = [createWebsiteSchema()];
       import { initAnalytics } from '~/lib/analytics';
 
       initAnalytics();
+    </script>
+    <script>
+      import '~/scripts/motion';
     </script>
   </body>
 </html>

@@ -5,6 +5,7 @@
  * Site chrome: CTA band, footer columns (brand, link groups, contact/NAP) and
  * the mobile contact bar, wired to `site.config.ts`.
  */
+import CityLogo from '~/components/ui/primitives/CityLogo.astro';
 import ApprovalSeals from '~/components/ui/primitives/ApprovalSeals.astro';
 import Footer from '~/components/ui/navigation/Footer.astro';
 import MobileContactBar, { type ContactBarAction } from './MobileContactBar.astro';
@@ -143,6 +144,7 @@ const hours = siteConfig.hours ?? [];
     class="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-16 md:flex-row md:items-end md:justify-between md:py-20"
   >
     <div class="max-w-xl">
+      <CityLogo tone="light" height="3.75rem" class="mb-4" />
       <p class="eyebrow">Visit Tranquill City</p>
       {
         /*

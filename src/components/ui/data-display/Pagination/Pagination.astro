@@ -89,56 +89,62 @@ const nextUrl = currentPage < totalPages ? hrefFor(currentPage + 1) : undefined;
 
 <nav class={cn('flex items-center gap-1', className)} aria-label="Pagination" {...attrs}>
   {/* Previous */}
-  {prevUrl ? (
-    <a
-      href={prevUrl}
-      class={cn(paginationItemVariants({ variant: 'default', size }))}
-      aria-label="Previous page"
-    >
-      <Icon name="chevron-left" size="sm" />
-    </a>
-  ) : (
-    <span class={cn(paginationItemVariants({ variant: 'disabled', size }))} aria-disabled="true">
-      <Icon name="chevron-left" size="sm" />
-    </span>
-  )}
+  {
+    prevUrl ? (
+      <a
+        href={prevUrl}
+        class={cn(paginationItemVariants({ variant: 'default', size }))}
+        aria-label="Previous page"
+      >
+        <Icon name="chevron-left" size="sm" />
+      </a>
+    ) : (
+      <span class={cn(paginationItemVariants({ variant: 'disabled', size }))} aria-disabled="true">
+        <Icon name="chevron-left" size="sm" />
+      </span>
+    )
+  }
 
   {/* Page Numbers */}
-  {pages.map((page) =>
-    page === '...' ? (
-      <span
-        class={cn(
-          paginationItemVariants({ variant: 'default', size }),
-          'cursor-default hover:bg-transparent'
-        )}
-        role="separator"
-        aria-label="More pages"
-      >
-        <span aria-hidden="true">...</span>
-      </span>
-    ) : page === currentPage ? (
-      <span class={cn(paginationItemVariants({ variant: 'active', size }))} aria-current="page">
-        {page}
-      </span>
-    ) : (
-      <a href={hrefFor(page)} class={cn(paginationItemVariants({ variant: 'default', size }))}>
-        {page}
-      </a>
+  {
+    pages.map((page) =>
+      page === '...' ? (
+        <span
+          class={cn(
+            paginationItemVariants({ variant: 'default', size }),
+            'cursor-default hover:bg-transparent'
+          )}
+          role="separator"
+          aria-label="More pages"
+        >
+          <span aria-hidden="true">...</span>
+        </span>
+      ) : page === currentPage ? (
+        <span class={cn(paginationItemVariants({ variant: 'active', size }))} aria-current="page">
+          {page}
+        </span>
+      ) : (
+        <a href={hrefFor(page)} class={cn(paginationItemVariants({ variant: 'default', size }))}>
+          {page}
+        </a>
+      )
     )
-  )}
+  }
 
   {/* Next */}
-  {nextUrl ? (
-    <a
-      href={nextUrl}
-      class={cn(paginationItemVariants({ variant: 'default', size }))}
-      aria-label="Next page"
-    >
-      <Icon name="chevron-right" size="sm" />
-    </a>
-  ) : (
-    <span class={cn(paginationItemVariants({ variant: 'disabled', size }))} aria-disabled="true">
-      <Icon name="chevron-right" size="sm" />
-    </span>
-  )}
+  {
+    nextUrl ? (
+      <a
+        href={nextUrl}
+        class={cn(paginationItemVariants({ variant: 'default', size }))}
+        aria-label="Next page"
+      >
+        <Icon name="chevron-right" size="sm" />
+      </a>
+    ) : (
+      <span class={cn(paginationItemVariants({ variant: 'disabled', size }))} aria-disabled="true">
+        <Icon name="chevron-right" size="sm" />
+      </span>
+    )
+  }
 </nav>

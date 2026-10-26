@@ -62,27 +62,29 @@ const controlClasses = [
     </div>
   </div>
 
-  {pauseControl && (
-    <div class="mt-3 flex justify-end">
-      <button
-        type="button"
-        class={controlClasses}
-        data-marquee-toggle
-        data-pause-label={pauseLabel}
-        data-play-label={playLabel}
-        aria-pressed="false"
-        aria-label={pauseLabel}
-      >
-        <span data-marquee-pause-icon>
-          <Icon name="pause" size="xs" />
-        </span>
-        <span data-marquee-play-icon hidden>
-          <Icon name="play" size="xs" />
-        </span>
-        <span data-marquee-toggle-label>{pauseLabel}</span>
-      </button>
-    </div>
-  )}
+  {
+    pauseControl && (
+      <div class="mt-3 flex justify-end">
+        <button
+          type="button"
+          class={controlClasses}
+          data-marquee-toggle
+          data-pause-label={pauseLabel}
+          data-play-label={playLabel}
+          aria-pressed="false"
+          aria-label={pauseLabel}
+        >
+          <span data-marquee-pause-icon>
+            <Icon name="pause" size="xs" />
+          </span>
+          <span data-marquee-play-icon hidden>
+            <Icon name="play" size="xs" />
+          </span>
+          <span data-marquee-toggle-label>{pauseLabel}</span>
+        </button>
+      </div>
+    )
+  }
 </section>
 
 <script>

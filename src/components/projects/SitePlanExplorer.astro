@@ -17,7 +17,18 @@
 import Icon from '~/components/ui/primitives/Icon/Icon.astro';
 import { enquiryCtaTarget } from '~/lib/enquiry-cta';
 import projectConfig from '~/config/project.config';
-import { bandOf, planBox, planShapes, roadNames, sitePlots, sizeBands } from '~/config/site-plan';
+import { getImage } from 'astro:assets';
+import {
+  bandOf,
+  planBox,
+  planShapes,
+  roadNames,
+  sitePlots,
+  sizeBands,
+  trees,
+} from '~/config/site-plan';
+import villaRender from '~/assets/images/projects/tranquill-city/home-hero/green-spaces.webp';
+import cityLogo from '~/assets/brand/tranquill-city-logo.png';
 
 interface Props {
   id?: string;
@@ -39,6 +50,11 @@ const plotData = sitePlots.map((plot) => ({
 }));
 
 const P = planShapes;
+
+// The villa render in the hover card and the phone sheet, small and cropped
+// to the nearest villa.
+const villa = await getImage({ src: villaRender, width: 520, format: 'webp' });
+const logo = await getImage({ src: cityLogo, height: 260, format: 'png' });
 ---
 
 <section
@@ -153,20 +169,48 @@ const P = planShapes;
 
                 <polygon class="sp-park" points={P.park1.points} fill={`url(#${id}-trees)`}
                 ></polygon>
+                <polygon class="sp-park" points={P.park2.points} fill={`url(#${id}-trees)`}
+                ></polygon>
+
+                {/* Trees pop up in the parks and along the buffer once the plan is in view. */}
+                <g class="sp-trees" aria-hidden="true">
+                  {
+                    trees.map((t, i) => (
+                      <g
+                        class="sp-tree"
+                        style={`--i:${i};--x:${t.x.toFixed(1)}px;--y:${t.y.toFixed(1)}px`}
+                      >
+                        <rect
+                          x={t.x - 1}
+                          y={t.y}
+                          width="2"
+                          height={t.r * 0.9}
+                          rx="1"
+                          class="sp-tree-trunk"
+                        />
+                        <circle cx={t.x} cy={t.y - t.r * 0.15} r={t.r} class="sp-tree-crown" />
+                        <circle
+                          cx={t.x - t.r * 0.3}
+                          cy={t.y - t.r * 0.45}
+                          r={t.r * 0.5}
+                          class="sp-tree-light"
+                        />
+                      </g>
+                    ))
+                  }
+                </g>
+
                 <text
-                  class="sp-area-label"
+                  class="sp-area-label sp-park-label"
                   transform={`translate(${P.park1.label[0]} ${P.park1.label[1]}) rotate(-86.6)`}
                   text-anchor="middle"
                 >
                   PARK 1,040.50 SQ.YD
                 </text>
-
-                <polygon class="sp-park" points={P.park2.points} fill={`url(#${id}-trees)`}
-                ></polygon>
                 <text
                   x={P.park2.label[0]}
                   y={P.park2.label[1]}
-                  class="sp-area-label"
+                  class="sp-area-label sp-park-label"
                   text-anchor="middle"
                 >
                   PARK 762.49 SQ.YD
@@ -174,7 +218,7 @@ const P = planShapes;
                 <text
                   x={P.park2.label[0]}
                   y={P.park2.label[1] + 14}
-                  class="sp-area-label"
+                  class="sp-area-label sp-park-label"
                   text-anchor="middle"
                 >
                   CYCLE TRACK
@@ -261,6 +305,35 @@ const P = planShapes;
                 {/* The hovered plot is copied here so it lifts above its neighbours. */}
                 <g class="sp-lift" data-sp-lift aria-hidden="true"></g>
 
+                {/* The project logo in the open corner, as on the brochure */}
+                <g class="sp-brand">
+                  <image
+                    href={logo.src}
+                    x="1192"
+                    y="478"
+                    width="108"
+                    height="120"
+                    class="sp-brand-logo"
+                  />
+                  <text x="1246" y="620" class="sp-brand-hmda" text-anchor="middle">
+                    HMDA NO: {projectConfig.approvals.hmda.number}
+                  </text>
+                  {/* Gold ornament, drawn out from the centre */}
+                  <g class="sp-brand-rule">
+                    <path d="M1166 642 H1232 M1260 642 H1326"></path>
+                    <circle cx="1166" cy="642" r="2.2"></circle>
+                    <circle cx="1326" cy="642" r="2.2"></circle>
+                    <path class="sp-brand-gem" d="M1246 635 L1253 642 L1246 649 L1239 642 Z"></path>
+                  </g>
+                  {/* The brochure's own line, beside the plan as on its layout page */}
+                  <text x="1246" y="684" class="sp-quote sp-quote-1" text-anchor="middle">
+                    A LIFESTYLE
+                  </text>
+                  <text x="1246" y="716" class="sp-quote sp-quote-2" text-anchor="middle">
+                    WORTH INVESTING IN.
+                  </text>
+                </g>
+
                 <text x="1180" y="900" class="sp-note" text-anchor="middle"
                   >Drawn from the brochure layout plan</text
                 >
@@ -276,6 +349,17 @@ const P = planShapes;
             <Icon name="search" size="xs" /> Point at a plot for its details. Use + to zoom, drag to move.
           </p>
           <div class="sp-pop" data-sp-pop hidden aria-hidden="true">
+            <div class="sp-pop-media">
+              <img
+                src={villa.src}
+                alt=""
+                width="520"
+                height="292"
+                loading="lazy"
+                decoding="async"
+              />
+              <span>Illustrative villa render</span>
+            </div>
             <p class="sp-pop-no">Plot <span data-pop-no></span></p>
             <p class="sp-pop-size">
               <b><span data-pop-sqyd></span> sq.yd</b>
@@ -342,6 +426,10 @@ const P = planShapes;
         <button type="button" class="sp-sheet-close" data-sp-sheet-close aria-label="Close">
           <Icon name="x" size="sm" />
         </button>
+        <div class="sp-sheet-media">
+          <img src={villa.src} alt="" width="520" height="292" loading="lazy" decoding="async" />
+          <span>Illustrative villa render</span>
+        </div>
         <p class="sp-panel-kicker">Your plot</p>
         <p class="sp-sheet-no">Plot <span data-sheet-no></span></p>
         <p class="sp-sheet-size">
@@ -581,7 +669,26 @@ const P = planShapes;
           copy.removeAttribute('role');
           copy.removeAttribute('data-sp-plot');
           copy.setAttribute('class', `${plot.getAttribute('class') ?? ''} is-lifted`);
-          lift.replaceChildren(copy);
+          // A villa pops up out of the plot, on a marker above it.
+          const box = plot.getBBox();
+          const ns = 'http://www.w3.org/2000/svg';
+          const marker = document.createElementNS(ns, 'g');
+          marker.setAttribute('class', 'sp-villa');
+          marker.setAttribute(
+            'transform',
+            `translate(${box.x + box.width / 2} ${box.y - box.height * 0.2})`
+          );
+          marker.innerHTML =
+            '<g class="sp-villa-pop">' +
+            '<path class="sp-villa-pin" d="M-22 -50 h44 a8 8 0 0 1 8 8 v24 a8 8 0 0 1 -8 8 h-14 l-8 10 l-8 -10 h-14 a8 8 0 0 1 -8 -8 v-24 a8 8 0 0 1 8 -8z"/>' +
+            '<path class="sp-villa-roof" d="M-17 -31 L-4 -43 L9 -31 M-2 -33 L8 -42 L19 -33"/>' +
+            '<rect class="sp-villa-body" x="-14" y="-32" width="20" height="14" rx="1"/>' +
+            '<rect class="sp-villa-body" x="6" y="-34" width="11" height="16" rx="1"/>' +
+            '<rect class="sp-villa-win" x="-10" y="-28" width="5" height="5"/>' +
+            '<rect class="sp-villa-win" x="-1" y="-28" width="4" height="10"/>' +
+            '<rect class="sp-villa-win" x="9" y="-30" width="5" height="4"/>' +
+            '</g>';
+          lift.replaceChildren(copy, marker);
           lift.dataset.no = plot.dataset.spPlot;
         }
         pop.hidden = false;
@@ -776,14 +883,142 @@ const P = planShapes;
     pointer-events: none;
   }
 
+  /* Trees */
+  .sp-tree-trunk {
+    fill: #6b4e2e;
+  }
+
+  .sp-tree-crown {
+    fill: #3f7d3a;
+    stroke: #2f6230;
+    stroke-width: 0.8;
+  }
+
+  .sp-tree-light {
+    fill: #6aa65a;
+  }
+
+  .sp-tree {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+  }
+
+  .sp-park-label {
+    paint-order: stroke;
+    stroke: #2f6230;
+    stroke-width: 4px;
+    stroke-linejoin: round;
+  }
+
+  /* Villa marker over the hovered plot */
+  .sp-lift :global(.sp-villa) {
+    pointer-events: none;
+  }
+
+  .sp-lift :global(.sp-villa-pop) {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation: sp-villa-in 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  .sp-lift :global(.sp-villa-pin) {
+    fill: #1f3d2e;
+    stroke: #e9c46a;
+    stroke-width: 1.5;
+    filter: drop-shadow(0 4px 6px rgb(15 30 22 / 40%));
+  }
+
+  .sp-lift :global(.sp-villa-roof) {
+    fill: none;
+    stroke: #e9c46a;
+    stroke-width: 2.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .sp-lift :global(.sp-villa-body) {
+    fill: #f4efe2;
+  }
+
+  .sp-lift :global(.sp-villa-win) {
+    fill: #c8932a;
+  }
+
+  @keyframes sp-villa-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px) scale(0.2);
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
   /* Hover card */
+  .sp-pop-media,
+  .sp-sheet-media {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.7rem;
+  }
+
+  .sp-pop-media {
+    margin: -0.35rem -0.4rem 0.75rem;
+    height: 6.5rem;
+  }
+
+  .sp-pop-media img,
+  .sp-sheet-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 82% 60%;
+  }
+
+  .sp-pop.is-on .sp-pop-media img {
+    animation: sp-kenburns 2.4s ease-out both;
+  }
+
+  .sp-pop-media span,
+  .sp-sheet-media span {
+    position: absolute;
+    right: 0.4rem;
+    bottom: 0.35rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+    background: rgb(0 0 0 / 45%);
+    color: #fff;
+    font-size: 0.58rem;
+    font-weight: 600;
+  }
+
+  @keyframes sp-kenburns {
+    from {
+      transform: scale(1.18);
+    }
+
+    to {
+      transform: scale(1);
+    }
+  }
+
+  .sp-sheet-media {
+    height: 8.5rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .sp-sheet.is-open .sp-sheet-media img {
+    animation: sp-kenburns 2.4s ease-out both;
+  }
+
   .sp-pop {
     position: absolute;
     top: 0;
     left: 0;
     z-index: 2;
-    min-width: 11.5rem;
-    max-width: 15rem;
+    width: 15.5rem;
     padding: 0.85rem 1rem;
     border-radius: 1rem;
     background: var(--surface-invert);
@@ -859,6 +1094,12 @@ const P = planShapes;
     .sp-lift :global(.is-lifted) {
       animation: none;
       transform: scale(1.35);
+    }
+
+    .sp-lift :global(.sp-villa-pop),
+    .sp-pop-media img,
+    .sp-sheet-media img {
+      animation: none !important;
     }
   }
 
@@ -954,9 +1195,103 @@ const P = planShapes;
   }
 
   .sp-neighbour {
-    fill: #2c3a6b;
+    fill: #8a8f9e;
     font-family: var(--font-display);
-    font-size: 22px;
+    font-size: 15px;
+    font-style: italic;
+  }
+
+  .sp-brand-hmda {
+    fill: #2c3a6b;
+    font-size: 11.5px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+  }
+
+  .sp-brand-rule path {
+    fill: none;
+    stroke: #c8932a;
+    stroke-width: 1.4;
+  }
+
+  .sp-brand-rule circle,
+  .sp-brand-rule .sp-brand-gem {
+    fill: #c8932a;
+    stroke: none;
+  }
+
+  .sp-quote {
+    font-family: var(--font-display);
+    font-size: 25px;
+    letter-spacing: 0.04em;
+  }
+
+  .sp-quote-1 {
+    fill: #1d1d1b;
+  }
+
+  .sp-quote-2 {
+    fill: #6b1f2a;
+    font-size: 21px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* The logo rises in, the ornament draws out, then the line types in. */
+    .is-enhanced .sp-brand > * {
+      transform-box: fill-box;
+      transform-origin: center;
+      transition:
+        opacity 700ms ease,
+        transform 800ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .is-enhanced:not(.is-in) .sp-brand > * {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+
+    .is-enhanced:not(.is-in) .sp-brand-rule {
+      transform: scaleX(0);
+    }
+
+    .is-in .sp-brand-logo {
+      transition-delay: 900ms;
+      animation: sp-logo-float 5s ease-in-out 2s infinite;
+    }
+
+    .is-in .sp-brand-hmda {
+      transition-delay: 1150ms;
+    }
+
+    .is-in .sp-brand-rule {
+      transition-delay: 1300ms;
+    }
+
+    .is-in .sp-quote-1 {
+      transition-delay: 1550ms;
+    }
+
+    .is-in .sp-quote-2 {
+      transition-delay: 1800ms;
+    }
+
+    .is-in .sp-brand-gem {
+      animation: sp-gem 3s ease-in-out 2.4s infinite;
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+  }
+
+  @keyframes sp-logo-float {
+    50% {
+      transform: translateY(-5px);
+    }
+  }
+
+  @keyframes sp-gem {
+    50% {
+      transform: rotate(180deg) scale(1.3);
+    }
   }
 
   .sp-note {
@@ -1130,10 +1465,45 @@ const P = planShapes;
       animation: sp-flow 1.6s linear infinite;
     }
 
+    /* Trees spring up after the plots land, then sway in the breeze. */
+    .is-enhanced:not(.is-in) .sp-tree {
+      opacity: 0;
+      transform: scale(0);
+    }
+
+    .is-in .sp-tree {
+      animation:
+        sp-tree-pop 600ms cubic-bezier(0.34, 1.7, 0.64, 1) both,
+        sp-sway 3.6s ease-in-out infinite alternate;
+      animation-delay: calc(700ms + var(--i) * 18ms), calc(1400ms + var(--i) * 37ms);
+    }
+
     .sp-lift :global(.is-lifted) {
       animation:
         sp-lift 220ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
         sp-glow 1.4s ease-in-out 220ms infinite;
+    }
+  }
+
+  @keyframes sp-tree-pop {
+    from {
+      opacity: 0;
+      transform: scale(0);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes sp-sway {
+    from {
+      transform: rotate(-3deg);
+    }
+
+    to {
+      transform: rotate(3deg);
     }
   }
 

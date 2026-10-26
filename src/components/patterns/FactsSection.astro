@@ -23,7 +23,6 @@ interface Props {
 }
 
 const { id, eyebrow, title, intro, facts } = Astro.props;
-
 ---
 
 <section
@@ -34,29 +33,31 @@ const { id, eyebrow, title, intro, facts } = Astro.props;
   <div class="section mx-auto max-w-6xl px-6">
     <SectionHeading eyebrow={eyebrow} title={title} intro={intro} id={`${id}-title`} />
 
-    <dl class="mt-10 grid gap-x-12 gap-y-6 md:grid-cols-2">
-      {facts.map((fact) => (
-        <div class="border-border border-t pt-5">
-          <dt class="text-foreground-muted text-[0.7rem] font-extrabold tracking-[0.13em] uppercase">
-            {fact.label}
-          </dt>
-          <dd class="display-xs mt-2 [overflow-wrap:break-word]">
-            {fact.href ? (
-              <a
-                class="hover:text-accent-ink focus-visible:text-accent-ink inline-flex items-center gap-1.5 transition-colors"
-                href={fact.href}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+    <dl class="mt-10 grid gap-x-12 gap-y-6 md:grid-cols-2" data-stagger>
+      {
+        facts.map((fact) => (
+          <div class="border-border border-t pt-5">
+            <dt class="text-foreground-muted text-[0.7rem] font-extrabold tracking-[0.13em] uppercase">
+              {fact.label}
+            </dt>
+            <dd class="display-xs mt-2 [overflow-wrap:break-word]">
+              {fact.href ? (
+                <a
+                  class="hover:text-accent-ink focus-visible:text-accent-ink inline-flex items-center gap-1.5 transition-colors"
+                  href={fact.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <span set:html={breakableReference(fact.value)} />
+                  <Icon name="external-link" size="sm" />
+                </a>
+              ) : (
                 <span set:html={breakableReference(fact.value)} />
-                <Icon name="external-link" size="sm" />
-              </a>
-            ) : (
-              <span set:html={breakableReference(fact.value)} />
-            )}
-          </dd>
-        </div>
-      ))}
+              )}
+            </dd>
+          </div>
+        ))
+      }
     </dl>
   </div>
 </section>

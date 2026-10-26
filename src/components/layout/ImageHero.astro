@@ -68,37 +68,43 @@ const hasBreadcrumbs = Astro.slots.has('breadcrumbs');
       formats={['avif', 'webp']}
       priority
     />
-    {video && (
-      <video
-        class="image-hero-video"
-        data-hero-video
-        muted
-        playsinline
-        loop
-        preload="none"
-        disablepictureinpicture
-        aria-hidden="true"
-      >
-        {video.mobileSrc && (
-          <source src={video.mobileSrc} media="(max-width: 42rem)" type="video/mp4" />
-        )}
-        <source src={video.src} type="video/mp4" />
-      </video>
-    )}
+    {
+      video && (
+        <video
+          class="image-hero-video"
+          data-hero-video
+          muted
+          playsinline
+          loop
+          preload="none"
+          disablepictureinpicture
+          aria-hidden="true"
+        >
+          {video.mobileSrc && (
+            <source src={video.mobileSrc} media="(max-width: 42rem)" type="video/mp4" />
+          )}
+          <source src={video.src} type="video/mp4" />
+        </video>
+      )
+    }
   </div>
 
   <div class="image-hero-scrim" aria-hidden="true"></div>
 
   <div class="image-hero-inner">
-    <div class="image-hero-top mx-auto flex w-full max-w-6xl items-center justify-between gap-6 px-6 pt-6 md:pt-8">
-      {hasBreadcrumbs ? <slot name="breadcrumbs" /> : <span></span>}
+    <div
+      class="image-hero-top mx-auto flex w-full max-w-6xl items-center justify-between gap-6 px-6 pt-6 md:pt-8"
+    >
+      {hasBreadcrumbs ? <slot name="breadcrumbs" /> : <span />}
       <p class="image-hero-caption hidden text-xs tracking-[0.08em] uppercase md:block">
         {caption}
       </p>
     </div>
 
     <div class="image-hero-copy">
-      <div class="image-hero-copy-frame mx-auto w-full max-w-6xl px-6 pt-16 pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-20">
+      <div
+        class="image-hero-copy-frame mx-auto w-full max-w-6xl px-6 pt-16 pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-20"
+      >
         <div class="image-hero-copy-plate">
           <div class="image-hero-copy-content">
             <slot />
@@ -108,22 +114,24 @@ const hasBreadcrumbs = Astro.slots.has('breadcrumbs');
     </div>
 
     <div class="image-hero-controls">
-      {video && (
-        <button
-          type="button"
-          class="image-hero-round"
-          data-hero-video-toggle
-          aria-pressed="false"
-          aria-label="Play background video"
-        >
-          <span class="image-hero-toggle-play">
-            <Icon name="play" size="sm" />
-          </span>
-          <span class="image-hero-toggle-pause">
-            <Icon name="pause" size="sm" />
-          </span>
-        </button>
-      )}
+      {
+        video && (
+          <button
+            type="button"
+            class="image-hero-round"
+            data-hero-video-toggle
+            aria-pressed="false"
+            aria-label="Play background video"
+          >
+            <span class="image-hero-toggle-play">
+              <Icon name="play" size="sm" />
+            </span>
+            <span class="image-hero-toggle-pause">
+              <Icon name="pause" size="sm" />
+            </span>
+          </button>
+        )
+      }
       <a class="image-hero-round image-hero-cue" href={cueHref} aria-label={cueLabel}>
         <Icon name="chevron-down" size="sm" />
       </a>

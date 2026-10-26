@@ -20,6 +20,7 @@ import Breadcrumbs from '~/components/seo/Breadcrumbs.astro';
 import JsonLd from '~/components/seo/JsonLd.astro';
 import { createFAQSchema } from '~/lib/schema';
 import AboutHero from '~/components/about/AboutHero.astro';
+import PastProjects from '~/components/home/PastProjects.astro';
 import ApproachStrip from '~/components/about/ApproachStrip.astro';
 import MissionVision from '~/components/about/MissionVision.astro';
 import ProcessSection from '~/components/about/ProcessSection.astro';
@@ -110,6 +111,8 @@ const publishedFacts = projectIdentityFacts(siteConfig.author);
       </div>
     </div>
   </section>
+
+  <PastProjects id="about-past-projects" />
 
   <ProjectHighlights variant="compact" id="about-highlights" />
 

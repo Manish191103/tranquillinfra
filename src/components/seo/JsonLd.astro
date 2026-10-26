@@ -13,6 +13,4 @@ const { schema } = Astro.props;
 const schemas = Array.isArray(schema) ? schema : [schema];
 ---
 
-{schemas.map((s) => (
-  <script is:inline type="application/ld+json" set:html={jsonForScript(s)}></script>
-))}
+{schemas.map((s) => <script is:inline type="application/ld+json" set:html={jsonForScript(s)} />)}

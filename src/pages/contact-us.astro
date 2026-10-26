@@ -15,6 +15,7 @@
  * attribute for the analytics layer; the values themselves come from
  * `site.config.ts` (the published NAP) and `project.config.ts`.
  */
+import CityLogo from '~/components/ui/primitives/CityLogo.astro';
 import { PUBLIC_GOOGLE_MAPS_API_KEY } from 'astro:env/client';
 import PageLayout from '~/layouts/PageLayout.astro';
 import Breadcrumbs from '~/components/seo/Breadcrumbs.astro';
@@ -315,6 +316,7 @@ heroActions.push({
 
   <section id="contact-map" class="section scroll-mt-24" aria-labelledby="contact-map-title">
     <div class="mx-auto max-w-6xl px-6">
+      <CityLogo height="3.5rem" class="mb-4" />
       <h2 id="contact-map-title" class="display-md">Find the office and the site</h2>
       <p class="text-foreground-muted mt-4 max-w-[46rem] text-pretty">
         The office is in Nandini Nagar, Miyapur, Hyderabad, and the Tranquill City project site is

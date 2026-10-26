@@ -157,9 +157,7 @@ export function initAnnouncementBars(): void {
       () => {
         paused = !paused;
         armLiveRegion();
-        const pauseIcon = pauseButton.querySelector<HTMLElement>(
-          '[data-announcement-pause-icon]'
-        );
+        const pauseIcon = pauseButton.querySelector<HTMLElement>('[data-announcement-pause-icon]');
         const playIcon = pauseButton.querySelector<HTMLElement>('[data-announcement-play-icon]');
         if (pauseIcon) pauseIcon.hidden = paused;
         if (playIcon) playIcon.hidden = !paused;
