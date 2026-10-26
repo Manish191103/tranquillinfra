@@ -3,9 +3,10 @@
  * Homepage
  *
  * Order (2026-10-27): the aerial-reel hero with the headline figures, the
- * full-screen highlights scroll (layout, roads, parks, security, approvals),
+ * full-screen highlights scroll (layout and roads, parks and security, west
+ * Hyderabad's growth, entry price and loans),
  * the pinned location map, the plot explorer with buyer testimonials right
- * after it, land use and features, loans and fit, then the closing CTA. The
+ * after it, then land use and features. The
  * published position (layout, numbers, approvals) now lives on the project
  * page.
  * All copy lives here or in `src/content/pages/home.md`; the section
@@ -23,17 +24,13 @@ import LocationStory from '~/components/home/LocationStory.astro';
 import PastProjects from '~/components/home/PastProjects.astro';
 import ProjectHighlights from '~/components/projects/ProjectHighlights.astro';
 import SitePlanExplorer from '~/components/projects/SitePlanExplorer.astro';
-import LoanAndFit, { type FitPoint } from '~/components/home/LoanAndFit.astro';
 import ProjectTestimonials from '~/components/projects/ProjectTestimonials.astro';
 
 import { buildPosterPreload } from '~/components/ui/overlay/Carousel/posters';
 import type { BuildFrame } from '~/components/home/ScrollBuildStory.astro';
 import type { HeroFact } from '~/components/home/Hero.astro';
 import projectConfig from '~/config/project.config';
-import { landUse } from '~/config/highlights.config';
 
-import heroEntrance from '~/assets/images/projects/tranquill-city/home-hero/entrance.webp';
-import heroGreenSpaces from '~/assets/images/projects/tranquill-city/home-hero/green-spaces.webp';
 import heroAmenities from '~/assets/images/projects/tranquill-city/home-hero/amenities.webp';
 import heroCommunityWalk from '~/assets/images/projects/tranquill-city/home-hero/community-walk.webp';
 import belongFrame from '~/assets/images/projects/tranquill-city/build-sequence/05-belong.webp';
@@ -93,38 +90,16 @@ const buildSequence: BuildFrame[] = [
     image: belongFrame,
     imageAlt: 'Illustrative concept image of the layout with homes and planted streets in place',
     label: 'Layout',
-    title: '4.8 acres. 82 villa plots.',
-    detail: `A ${projectConfig.siteArea.sqM.toLocaleString('en-IN')} sq.m HMDA layout of plots from 150 to 300 sq.yd. ${projectConfig.availability.saleable} plots are for sale; ${projectConfig.availability.mortgageHeld} are held under HMDA Mortgage until the layout conditions are met.`,
+    title: "82 villa plots on 40' and 33' roads.",
+    detail: `A ${projectConfig.siteArea.acre} acre, ${projectConfig.siteArea.sqM.toLocaleString('en-IN')} sq.m HMDA layout of plots from 150 to 300 sq.yd on 40' and 33' cement-concrete roads. ${projectConfig.availability.saleable} plots are for sale; ${projectConfig.availability.mortgageHeld} are held under HMDA Mortgage until the layout conditions are met.`,
     visual: {
       kind: 'plots',
       total: projectConfig.availability.total,
       saleable: projectConfig.availability.saleable,
       stats: [
         { value: `${projectConfig.siteArea.acre} acres`, label: 'Layout' },
-        { value: '19,410 sq.m', label: 'Site area' },
         { value: '150–300', label: 'Sq.yd per plot' },
-      ],
-    },
-  },
-  {
-    image: heroGreenSpaces,
-    imageAlt:
-      'Illustrative golden-hour view along a planted villa street inside the planned layout, with a tree-lined avenue, low boundary walls and a car parked under a villa carport',
-    label: 'Roads',
-    title: "40' and 33' CC roads.",
-    detail:
-      "Cement-concrete internal roads with avenue plantation, underground drainage and water connection points. The site fronts an existing 18 m road on the east and a 40' road on the north.",
-    visual: {
-      kind: 'roads',
-      roads: [
-        { label: "40' CC road", feet: 40 },
-        { label: "33' CC road", feet: 33 },
-      ],
-      notes: [
-        { icon: 'compass', label: '18 m road on the east' },
-        { icon: 'road', label: "40' road on the north" },
-        { icon: 'cloud-rain', label: 'Underground drainage' },
-        { icon: 'trees', label: 'Avenue plantation' },
+        { value: "40' & 33'", label: 'CC roads' },
       ],
     },
   },
@@ -132,96 +107,77 @@ const buildSequence: BuildFrame[] = [
     image: heroAmenities,
     imageAlt:
       "Illustrative view of a planned children's play area inside the layout in daylight, with a multi-play tower and spiral slide, spring riders, a swing frame and a coloured play surface among planting and lawns",
-    label: 'Parks',
-    title: 'Two parks and a play area.',
+    label: 'Parks & security',
+    title: 'Two parks, a play area, gated and secure.',
     detail:
-      "Parks of 1,040.50 and 762.49 sq.yd, a children's play area, a jogging and cycle track with sit-outs, and 588.54 sq.yd reserved for social infrastructure.",
-    visual: {
-      kind: 'landuse',
-      // The plotted share reads as paper on the dark frame, not the brand forest.
-      shares: landUse.map(({ label, percent, tone }, i) => ({
-        label,
-        percent,
-        tone: i === 0 ? '#e9e3d3' : tone,
-      })),
-      stats: [
-        { value: '1,040.50', label: 'Park 1, sq.yd' },
-        { value: '762.49', label: 'Park 2, sq.yd' },
-        { value: '588.54', label: 'Social infra, sq.yd' },
-      ],
-    },
-  },
-  {
-    image: heroEntrance,
-    imageAlt:
-      'Illustrative dusk view of the planned Tranquill City entrance arch, with the Tranquill City name and emblem on its stone pillar and a car arriving under the lit canopy',
-    label: 'Security',
-    title: 'Semi-gated, behind an entrance arch.',
-    detail:
-      'A compound wall around the layout, an entrance arch at the gate and security round the clock.',
+      "Parks of 1,040.50 and 762.49 sq.yd, a children's play area and a jogging and cycle track, inside a compound wall with an entrance arch and security round the clock.",
     visual: {
       kind: 'tiles',
       tiles: [
-        { icon: 'layers', label: 'Compound wall', note: 'Around the whole layout' },
-        { icon: 'building-bank', label: 'Entrance arch', note: 'One gated way in' },
+        { icon: 'trees', label: 'Two parks', note: '1,040.50 and 762.49 sq.yd' },
+        { icon: 'baby', label: 'Play area', note: 'Jogging and cycle track' },
+        { icon: 'fence', label: 'Compound wall', note: 'With an entrance arch' },
         { icon: 'shield-check', label: '24/7 security', note: 'Round the clock' },
       ],
     },
   },
   {
+    image: heroPoster,
+    imageAlt:
+      'Illustrative aerial render of the planned layout beside the highway interchange, with the city skyline on the horizon',
+    label: 'Growth',
+    title: 'Hyderabad is growing west.',
+    detail:
+      'City home prices rose 13% in 2025 and office leasing grew 29% in the first half of 2026. The metro is planned 13.4 km from Miyapur to Patancheru, and NHAI has tendered the Regional Ring Road’s northern arc from Sangareddy.',
+    visual: {
+      kind: 'growth',
+      metrics: [
+        { chart: 'line', value: '+13%', label: 'Hyderabad home prices, 2025' },
+        { chart: 'bars', value: '+29%', label: 'Office leasing, H1 2026' },
+        { chart: 'route', value: '13.4 km', label: 'Metro to Patancheru, proposed' },
+        { chart: 'ring', value: '₹9,362 cr', label: 'RRR north tenders, NHAI' },
+      ],
+    },
+    note: 'City-wide figures, not a forecast for this project; past growth does not promise returns.',
+    sources: [
+      {
+        label: 'Knight Frank 2025',
+        url: 'https://content.knightfrank.com/research/3070/documents/en/india-real-estate-office-and-residential-market-h2-2025-12597.pdf',
+      },
+      {
+        label: 'Knight Frank H1 2026',
+        url: 'https://content.knightfrank.com/research/3116/documents/en/india-real-estate-office-and-residential-market-h1-2026-12927.pdf',
+      },
+      { label: 'HMRL Phase II', url: 'https://hmrl.co.in/phase-ii/' },
+      {
+        label: 'RRR tenders',
+        url: 'https://telanganatoday.com/regional-ring-road-project-faces-fresh-delay-as-nhai-extends-bid-deadline-for-sixth-time',
+      },
+    ],
+  },
+  {
     image: heroCommunityWalk,
     imageAlt:
       'Illustrative view along a landscaped walkway inside the planned layout, with a timber pergola and benches where residents sit, planting beds with bollard lights, and two residents walking towards the camera',
-    label: 'Approvals',
-    title: `RERA registered, HMDA approved. From ${priceFrom}.`,
-    detail: `RERA ${rera.number} · HMDA ${hmda.number}. Both numbers are printed on the brochure; see the plots on a site visit.`,
+    label: 'Get in early',
+    title: 'Get in early.',
+    detail: `Buy at today's entry price, from ${priceFrom} per plot, before the roads arrive. RERA ${rera.number} and HMDA ${hmda.number}, the approvals a lender checks; our banking partners process plot and construction loans and our team handles the paperwork with you.`,
     visual: {
-      kind: 'approvals',
+      kind: 'invest',
       price: priceFrom,
-      priceNote: 'Starting price per plot',
+      priceNote: 'Entry price per plot',
+      total: projectConfig.availability.total,
+      saleable: projectConfig.availability.saleable,
+      loan: [
+        'Bank loans through our banking partners',
+        'Plot and construction loans',
+        'We handle the paperwork with you',
+      ],
     },
   },
 ];
 
 const project = await getEntry('projects', 'tranquill-city');
-
-/**
- * Who the project suits. Each point links to the guide that backs it, which
- * keeps the buyer guides linked from the homepage now that the library
- * section is gone (the footer carries the full guide list).
- */
-const fitPoints: FitPoint[] = [
-  {
-    icon: 'home',
-    title: 'Want to build your own villa',
-    body: 'Plots from 150 to 300 sq.yd on a planned layout, for an independent home to your own plan.',
-    link: {
-      href: '/blog/building-permission-plot-telangana/',
-      label: 'Building permission on a plot',
-    },
-  },
-  {
-    icon: 'certificate',
-    title: 'Want approvals you can check',
-    body: `RERA ${projectConfig.approvals.rera.number} and HMDA ${projectConfig.approvals.hmda.number}, printed on the brochure and the layout plan.`,
-    link: { href: '/blog/hmda-or-dtcp-plot-approval-telangana/', label: 'HMDA or DTCP approval' },
-  },
-  {
-    icon: 'factory',
-    title: 'Work in the Patancheru and Sangareddy belt',
-    body: 'Off NH-65 near Rudraram, with BHEL, Isnapur, Pashamylaram and IIT Hyderabad around the site.',
-    link: {
-      href: '/blog/rudraram-patancheru-corridor/',
-      label: 'Rudraram and Patancheru corridor guide',
-    },
-  },
-  {
-    icon: 'trees',
-    title: 'Want open space for family',
-    body: "Two parks, a children's play area, a jogging and cycle track, a compound wall and 24/7 security.",
-    link: { href: '/blog/verify-plot-hyderabad/', label: 'How to verify a plot before you buy' },
-  },
-];
 ---
 
 <PageLayout title={home.data.title} description={home.data.description} lcpPreload={lcpPreload}>
@@ -265,9 +221,9 @@ const fitPoints: FitPoint[] = [
     eyebrow="Project highlights"
     titleLead="A planned layout,"
     titleAccent="ready for your home."
-    caption="Layout · roads · parks · security · approvals"
+    caption="Layout · parks · growth · price"
     sequenceLabel="Project highlights"
-    skipLabel="Skip to approvals and price"
+    skipLabel="Skip to price and loans"
   />
 
   <LocationStory />
@@ -296,12 +252,4 @@ const fitPoints: FitPoint[] = [
     intro="The area statement from the HMDA scrutiny plan, and the ten layout features listed in the brochure."
     showFigures={false}
   />
-
-  <LoanAndFit
-    eyebrow="Loans and fit"
-    title="Bank loan available. Is it right for you?"
-    intro="The approvals lenders look for are in place. Here is who Tranquill City suits, with a guide behind each point."
-    fit={fitPoints}
-  />
-
 </PageLayout>

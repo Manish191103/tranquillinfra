@@ -113,6 +113,47 @@ const pins: Pin[] = [
   { kind: 'office', x: 350, y: 1335, label: 'Infosys', cat: 'work' },
 ];
 
+const kindNames: Record<Kind, string> = {
+  city: 'Town',
+  school: 'School',
+  university: 'University',
+  hospital: 'Medical',
+  industry: 'Industry',
+  office: 'Offices',
+  bank: 'Bank',
+  temple: 'Temple',
+  food: 'Food',
+  bus: 'Bus stand',
+  exit: 'ORR exit',
+  sports: 'Sports',
+  research: 'Research',
+};
+
+const catNames: Record<Category, string> = {
+  roads: 'Getting around',
+  work: 'Jobs nearby',
+  learn: 'Schools and colleges',
+  place: 'Nearby',
+};
+
+// The map's summary, shown as the site's popup card (and read out as the
+// map's accessible name).
+const summary: { glyph: string; text: string }[] = [
+  { glyph: 'M5 21 9 3M19 21 15 3M12 5v2M12 11v2M12 17v2', text: 'Off the Mumbai Highway (NH-65)' },
+  {
+    glyph: 'M5 21 9 3M19 21 15 3M12 5v2M12 11v2M12 17v2',
+    text: 'Beside the Nanded Highway (NH-161)',
+  },
+  { glyph: glyphs.university, text: 'Near IIT Hyderabad' },
+  {
+    glyph: 'M3 12a9 9 0 0 1 18 0M7 12a5 5 0 0 1 10 0M12 12v8',
+    text: 'Between the proposed Regional Ring Road and the Outer Ring Road',
+  },
+  { glyph: glyphs.exit, text: 'Reached from ORR Exit 3' },
+];
+const summaryLabel =
+  'Location map: Tranquill City off the Mumbai Highway (NH-65) beside the Nanded Highway (NH-161) and IIT Hyderabad, between the proposed Regional Ring Road and the Outer Ring Road at Exit 3';
+
 const labelAt = (pin: Pin) => {
   if (pin.side === 'below') return { x: pin.x, y: pin.y + 36, anchor: 'middle' };
   if (pin.side === 'above') return { x: pin.x, y: pin.y - 22, anchor: 'middle' };
@@ -128,135 +169,403 @@ const rrr = 'M207 540 A245 245 0 0 1 697 540';
 const orr = 'M190 1140 A262 225 0 0 1 714 1140';
 ---
 
-<svg
-  viewBox="0 120 940 1240"
-  class:list={['location-map h-auto w-full', className]}
-  data-location-map
-  data-focus={focus}
-  role="img"
-  aria-labelledby={`${id}-title`}
->
-  <title id={`${id}-title`}>
-    Location map: Tranquill City off the Mumbai Highway (NH-65) beside the Nanded Highway (NH-161)
-    and IIT Hyderabad, between the proposed Regional Ring Road and the Outer Ring Road at Exit 3
-  </title>
-  <rect x="0" y="120" width="940" height="1240" class="map-bg" rx="24"></rect>
-
-  {/* Regional Ring Road */}
-  <path id={`${id}-rrr`} d={rrr} class="road road-ring"></path>
-  <path d={rrr} class="road-dash"></path>
-  <path d={rrr} class="road-glow"></path>
-  <text class="road-label"
-    ><textPath href={`#${id}-rrr`} startOffset="20%" text-anchor="middle"
-      >REGIONAL RING ROAD</textPath
-    ></text
+<div class="lm" data-lm>
+  <svg
+    viewBox="0 120 940 1240"
+    class:list={['location-map h-auto w-full', className]}
+    data-location-map
+    data-focus={focus}
+    role="img"
+    aria-label={summaryLabel}
   >
-  <text class="road-label"
-    ><textPath href={`#${id}-rrr`} startOffset="80%" text-anchor="middle"
-      >REGIONAL RING ROAD</textPath
-    ></text
-  >
+    <rect x="0" y="120" width="940" height="1240" class="map-bg" rx="24"></rect>
 
-  {/* Outer Ring Road, with the Kollur Exit 2 crossing */}
-  <path id={`${id}-orr`} d={orr} class="road road-ring"></path>
-  <path d={orr} class="road-dash"></path>
-  <path d={orr} class="road-glow"></path>
-  <text class="road-label"
-    ><textPath href={`#${id}-orr`} startOffset="31%" text-anchor="middle">OUTER RING ROAD</textPath
-    ></text
-  >
-  <text class="road-label"
-    ><textPath href={`#${id}-orr`} startOffset="76%" text-anchor="middle">OUTER RING ROAD</textPath
-    ></text
-  >
-  <path d="M95 1025 L315 1135" class="road road-side"></path>
+    {/* Regional Ring Road */}
+    <path id={`${id}-rrr`} d={rrr} class="road road-ring"></path>
+    <path d={rrr} class="road-dash"></path>
+    <path d={rrr} class="road-glow"></path>
+    <text class="road-label"
+      ><textPath href={`#${id}-rrr`} startOffset="20%" text-anchor="middle"
+        >REGIONAL RING ROAD</textPath
+      ></text
+    >
+    <text class="road-label"
+      ><textPath href={`#${id}-rrr`} startOffset="80%" text-anchor="middle"
+        >REGIONAL RING ROAD</textPath
+      ></text
+    >
 
-  {/* Local roads off the highway */}
-  <path d="M452 532 L745 532" class="road road-local"></path>
-  <text x="600" y="539" class="road-label road-label-sm" text-anchor="middle">NANDED HIGHWAY</text>
-  <path d="M452 615 L710 615" class="road road-local"></path>
-  <path d="M452 707 L710 707" class="road road-local"></path>
-  <path d="M452 645 L205 742" class="road road-local"></path>
-  <path d="M430 835 L290 768" class="road road-local"></path>
+    {/* Outer Ring Road, with the Kollur Exit 2 crossing */}
+    <path id={`${id}-orr`} d={orr} class="road road-ring"></path>
+    <path d={orr} class="road-dash"></path>
+    <path d={orr} class="road-glow"></path>
+    <text class="road-label"
+      ><textPath href={`#${id}-orr`} startOffset="31%" text-anchor="middle"
+        >OUTER RING ROAD</textPath
+      ></text
+    >
+    <text class="road-label"
+      ><textPath href={`#${id}-orr`} startOffset="76%" text-anchor="middle"
+        >OUTER RING ROAD</textPath
+      ></text
+    >
+    <path d="M95 1025 L315 1135" class="road road-side"></path>
 
-  {/* Mumbai Highway and the city-side branches */}
-  <path d="M452 1130 L290 1340" class="road road-main"></path>
-  <path d="M452 1130 L650 1295" class="road road-main"></path>
-  <path d={highway} class="road road-main"></path>
-  <path d={highway} class="road-dash"></path>
-  <path d={highway} class="road-glow"></path>
-  <text x="455" y="710" class="road-label" text-anchor="middle" transform="rotate(-90 455 710)"
-    >MUMBAI HIGHWAY · NH-65</text
-  >
-  <text x="410" y="420" class="small-label" text-anchor="middle" transform="rotate(-90 410 420)"
-    >SANGAREDDY</text
-  >
+    {/* Local roads off the highway */}
+    <path d="M452 532 L745 532" class="road road-local"></path>
+    <text x="600" y="539" class="road-label road-label-sm" text-anchor="middle">NANDED HIGHWAY</text
+    >
+    <path d="M452 615 L710 615" class="road road-local"></path>
+    <path d="M452 707 L710 707" class="road road-local"></path>
+    <path d="M452 645 L205 742" class="road road-local"></path>
+    <path d="M430 835 L290 768" class="road road-local"></path>
 
-  {/* Junctions */}
-  <circle cx="452" cy="295" r="46" class="junction"></circle>
-  <circle cx="452" cy="522" r="24" class="junction"></circle>
-  <text x="452" y="518" class="junction-label junction-label-sm" text-anchor="middle">NH</text>
-  <text x="452" y="534" class="junction-label junction-label-sm" text-anchor="middle">161</text>
-  <circle cx="452" cy="918" r="36" class="junction"></circle>
-  <text x="452" y="912" class="junction-label" text-anchor="middle">Exit</text>
-  <text x="452" y="934" class="junction-label" text-anchor="middle">No 3</text>
-  <circle cx="202" cy="1083" r="34" class="junction"></circle>
-  <circle cx="452" cy="1130" r="36" class="junction"></circle>
+    {/* Mumbai Highway and the city-side branches */}
+    <path d="M452 1130 L290 1340" class="road road-main"></path>
+    <path d="M452 1130 L650 1295" class="road road-main"></path>
+    <path d={highway} class="road road-main"></path>
+    <path d={highway} class="road-dash"></path>
+    <path d={highway} class="road-glow"></path>
+    <text x="455" y="710" class="road-label" text-anchor="middle" transform="rotate(-90 455 710)"
+      >MUMBAI HIGHWAY · NH-65</text
+    >
+    <text x="410" y="420" class="small-label" text-anchor="middle" transform="rotate(-90 410 420)"
+      >SANGAREDDY</text
+    >
 
-  {
-    pins.map((pin) => {
-      const label = labelAt(pin);
-      return (
-        <g class="pin-g" data-cat={pin.cat}>
-          {/* Invisible hit area, so the hover catches the label as well as the dot */}
-          <circle cx={pin.x} cy={pin.y} r="26" class="pin-hit" fill="transparent" />
-          <circle cx={pin.x} cy={pin.y} r="13" class="pin-ring" fill="none" />
-          <g class="pin-mark">
-            <circle cx={pin.x} cy={pin.y} r="13" class="pin" />
-            <svg
-              x={pin.x - 8}
-              y={pin.y - 8}
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              class="pin-glyph"
-            >
-              <path
-                d={glyphs[pin.kind]}
-                fill="none"
-                stroke="#fff"
-                stroke-width="2.2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
+    {/* Junctions */}
+    <circle cx="452" cy="295" r="46" class="junction"></circle>
+    <circle cx="452" cy="522" r="24" class="junction"></circle>
+    <text x="452" y="518" class="junction-label junction-label-sm" text-anchor="middle">NH</text>
+    <text x="452" y="534" class="junction-label junction-label-sm" text-anchor="middle">161</text>
+    <circle cx="452" cy="918" r="36" class="junction"></circle>
+    <text x="452" y="912" class="junction-label" text-anchor="middle">Exit</text>
+    <text x="452" y="934" class="junction-label" text-anchor="middle">No 3</text>
+    <circle cx="202" cy="1083" r="34" class="junction"></circle>
+    <circle cx="452" cy="1130" r="36" class="junction"></circle>
+
+    {
+      pins.map((pin) => {
+        const label = labelAt(pin);
+        return (
+          <g
+            class="pin-g"
+            data-cat={pin.cat}
+            data-name={pin.label.replace('|', ' ')}
+            data-kind={kindNames[pin.kind]}
+            data-group={catNames[pin.cat]}
+            data-glyph={glyphs[pin.kind]}
+          >
+            {/* Invisible hit area, so the hover catches the label as well as the dot */}
+            <circle cx={pin.x} cy={pin.y} r="26" class="pin-hit" fill="transparent" />
+            <circle cx={pin.x} cy={pin.y} r="13" class="pin-ring" fill="none" />
+            <g class="pin-mark">
+              <circle cx={pin.x} cy={pin.y} r="13" class="pin" />
+              <svg
+                x={pin.x - 8}
+                y={pin.y - 8}
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                class="pin-glyph"
+              >
+                <path
+                  d={glyphs[pin.kind]}
+                  fill="none"
+                  stroke="#fff"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </g>
+            <text x={label.x} y={label.y} text-anchor={label.anchor} class="pin-label">
+              {pin.label.split('|').map((line, i) => (
+                <tspan x={label.x} dy={i === 0 ? 0 : 22}>
+                  {line}
+                </tspan>
+              ))}
+            </text>
           </g>
-          <text x={label.x} y={label.y} text-anchor={label.anchor} class="pin-label">
-            {pin.label.split('|').map((line, i) => (
-              <tspan x={label.x} dy={i === 0 ? 0 : 22}>
-                {line}
-              </tspan>
-            ))}
-          </text>
-        </g>
-      );
-    })
-  }
+        );
+      })
+    }
 
-  {/* The site */}
-  <g class="site">
-    <rect x="500" y="546" width="262" height="50" rx="12" class="site-halo"></rect>
-    <rect x="500" y="546" width="262" height="50" rx="12" class="site-tag"></rect>
-    {/* Emblem only: the artwork's top 64%, cropped by the nested viewport */}
-    <svg x="506" y="549" width="62" height="44" viewBox="0 0 283 200">
-      <image href={logo.src} width="283" height="313" class="site-logo" />
-    </svg>
-    <text x="666" y="579" text-anchor="middle" class="site-text">TRANQUILL CITY</text>
-  </g>
-  <text x="30" y="1345" class="note">Schematic · not to scale</text>
-</svg>
+    {/* The site */}
+    <g class="site" data-lm-site>
+      <rect x="500" y="546" width="262" height="50" rx="12" class="site-halo"></rect>
+      <rect x="500" y="546" width="262" height="50" rx="12" class="site-tag"></rect>
+      {/* Emblem only: the artwork's top 64%, cropped by the nested viewport */}
+      <svg x="506" y="549" width="62" height="44" viewBox="0 0 283 200">
+        <image href={logo.src} width="283" height="313" class="site-logo" />
+      </svg>
+      <text x="666" y="579" text-anchor="middle" class="site-text">TRANQUILL CITY</text>
+    </g>
+    <text x="30" y="1345" class="note">Schematic · not to scale</text>
+  </svg>
+
+  {/* Popup card: the site summary, or the place under the pointer / finger */}
+  <div class="lm-pop" data-lm-pop aria-hidden="true">
+    <div class="lm-card" data-lm-card="site">
+      <p class="lm-head">
+        <span class="lm-badge lm-badge-site"><img src={logo.src} alt="" /></span>
+        <span>
+          <strong>Tranquill City</strong>
+          <small>Mamidipally, near Rudraram</small>
+        </span>
+      </p>
+      <ul class="lm-list">
+        {
+          summary.map((row) => (
+            <li>
+              <svg viewBox="0 0 24 24" class="lm-ico">
+                <path d={row.glyph} />
+              </svg>
+              {row.text}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+    <div class="lm-card" data-lm-card="pin" hidden>
+      <p class="lm-head">
+        <span class="lm-badge">
+          <svg viewBox="0 0 24 24" class="lm-ico lm-ico-white"><path data-lm-glyph d=""></path></svg
+          >
+        </span>
+        <span>
+          <strong data-lm-name></strong>
+          <small data-lm-kind></small>
+        </span>
+      </p>
+      <p class="lm-group" data-lm-group></p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const init = (root: HTMLElement) => {
+    const svg = root.querySelector<SVGSVGElement>('[data-location-map]');
+    const pop = root.querySelector<HTMLElement>('[data-lm-pop]');
+    const site = root.querySelector<SVGGElement>('[data-lm-site]');
+    const siteCard = root.querySelector<HTMLElement>('[data-lm-card="site"]');
+    const pinCard = root.querySelector<HTMLElement>('[data-lm-card="pin"]');
+    if (!svg || !pop || !site || !siteCard || !pinCard) return;
+    const pins = [...root.querySelectorAll<SVGGElement>('.pin-g')];
+    let current: Element | null = null;
+
+    // Above the target, or below it when there is no room; kept inside the map.
+    const place = (target: Element) => {
+      const box = root.getBoundingClientRect();
+      const r = target.getBoundingClientRect();
+      const gap = 10;
+      const w = pop.offsetWidth;
+      const h = pop.offsetHeight;
+      const cx = r.left - box.left + r.width / 2;
+      const left = Math.min(Math.max(cx - w / 2, 8), Math.max(8, box.width - w - 8));
+      let top = r.top - box.top - h - gap;
+      const below = top < 8;
+      if (below) top = r.bottom - box.top + gap;
+      pop.style.left = `${left}px`;
+      pop.style.top = `${Math.min(top, Math.max(8, box.height - h - 8))}px`;
+      pop.dataset.side = below ? 'below' : 'above';
+      pop.style.setProperty('--arrow', `${Math.min(Math.max(cx - left, 16), w - 16)}px`);
+    };
+
+    const show = (target: Element) => {
+      current = target;
+      const isPin = target !== site;
+      siteCard.hidden = isPin;
+      pinCard.hidden = !isPin;
+      if (isPin) {
+        const d = (target as SVGGElement).dataset;
+        pinCard.querySelector('[data-lm-glyph]')?.setAttribute('d', d.glyph ?? '');
+        pinCard.querySelector('[data-lm-name]')!.textContent = d.name ?? '';
+        pinCard.querySelector('[data-lm-kind]')!.textContent = d.kind ?? '';
+        pinCard.querySelector('[data-lm-group]')!.textContent = d.group ?? '';
+      }
+      pop.classList.add('is-open');
+      place(target);
+    };
+
+    const hide = () => {
+      current = null;
+      pop.classList.remove('is-open');
+    };
+
+    for (const el of [site, ...pins]) {
+      el.addEventListener('pointerenter', (e) => {
+        if (e.pointerType === 'mouse') show(el);
+      });
+      el.addEventListener('pointerleave', (e) => {
+        if (e.pointerType === 'mouse' && current === el) hide();
+      });
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (current === el && !matchMedia('(hover: hover)').matches) hide();
+        else show(el);
+      });
+    }
+    document.addEventListener('click', (e) => {
+      if (current && !root.contains(e.target as Node)) hide();
+    });
+    window.addEventListener('resize', () => current && place(current), { passive: true });
+
+    // Open the site summary once, when the map first comes into view.
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          io.disconnect();
+          window.setTimeout(() => !current && show(site), 700);
+        }
+      },
+      { threshold: 0.35 }
+    );
+    io.observe(svg);
+  };
+
+  document.querySelectorAll<HTMLElement>('[data-lm]').forEach(init);
+</script>
 
 <style>
+  .lm {
+    position: relative;
+  }
+
+  .lm-pop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 5;
+    width: min(18rem, calc(100% - 16px));
+    padding: 0.85rem 0.95rem;
+    border: 1px solid rgb(31 61 46 / 14%);
+    border-radius: 14px;
+    background: #fffdf7;
+    box-shadow: 0 14px 34px -12px rgb(20 30 25 / 35%);
+    color: #1f2a24;
+    font-family: var(--site-font-sans);
+    font-size: 0.8125rem;
+    line-height: 1.35;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(6px) scale(0.97);
+    transition:
+      opacity 200ms ease,
+      transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .lm-pop.is-open {
+    opacity: 1;
+    transform: none;
+  }
+
+  .lm-pop::after {
+    content: '';
+    position: absolute;
+    left: calc(var(--arrow, 50%) - 7px);
+    bottom: -7px;
+    width: 14px;
+    height: 14px;
+    border: inherit;
+    border-width: 0 1px 1px 0;
+    background: inherit;
+    transform: rotate(45deg);
+  }
+
+  .lm-pop[data-side='below']::after {
+    top: -7px;
+    bottom: auto;
+    border-width: 1px 0 0 1px;
+  }
+
+  .lm-head {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .lm-head strong {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+  }
+
+  .lm-head small {
+    display: block;
+    color: #6b6458;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .lm-badge {
+    display: grid;
+    flex: none;
+    width: 2.25rem;
+    height: 2.25rem;
+    place-items: center;
+    border-radius: 999px;
+    background: #2f8a3b;
+  }
+
+  .lm-badge-site {
+    background: #b0157e;
+  }
+
+  .lm-badge-site img {
+    width: 1.6rem;
+    height: 1.6rem;
+    object-fit: cover;
+    object-position: top;
+    filter: brightness(0) invert(1);
+  }
+
+  .lm-ico {
+    flex: none;
+    width: 1.1rem;
+    height: 1.1rem;
+    fill: none;
+    stroke: #2f8a3b;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .lm-ico-white {
+    stroke: #fff;
+  }
+
+  .lm-list {
+    display: grid;
+    gap: 0.45rem;
+    margin-top: 0.75rem;
+    padding-top: 0.7rem;
+    border-top: 1px solid rgb(31 61 46 / 10%);
+  }
+
+  .lm-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    font-weight: 600;
+  }
+
+  .lm-group {
+    display: inline-block;
+    margin-top: 0.6rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: #e7f0e2;
+    color: #1f3d2e;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .site {
+    cursor: pointer;
+  }
+
   .location-map {
     font-family: var(--site-font-sans);
   }
@@ -511,6 +820,10 @@ const orr = 'M190 1140 A262 225 0 0 1 714 1140';
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .lm-pop {
+      transition: none;
+    }
+
     .site-halo {
       animation: none;
     }

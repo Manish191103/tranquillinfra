@@ -36,6 +36,10 @@ export interface BuildFrame {
   detail: string;
   /** A figure shown in place of `detail`, which stays as screen-reader text */
   visual?: BuildVisualSpec;
+  /** A short visible note under the figure, e.g. a disclaimer */
+  note?: string;
+  /** Where the beat's figures come from, linked under it */
+  sources?: { label: string; url: string }[];
 }
 
 interface Props {
@@ -209,6 +213,19 @@ const pad = (value: number) => String(value).padStart(2, '0');
               ) : (
                 <p>{frame.detail}</p>
               )}
+              {(frame.note || frame.sources) && (
+                <p class="build-beat-sources">
+                  {frame.note}
+                  {frame.sources?.map((source, i) => (
+                    <>
+                      {i === 0 ? ' Sources: ' : ' · '}
+                      <a href={source.url} target="_blank" rel="noopener">
+                        {source.label}
+                      </a>
+                    </>
+                  ))}
+                </p>
+              )}
               {index === lastIndex && (
                 <div class="build-beat-actions">
                   <a
@@ -245,6 +262,21 @@ const pad = (value: number) => String(value).padStart(2, '0');
 </script>
 
 <style>
+  .build-beat .build-beat-sources {
+    max-width: 30rem;
+    margin-top: 0.75rem;
+    color: rgb(255 255 255 / 70%);
+    font-size: 0.7rem;
+    line-height: 1.45;
+    text-shadow: var(--build-text-shadow);
+  }
+
+  .build-beat .build-beat-sources a {
+    color: rgb(255 255 255 / 88%);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
   .build-story {
     /* Chrome inset, aligned with the `max-w-6xl px-6` shell below */
     --build-inset: max(1.5rem, calc((100vw - 72rem) / 2 + 1.5rem));

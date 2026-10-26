@@ -64,7 +64,7 @@ const stepCount = connectivity.length + 1;
       <ol class="ls-steps">
         <li class="ls-step is-active" data-ls-step="site">
           <div class="ls-step-head">
-            <span class="ls-icon"><Icon name="map-pin" size="lg" /></span>
+            <span class="ls-icon"><Icon name="map-pin" size="md" /></span>
             <span class="ls-num">{pad(1)} / {pad(stepCount)}</span>
           </div>
           <h3 class="ls-title">The site and its corridor</h3>
@@ -178,15 +178,15 @@ const stepCount = connectivity.length + 1;
 <style>
   .ls-grid {
     display: grid;
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-    gap: clamp(2.5rem, 6vw, 5.5rem);
+    grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
+    gap: clamp(2rem, 4.5vw, 4rem);
     margin-top: clamp(2.5rem, 6vw, 4rem);
   }
 
   /* Map on the right on desktop, steps on the left. */
   .ls-map {
     position: sticky;
-    top: 6.5rem;
+    top: 5.25rem;
     order: 2;
     align-self: start;
   }
@@ -198,9 +198,9 @@ const stepCount = connectivity.length + 1;
     box-shadow: var(--shell-edge-invert);
   }
 
-  .ls-map-frame :global(svg) {
+  .ls-map-frame :global(.location-map) {
     display: block;
-    max-height: calc(100svh - 11rem);
+    max-height: calc(100svh - 7.5rem);
     margin-inline: auto;
   }
 
@@ -267,10 +267,10 @@ const stepCount = connectivity.length + 1;
 
   .ls-icon {
     display: grid;
-    width: 3.25rem;
-    height: 3.25rem;
+    width: 2.5rem;
+    height: 2.5rem;
     place-items: center;
-    border-radius: 1rem;
+    border-radius: 0.75rem;
     background: var(--accent);
     color: var(--accent-foreground);
   }
@@ -278,28 +278,28 @@ const stepCount = connectivity.length + 1;
   .ls-num {
     color: var(--color-foreground-muted);
     font-family: var(--font-display);
-    font-size: 1rem;
+    font-size: 0.875rem;
     font-variant-numeric: tabular-nums;
   }
 
   .ls-title {
-    margin-top: 1.4rem;
+    margin-top: 1rem;
     font-family: var(--font-display);
-    font-size: clamp(1.8rem, 2.8vw, 2.4rem);
+    font-size: clamp(1.45rem, 2.1vw, 1.85rem);
     line-height: 1.1;
     letter-spacing: -0.02em;
   }
 
   .ls-body {
     max-width: 46ch;
-    margin-top: 1rem;
+    margin-top: 0.75rem;
     color: var(--color-foreground-muted);
-    font-size: 1.05rem;
-    line-height: 1.6;
+    font-size: 0.95rem;
+    line-height: 1.55;
   }
 
   .ls-chains {
-    margin-top: 1.75rem;
+    margin-top: 1.25rem;
   }
 
   .ls-chain-label {
@@ -323,10 +323,10 @@ const stepCount = connectivity.length + 1;
   }
 
   .ls-place {
-    padding: 0.4rem 0.9rem;
+    padding: 0.3rem 0.7rem;
     border: 1px solid var(--color-border-strong);
     border-radius: var(--radius-full);
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     font-weight: 600;
   }
 
@@ -341,8 +341,9 @@ const stepCount = connectivity.length + 1;
     flex-wrap: wrap;
     align-items: center;
     gap: 0.5rem;
-    margin-top: 1.75rem;
+    margin-top: 1.25rem;
     color: var(--accent);
+    font-size: 0.9rem;
     font-weight: 700;
   }
 
@@ -422,10 +423,10 @@ const stepCount = connectivity.length + 1;
       background: var(--color-background);
     }
 
-    .ls-map-frame :global(svg) {
+    .ls-map-frame :global(.location-map) {
       width: auto;
       max-width: 100%;
-      max-height: 36svh;
+      max-height: 46svh;
     }
 
     .ls-legend {
@@ -443,7 +444,7 @@ const stepCount = connectivity.length + 1;
     }
 
     .ls-title {
-      font-size: 1.65rem;
+      font-size: 1.4rem;
     }
   }
 
