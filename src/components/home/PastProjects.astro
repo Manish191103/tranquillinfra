@@ -122,7 +122,7 @@ const icons = ['skyscraper', 'plant', 'home', 'trees', 'fence', 'map-pin', 'layo
     align-items: center;
     gap: 0.9rem;
     padding: 0.85rem 1.6rem 0.85rem 0.85rem;
-    border: 1px solid color-mix(in oklch, var(--accent) 35%, transparent);
+    border: 1px solid rgb(170 214 160 / 30%);
     border-radius: 999px;
     background: color-mix(in oklch, var(--on-invert) 6%, transparent);
     transition:
@@ -138,8 +138,8 @@ const icons = ['skyscraper', 'plant', 'home', 'trees', 'fence', 'map-pin', 'layo
 
   .pp-badge:hover {
     transform: translateY(-4px) scale(1.04);
-    border-color: var(--accent);
-    background: color-mix(in oklch, var(--accent) 14%, transparent);
+    border-color: rgb(190 228 180 / 70%);
+    background: rgb(150 200 140 / 16%);
   }
 
   .pp-emblem {
@@ -147,9 +147,20 @@ const icons = ['skyscraper', 'plant', 'home', 'trees', 'fence', 'map-pin', 'layo
     width: 2.9rem;
     height: 2.9rem;
     place-items: center;
+    border: 1px solid rgb(255 255 255 / 28%);
     border-radius: 999px;
-    background: var(--accent);
-    color: var(--accent-foreground);
+    /* Glass green: a light, translucent green disc with a white icon */
+    background: linear-gradient(145deg, rgb(170 214 160 / 45%), rgb(110 170 110 / 22%));
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 35%),
+      0 4px 14px -6px rgb(0 0 0 / 40%);
+    backdrop-filter: blur(6px);
+    color: #fff;
+  }
+
+  .pp-paper .pp-emblem {
+    background: linear-gradient(145deg, #d8ebd0, #b9d7ab);
+    color: #1f3d2e;
   }
 
   .pp-name {
