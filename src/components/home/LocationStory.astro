@@ -124,7 +124,13 @@ const stepCount = connectivity.length + 1;
                       <Icon name={item.icon} size="md" />
                     </span>
                     {item.href ? <a href={item.href}>{item.label}</a> : <span>{item.label}</span>}
-                    {item.distanceKm && <span class="ls-km">~{item.distanceKm} km</span>}
+                    {item.distanceKm && (
+                      <span class="ls-km">
+                        {item.driveMin
+                          ? `${item.distanceKm} km · ${item.driveMin} min`
+                          : `~${item.distanceKm} km`}
+                      </span>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -135,7 +141,7 @@ const stepCount = connectivity.length + 1;
     </div>
 
     <p class="text-foreground-muted mt-10 text-sm">
-      Distances are straight-line from the site, not road distances or drive times. Map redrawn from
+      Distances are straight-line from the site, except where a drive time is shown: that one is by road. Map redrawn from
       the project brochure, not to scale. <a
         class="text-foreground underline underline-offset-4"
         href="/blog/rudraram-patancheru-corridor/"

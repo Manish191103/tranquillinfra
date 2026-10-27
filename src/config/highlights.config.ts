@@ -46,6 +46,8 @@ export interface ConnectivityItem {
   href?: string;
   /** Straight-line distance from the site pin (same figures as the project entry) */
   distanceKm?: number;
+  /** Drive time in minutes; when set, `distanceKm` is the road distance */
+  driveMin?: number;
   /** Icon name from the shared Icon set */
   icon: string;
 }
@@ -196,7 +198,13 @@ export const connectivity: ConnectivityGroup[] = [
     title: 'Education & social infrastructure',
     icon: 'book',
     items: [
-      { label: 'IIT Hyderabad, Kandi', href: CORRIDOR_GUIDE, distanceKm: 10.5, icon: 'school' },
+      {
+        label: 'IIT Hyderabad, Kandi',
+        href: CORRIDOR_GUIDE,
+        distanceKm: 6.3,
+        driveMin: 12,
+        icon: 'school',
+      },
       {
         label: 'Engineering, medical & degree colleges belt',
         href: CORRIDOR_GUIDE,

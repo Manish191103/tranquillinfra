@@ -6,10 +6,9 @@
  * project page opens on) behind the page's H1, the primary actions and a strip
  * of the project's headline figures.
  *
- * Desktop sets the copy over the clip's left half, which carries no detail —
- * the layout outline and the highway sit right of centre — under a scrim dark
- * enough to hold white type on any frame. A phone shows the clip as its own
- * band and sets the copy below it on the forest surface, so no text sits on
+ * Desktop sets the copy over the clip's left half with no scrim, so the plots
+ * stay visible across the whole frame; a text shadow holds the white type.
+ * A phone shows the clip as its own band and sets the copy below it on the forest surface, so no text sits on
  * the moving image at that width.
  *
  * The still under the clip is the LCP element and the whole hero until the clip
@@ -56,8 +55,15 @@ interface Props {
   poster: ImageMetadata;
   alt: string;
   video: { src: string; mobileSrc?: string };
-  /** Small label over the media: the clip is a render, not footage. */
+  /** Small label over the media: says whether the clip is footage or a render. */
   mediaNote: string;
+  /**
+   * Optional second clip of the same fly-over, rendered as the finished
+   * development. Adds an After / Today switch that opens on After; the two
+   * clips share one camera move, so the switch cross-fades at the same
+   * timestamp. `poster` should then be the after clip's first frame.
+   */
+  afterVideo?: { src: string; mobileSrc?: string; note: string };
   /** The page's H1. */
   title: string;
   /** Second line of the H1, in the accent colour. */
@@ -70,11 +76,16 @@ interface Props {
   facts: HeroFact[];
 }
 
-const { poster, alt, video, mediaNote, title, titleAccent, intro, eyebrow, seals, actions, facts } =
+const { poster, alt, video, mediaNote, afterVideo, title, titleAccent, intro, eyebrow, seals, actions, facts } =
   Astro.props;
 ---
 
-<section class="home-hero bg-background" data-image-hero aria-labelledby="home-hero-title">
+<section
+  class="home-hero bg-background"
+  data-image-hero
+  data-hero-view={afterVideo ? 'after' : undefined}
+  aria-labelledby="home-hero-title"
+>
   <div class="hero-stage invert-section">
     <div class="hero-media">
       <Picture {...leadingPosterPictureProps} class="hero-poster" src={poster} alt={alt} priority />
@@ -95,10 +106,47 @@ const { poster, alt, video, mediaNote, title, titleAccent, intro, eyebrow, seals
         }
         <source src={video.src} type="video/mp4" />
       </video>
+      {
+        afterVideo && (
+          <video
+            class="hero-video hero-video-after"
+            data-hero-video-after
+            muted
+            playsinline
+            loop
+            preload="none"
+            disablepictureinpicture
+            aria-hidden="true"
+          >
+            {afterVideo.mobileSrc && (
+              <source src={afterVideo.mobileSrc} media="(max-width: 42rem)" type="video/mp4" />
+            )}
+            <source src={afterVideo.src} type="video/mp4" />
+          </video>
+        )
+      }
       <div class="hero-scrim" aria-hidden="true"></div>
 
       <div class="hero-media-bar">
-        <span class="hero-media-note">{mediaNote}</span>
+        {
+          afterVideo && (
+            <div class="hero-view-switch" role="group" aria-label="Choose the view">
+              <button type="button" data-hero-view="after" aria-pressed="true">
+                After<span class="hero-view-long"> development</span>
+              </button>
+              <button type="button" data-hero-view="today" aria-pressed="false">
+                <span class="hero-view-long">Site </span>Today
+              </button>
+            </div>
+          )
+        }
+        <span
+          class="hero-media-note"
+          data-hero-media-note
+          data-note-today={mediaNote}
+          data-note-after={afterVideo?.note}
+          aria-live="polite">{afterVideo?.note ?? mediaNote}</span
+        >
         <button
           type="button"
           class="hero-round"
@@ -185,10 +233,18 @@ const { poster, alt, video, mediaNote, title, titleAccent, intro, eyebrow, seals
 
 <script>
   import { initImageHeroVideos } from '../layout/image-hero-video';
+  import { initHeroViewSwitch } from './hero-view-switch';
+  import { initHeroEndCard } from './hero-end-card';
 
   initImageHeroVideos();
+  initHeroViewSwitch();
+  initHeroEndCard();
   document.addEventListener('astro:page-load', initImageHeroVideos);
   document.addEventListener('astro:after-swap', initImageHeroVideos);
+  document.addEventListener('astro:page-load', initHeroViewSwitch);
+  document.addEventListener('astro:after-swap', initHeroViewSwitch);
+  document.addEventListener('astro:page-load', initHeroEndCard);
+  document.addEventListener('astro:after-swap', initHeroEndCard);
 </script>
 
 <style>
@@ -238,24 +294,59 @@ const { poster, alt, video, mediaNote, title, titleAccent, intro, eyebrow, seals
     opacity: 1;
   }
 
+  /* The after clip sits over the footage and only shows once it is chosen
+     and actually playing, so a slow load keeps the footage on screen. */
+  .home-hero .hero-video-after,
+  .home-hero[data-video-state='playing'] .hero-video-after {
+    opacity: 0;
+  }
+
+  .home-hero[data-hero-view='after'][data-after-state] .hero-video-after {
+    opacity: 1;
+  }
+
+  .hero-view-switch {
+    display: flex;
+    padding: 0.2rem;
+    border-radius: var(--radius-full);
+    background: rgb(6 20 13 / 62%);
+  }
+
+  .hero-view-switch button {
+    padding: 0.35rem 0.8rem;
+    border-radius: var(--radius-full);
+    color: var(--on-invert);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color var(--site-duration-base) var(--ease-in-out-quint);
+  }
+
+  .hero-view-switch button {
+    white-space: nowrap;
+  }
+
+  .hero-view-switch button[aria-pressed='true'] {
+    background: var(--on-invert);
+    color: rgb(6 20 13);
+  }
+
+  .hero-view-switch button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
   /*
-   * Left-to-right for the copy column, bottom-up for the figures strip. The
-   * left edge reaches 92% so the H1 and the muted intro hold contrast over the
-   * sky band and the bright frames of the fly-over; the right half — where the
-   * layout outline is — stays clear.
+   * Bottom-up for the figures strip only: the plots fill the whole frame, so
+   * the copy column carries no scrim and holds contrast with a text shadow
+   * (.hero-copy) instead.
    */
   .hero-scrim {
     position: absolute;
     inset: 0;
-    background:
-      linear-gradient(
-        90deg,
-        rgb(6 20 13 / 92%) 0%,
-        rgb(6 20 13 / 80%) 36%,
-        rgb(6 20 13 / 25%) 60%,
-        rgb(6 20 13 / 0%) 78%
-      ),
-      linear-gradient(0deg, rgb(6 20 13 / 92%) 0%, rgb(6 20 13 / 0%) 34%);
+    background: linear-gradient(0deg, rgb(6 20 13 / 92%) 0%, rgb(6 20 13 / 0%) 34%);
   }
 
   .hero-media-bar {
@@ -310,7 +401,11 @@ const { poster, alt, video, mediaNote, title, titleAccent, intro, eyebrow, seals
     display: inline-flex;
   }
 
+  /* The copy layer spans the whole stage above the media, so it lets clicks
+     through to the media bar (pause, view switch) everywhere but its own
+     children. */
   .hero-content {
+    pointer-events: none;
     position: relative;
     z-index: 1;
     display: flex;
@@ -320,9 +415,38 @@ const { poster, alt, video, mediaNote, title, titleAccent, intro, eyebrow, seals
     padding: clamp(4rem, 8vh, 6rem) clamp(1.5rem, 4vw, 3.5rem) clamp(1.5rem, 3vw, 2.5rem);
   }
 
+  .hero-content > :global(*) {
+    pointer-events: auto;
+  }
+
+  /* The copy panel is clear while the fly-over plays, with a text shadow
+     holding the white type, and turns into a frosted card when the logo end
+     card comes up (hero-end-card.ts sets data-end-card). It also stays raised
+     whenever the clip is not playing, so the still always has a legible card.
+     The negative margin keeps the text on the figures strip's left edge. */
   .hero-copy {
-    max-width: 38rem;
+    max-width: calc(38rem + 3rem);
+    margin-left: -1.5rem;
+    padding: 1.25rem 1.5rem;
+    border-radius: 1.5rem;
+    background: rgb(6 20 13 / 0%);
+    -webkit-backdrop-filter: blur(0) saturate(100%);
+    backdrop-filter: blur(0) saturate(100%);
     color: var(--on-invert);
+    text-shadow:
+      0 1px 2px rgb(6 20 13 / 85%),
+      0 2px 18px rgb(6 20 13 / 70%);
+    transition:
+      background-color 0.8s var(--ease-in-out-quint),
+      backdrop-filter 0.8s var(--ease-in-out-quint),
+      -webkit-backdrop-filter 0.8s var(--ease-in-out-quint);
+  }
+
+  .home-hero[data-end-card] .hero-copy,
+  .home-hero:not([data-video-state='playing']) .hero-copy {
+    background: rgb(6 20 13 / 52%);
+    -webkit-backdrop-filter: blur(8px) saturate(115%);
+    backdrop-filter: blur(8px) saturate(115%);
   }
 
   .hero-brand {
@@ -337,7 +461,7 @@ const { poster, alt, video, mediaNote, title, titleAccent, intro, eyebrow, seals
   }
 
   .hero-eyebrow {
-    color: var(--accent);
+    color: var(--on-invert);
     font-size: 0.74rem;
     font-weight: 800;
     letter-spacing: 0.16em;
@@ -366,7 +490,7 @@ const { poster, alt, video, mediaNote, title, titleAccent, intro, eyebrow, seals
   .hero-intro {
     max-width: 32rem;
     margin-top: 1.25rem;
-    color: var(--on-invert-secondary);
+    color: var(--on-invert);
     font-size: clamp(1rem, 1.35vw, 1.15rem);
     line-height: 1.55;
     text-wrap: pretty;
@@ -444,6 +568,42 @@ const { poster, alt, video, mediaNote, title, titleAccent, intro, eyebrow, seals
    * plain forest ink — nothing is read over the moving image at this width.
    */
   @media (max-width: 48rem) {
+    .hero-view-long {
+      display: none;
+    }
+
+    /* Full width on a phone so the switch, the label and the pause button
+       fit on one row inside the clip. */
+    .hero-media-bar {
+      top: 0.75rem;
+      right: 0.75rem;
+      left: 0.75rem;
+      justify-content: space-between;
+      gap: 0.4rem;
+    }
+
+    .hero-media-note {
+      padding: 0.4rem 0.6rem;
+      font-size: 0.62rem;
+      white-space: nowrap;
+    }
+
+    .hero-view-switch button {
+      padding: 0.35rem 0.65rem;
+    }
+
+    /* The copy sits below the clip on the forest surface here. */
+    .hero-copy,
+    .home-hero[data-end-card] .hero-copy,
+    .home-hero:not([data-video-state='playing']) .hero-copy {
+      margin-left: 0;
+      padding: 0;
+      border-radius: 0;
+      background: none;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+
     .home-hero {
       padding: 0.75rem;
     }
@@ -504,7 +664,8 @@ const { poster, alt, video, mediaNote, title, titleAccent, intro, eyebrow, seals
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .hero-video {
+    .hero-video,
+    .hero-copy {
       transition: none;
     }
   }

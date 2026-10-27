@@ -88,8 +88,8 @@ amenities:
 locationSection:
   eyebrow: The location
   title: Mamidipally, on the western Hyderabad corridor.
-  intro: "Tranquill City sits in Mamidipally village, Kandi mandal, Sangareddy district, near Rudraram and Patancheru. The list below names the landmarks buyers ask about on this corridor, with the straight-line distance from the site. Use the map for routes and live travel times."
-  note: Straight-line distances from the site, not road distances or drive times.
+  intro: "Tranquill City sits in Mamidipally village, Kandi mandal, Sangareddy district, near Rudraram and Patancheru. The list below names the landmarks buyers ask about on this corridor, with the distance from the site. Use the map for routes and live travel times."
+  note: Straight-line distances from the site, except where a drive time is shown, which is by road.
   groups:
     - title: Road and corridor
       landmarks:
@@ -99,7 +99,8 @@ locationSection:
     - title: Employment and education
       landmarks:
         - name: IIT Hyderabad, Kandi
-          distanceKm: 10.5
+          distanceKm: 6.3
+          driveMin: 12
         - name: GITAM University, Rudraram
           distanceKm: 4.5
         - name: ICRISAT, Patancheru

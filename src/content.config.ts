@@ -138,7 +138,7 @@ const projects = defineCollection({
              * route and traffic, which is why none is published.
              */
             landmarks: z.array(
-              z.union([z.string(), z.object({ name: z.string(), distanceKm: z.number() })])
+              z.union([z.string(), z.object({ name: z.string(), distanceKm: z.number(), driveMin: z.number().optional() })])
             ),
           })
         ),

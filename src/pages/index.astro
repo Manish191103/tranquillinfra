@@ -35,6 +35,7 @@ import heroAmenities from '~/assets/images/projects/tranquill-city/home-hero/ame
 import heroCommunityWalk from '~/assets/images/projects/tranquill-city/home-hero/community-walk.webp';
 import belongFrame from '~/assets/images/projects/tranquill-city/build-sequence/05-belong.webp';
 import heroPoster from '~/assets/images/projects/tranquill-city/project-hero-poster.webp';
+import afterHeroPoster from '~/assets/images/projects/tranquill-city/project-hero-after-poster.webp';
 
 const home = await getEntry('pages', 'home');
 if (!home) {
@@ -50,7 +51,7 @@ if (!homeBodyTitle) {
 }
 
 const heroAlt =
-  'Illustrative aerial render of the planned Tranquill City layout at golden hour, its boundary outlined in gold beside the highway interchange, with the city skyline on the horizon';
+  'Illustrative render of Tranquill City after development: black-top internal roads lined with trees between rows of open green plots, with landscaped parks, seen from a drone';
 
 // The hero still is the page's LCP element; the head preload starts its fetch
 // before the parser reaches the hero markup.
@@ -59,7 +60,7 @@ const lcpPreload = await buildPosterPreload({
   title: '',
   caption: '',
   alt: heroAlt,
-  poster: heroPoster,
+  poster: afterHeroPoster,
 });
 
 /** The figures strip under the hero copy, read from project.config.ts. */
@@ -182,13 +183,18 @@ const project = await getEntry('projects', 'tranquill-city');
 
 <PageLayout title={home.data.title} description={home.data.description} lcpPreload={lcpPreload}>
   <Hero
-    poster={heroPoster}
+    poster={afterHeroPoster}
     alt={heroAlt}
     video={{
       src: '/media/projects/project-hero.mp4',
       mobileSrc: '/media/projects/project-hero-mobile.mp4',
     }}
-    mediaNote="Illustrative aerial render"
+    mediaNote="Drone footage of the site"
+    afterVideo={{
+      src: '/media/projects/project-hero-after.mp4',
+      mobileSrc: '/media/projects/project-hero-after-mobile.mp4',
+      note: 'Illustrative render',
+    }}
     title={homeBodyTitle}
     titleAccent="near Rudraram & Patancheru"
     intro={home.data.heroIntro ?? home.data.description}

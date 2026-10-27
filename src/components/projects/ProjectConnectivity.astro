@@ -136,7 +136,13 @@ const headingId = `${id}-title`;
                     ) : (
                       <span class="text-foreground-secondary">{item.label}</span>
                     )}
-                    {item.distanceKm && <span class="distance">~{item.distanceKm} km</span>}
+                    {item.distanceKm && (
+                      <span class="distance">
+                        {item.driveMin
+                          ? `${item.distanceKm} km · ${item.driveMin} min`
+                          : `~${item.distanceKm} km`}
+                      </span>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -146,7 +152,7 @@ const headingId = `${id}-title`;
       }
     </div>
     <p class="text-foreground-muted mt-6 text-sm">
-      Distances are straight-line from the site, not road distances or drive times. Site pin:
+      Distances are straight-line from the site, except where a drive time is shown: that one is by road. Site pin:
       <span class="font-mono tabular-nums">17.585611° N, 78.148361° E</span>.
     </p>
   </div>

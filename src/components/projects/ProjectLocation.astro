@@ -26,7 +26,7 @@ interface Props {
    */
   groups: Array<{
     title: string;
-    landmarks: Array<string | { name: string; distanceKm: number }>;
+    landmarks: Array<string | { name: string; distanceKm: number; driveMin?: number }>;
   }>;
   directionsUrl: string;
   coordinates: { latitude: number; longitude: number };
@@ -52,7 +52,11 @@ const coordinateLine = `${coordinates.latitude}° N, ${coordinates.longitude}° 
                 {group.landmarks.map((landmark) => {
                   const name = typeof landmark === 'string' ? landmark : landmark.name;
                   const distance =
-                    typeof landmark === 'string' ? null : `about ${landmark.distanceKm} km`;
+                    typeof landmark === 'string'
+                      ? null
+                      : landmark.driveMin
+                        ? `${landmark.distanceKm} km, ${landmark.driveMin} min drive`
+                        : `about ${landmark.distanceKm} km`;
                   return (
                     <li class="flex items-start gap-2">
                       <Icon name="map-pin" size="xs" class="text-accent-ink mt-1" />
