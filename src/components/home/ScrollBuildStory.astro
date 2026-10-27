@@ -122,7 +122,7 @@ const pad = (value: number) => String(value).padStart(2, '0');
       {
         sequence.map((frame, index) => (
           <Picture
-            class={`build-story-image${index === 0 ? 'is-visible' : ''}`}
+            class={`build-story-image${index === 0 ? ' is-visible' : ''}`}
             data-build-image
             data-stage={index + 1}
             src={frame.image}
